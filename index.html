@@ -700,13 +700,18 @@ const loginSec = {
 window.addEventListener('DOMContentLoaded', async () => {
   if(!_sb){ mostrarErroConfig(); return; }
   loading(true);
-  // Verifica se já há sessão ativa (usuário já logado)
-  const { data: { session } } = await _sb.auth.getSession();
-  if(session){
-    await carregarSessao(session.user);
+  try {
+    await carregarConfig();
+    // Verifica se já há sessão ativa (usuário já logado)
+    const { data: { session } } = await _sb.auth.getSession();
+    if(session){
+      await carregarSessao(session.user);
+    }
+  } catch(e) {
+    console.error('Erro na inicialização:', e);
+  } finally {
+    loading(false);
   }
-  await carregarConfig();
-  loading(false);
 });
 
 async function carregarConfig(){
@@ -1305,4 +1310,5 @@ document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==
 </script>
 
 </body>
+<!-- v1.0.3 -->
 </html>
