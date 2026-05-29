@@ -52,9 +52,9 @@ h1,h2,h3,.display{font-family:'Barlow Condensed',sans-serif;text-transform:upper
 .nav-item.ativo,.nav-item:hover{background:#252525;color:var(--creme)}
 .btn-sair{padding:8px 16px;background:transparent;border:1px solid #2e2e2e;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--cinza-claro);transition:all 0.2s}
 .btn-sair:hover{border-color:var(--creme-escuro);color:var(--creme)}
-.admin-content{padding:2rem;max-width:1200px;margin:0 auto}
-.pagina-admin{display:none}
-.pagina-admin.ativa{display:block}
+.admin-content{padding:2rem;max-width:1200px;margin:0 auto;width:100%}
+.pagina-admin{display:none;width:100%}
+.pagina-admin.ativa{display:block;width:100%;min-height:200px}
 
 /* Cards de Estatísticas */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:2rem}
@@ -134,8 +134,8 @@ tr:hover td{background:#1c1c1c}
 .af-header{background:#171717;border-bottom:1px solid #252525;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
 .af-nav{display:flex;gap:4px}
 .af-content{padding:2rem;max-width:960px;margin:0 auto}
-.pagina-af{display:none}
-.pagina-af.ativa{display:block}
+.pagina-af{display:none;width:100%}
+.pagina-af.ativa{display:block;width:100%;min-height:200px}
 
 /* Painel afiliada - cards */
 .af-boas-vindas{margin-bottom:1.5rem}
