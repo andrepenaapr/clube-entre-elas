@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.1.1">
+<meta name="app-version" content="1.1.4">
 <title>Clube Entre Elas</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -534,9 +534,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   loading(true);
   try {
     // Detectar tipo de acesso pelo hash da URL
+    // Detectar tipo de acesso pelo hash da URL
     const hashParams = new URLSearchParams(window.location.hash.replace('#','?'));
-    const tipoAccess = hashParams.get('type') || window.location.hash;
+    const tipoAccess = hashParams.get('type') || '';
 
+    // Recuperação de senha
     if(tipoAccess === 'recovery') {
       _sb.auth.onAuthStateChange((event, session) => {
         if(event === 'PASSWORD_RECOVERY') {
@@ -548,31 +550,35 @@ window.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // Magic Link de convite de afiliada
+    // Convite (Magic Link) — afiliada ou admin
     if(tipoAccess === 'magiclink' || tipoAccess === 'signup' || tipoAccess === 'invite') {
       const {data:{session}} = await _sb.auth.getSession();
       if(session){
-        // Verificar se já tem perfil — se não, criar
+        // Verificar se já tem perfil
         const {data:perfil} = await _sb.from('perfis').select('*').eq('user_id', session.user.id).single();
         if(!perfil){
-          // Buscar afiliada pelo e-mail para vincular
+          // Primeiro acesso — vincular pelo e-mail
+          // Se o e-mail existir na tabela afiliadas → é afiliada
+          // Senão → é admin
           const {data:af} = await _sb.from('afiliadas').select('id').eq('email', session.user.email).single();
           if(af){
             await _sb.from('perfis').insert({user_id: session.user.id, role:'afiliada', afiliada_id: af.id});
-          }
-        } else {
-          // Verificar se é convite de admin (metadata contém role:'admin')
-          const meta = session.user.user_metadata || {};
-          if(meta.role === 'admin'){
+          } else {
             await _sb.from('perfis').insert({user_id: session.user.id, role:'admin'});
           }
         }
+        // Redirecionar para tela de definição de senha
         history.replaceState(null,'',window.location.pathname);
-        await carregarConfig();
-        await carregarSessao(session.user);
+        loading(false);
+        document.getElementById('tela-login').style.display = 'none';
+        const telaRedef = document.getElementById('tela-redefinir');
+        telaRedef.style.display = 'flex';
+        const titulo = telaRedef.querySelector('[style*="font-size:32px"]');
+        if(titulo) titulo.textContent = 'Defina sua Senha';
         return;
       }
     }
+
     await carregarConfig();
     const { data: { session } } = await _sb.auth.getSession();
     if(session) await carregarSessao(session.user);
@@ -610,12 +616,16 @@ async function confirmarRedefinicao() {
   loading(false);
   if(error) { err.textContent = 'Erro: ' + error.message; err.style.display = 'block'; return; }
   ok.style.display = 'block';
-  await _sb.auth.signOut();
-  setTimeout(() => {
+  // Não faz logout — carrega o painel direto após salvar a senha
+  setTimeout(async () => {
     document.getElementById('tela-redefinir').style.display = 'none';
-    document.getElementById('tela-login').style.display = 'flex';
-    history.replaceState(null, '', window.location.pathname);
-  }, 2500);
+    loading(true);
+    await carregarConfig();
+    const {data:{session}} = await _sb.auth.getSession();
+    if(session) await carregarSessao(session.user);
+    else document.getElementById('tela-login').style.display = 'flex';
+    loading(false);
+  }, 1500);
 }
 
 async function carregarConfig(){
@@ -933,7 +943,7 @@ async function salvarAfiliada(){
       email,
       options: {
         emailRedirectTo: redirectTo,
-        data: { afiliada_id: af.id, role: 'afiliada' }
+        shouldCreateUser: true,
       }
     });
 
@@ -984,7 +994,7 @@ async function convidarAdmin(){
     email,
     options: {
       emailRedirectTo: window.location.origin + window.location.pathname,
-      data: { nome, role: 'admin' }
+      shouldCreateUser: true,
     }
   });
   loading(false);
@@ -1222,6 +1232,6 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.1.1</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.1.4</div>
 </body>
 </html>
