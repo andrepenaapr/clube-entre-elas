@@ -304,7 +304,7 @@ tr:hover td{background:#1c1c1c}
 </div>
 
 <!-- ====== MÓDULO ADMIN ====== -->
-<div id="mod-admin">
+<div id="mod-admin" style="width:100%;min-height:100vh;background:#111010">
   <div class="admin-header">
     <div class="admin-logo">Entre <span>Elas</span> — Gestão</div>
     <div class="admin-nav">
@@ -317,10 +317,10 @@ tr:hover td{background:#1c1c1c}
     </div>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
-  <div class="admin-content">
+  <div class="admin-content" style="width:100%;padding:2rem;max-width:1200px;margin:0 auto;box-sizing:border-box">
 
     <!-- DASHBOARD -->
-    <div class="pagina-admin ativa" id="adm-dashboard">
+    <div class="pagina-admin ativa" id="adm-dashboard" style="width:100%;display:block">
       <div style="margin-bottom:1.5rem">
         <div class="secao-titulo">Dashboard</div>
         <div class="secao-desc">Visão geral do Clube Entre Elas — Maio 2025</div>
@@ -338,7 +338,7 @@ tr:hover td{background:#1c1c1c}
     </div>
 
     <!-- AFILIADAS -->
-    <div class="pagina-admin" id="adm-afiliadas">
+    <div class="pagina-admin" id="adm-afiliadas" style="width:100%;display:none">
       <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between">
         <div>
           <div class="secao-titulo">Afiliadas</div>
@@ -355,7 +355,7 @@ tr:hover td{background:#1c1c1c}
     </div>
 
     <!-- VENDAS -->
-    <div class="pagina-admin" id="adm-vendas">
+    <div class="pagina-admin" id="adm-vendas" style="width:100%;display:none">
       <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between">
         <div>
           <div class="secao-titulo">Lançamento de Vendas</div>
@@ -372,7 +372,7 @@ tr:hover td{background:#1c1c1c}
     </div>
 
     <!-- COMISSÕES -->
-    <div class="pagina-admin" id="adm-comissoes">
+    <div class="pagina-admin" id="adm-comissoes" style="width:100%;display:none">
       <div class="secao-titulo" style="margin-bottom:1.5rem">Regras de Comissão</div>
       <div class="faixas-wrap" id="faixas-admin"></div>
       <div style="margin-top:1.5rem">
@@ -389,7 +389,7 @@ tr:hover td{background:#1c1c1c}
     </div>
 
     <!-- REGRAS -->
-    <div class="pagina-admin" id="adm-regras">
+    <div class="pagina-admin" id="adm-regras" style="width:100%;display:none">
       <div class="secao-titulo" style="margin-bottom:0.5rem">Regras do Programa</div>
       <div class="secao-desc">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>
       <div class="tabela-wrap" style="padding:1.5rem">
@@ -405,7 +405,7 @@ tr:hover td{background:#1c1c1c}
     </div>
 
     <!-- NOTIFICAÇÕES -->
-    <div class="pagina-admin" id="adm-notificacoes">
+    <div class="pagina-admin" id="adm-notificacoes" style="width:100%;display:none">
       <div class="secao-titulo" style="margin-bottom:0.5rem">Notificações</div>
       <div class="secao-desc">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>
       <div class="tabela-wrap" style="padding:1.5rem;margin-bottom:1.5rem">
@@ -435,7 +435,7 @@ tr:hover td{background:#1c1c1c}
 </div>
 
 <!-- ====== MÓDULO AFILIADA ====== -->
-<div id="mod-afiliada">
+<div id="mod-afiliada" style="width:100%;min-height:100vh;background:#111010">
   <div class="af-header">
     <div class="admin-logo">Entre <span>Elas</span></div>
     <div class="af-nav">
@@ -447,7 +447,7 @@ tr:hover td{background:#1c1c1c}
     </div>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
-  <div class="af-content">
+  <div class="af-content" style="width:100%;padding:2rem;max-width:960px;margin:0 auto;box-sizing:border-box">
 
     <!-- PAINEL -->
     <div class="pagina-af ativa" id="af-painel">
@@ -847,9 +847,11 @@ async function sair() {
 
 // ===== ADMIN: RENDER =====
 function mudarPagAdmin(pag,btn){
-  document.querySelectorAll('.pagina-admin').forEach(p=>p.classList.remove('ativa'));
+  document.querySelectorAll('.pagina-admin').forEach(p=>{ p.classList.remove('ativa'); p.style.display='none'; });
   document.querySelectorAll('.admin-nav .nav-item').forEach(b=>b.classList.remove('ativo'));
-  document.getElementById('adm-'+pag).classList.add('ativa');
+  const el = document.getElementById('adm-'+pag);
+  el.classList.add('ativa');
+  el.style.display='block';
   btn.classList.add('ativo');
   if(pag==='afiliadas') renderTabelaAfiliadas();
   if(pag==='vendas') renderTabelaVendas();
@@ -1120,9 +1122,11 @@ async function preencherSelectAfiliadas(){
 
 // ===== AFILIADA: RENDER =====
 function mudarPagAf(pag,btn){
-  document.querySelectorAll('.pagina-af').forEach(p=>p.classList.remove('ativa'));
+  document.querySelectorAll('.pagina-af').forEach(p=>{ p.classList.remove('ativa'); p.style.display='none'; });
   document.querySelectorAll('.af-nav .nav-item').forEach(b=>b.classList.remove('ativo'));
-  document.getElementById('af-'+pag).classList.add('ativa');
+  const el = document.getElementById('af-'+pag);
+  el.classList.add('ativa');
+  el.style.display='block';
   btn.classList.add('ativo');
 }
 
