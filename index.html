@@ -52,9 +52,9 @@ h1,h2,h3,.display{font-family:'Barlow Condensed',sans-serif;text-transform:upper
 .nav-item.ativo,.nav-item:hover{background:#252525;color:var(--creme)}
 .btn-sair{padding:8px 16px;background:transparent;border:1px solid #2e2e2e;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--cinza-claro);transition:all 0.2s}
 .btn-sair:hover{border-color:var(--creme-escuro);color:var(--creme)}
-.admin-content{padding:2rem;max-width:1200px;margin:0 auto;width:100%}
-.pagina-admin{display:none;width:100%}
-.pagina-admin.ativa{display:block;width:100%;min-height:200px}
+.admin-content{padding:2rem;max-width:1200px;margin:0 auto}
+.pagina-admin{display:none}
+.pagina-admin.ativa{display:block}
 
 /* Cards de Estatísticas */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:2rem}
@@ -134,8 +134,8 @@ tr:hover td{background:#1c1c1c}
 .af-header{background:#171717;border-bottom:1px solid #252525;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
 .af-nav{display:flex;gap:4px}
 .af-content{padding:2rem;max-width:960px;margin:0 auto}
-.pagina-af{display:none;width:100%}
-.pagina-af.ativa{display:block;width:100%;min-height:200px}
+.pagina-af{display:none}
+.pagina-af.ativa{display:block}
 
 /* Painel afiliada - cards */
 .af-boas-vindas{margin-bottom:1.5rem}
@@ -273,14 +273,12 @@ tr:hover td{background:#1c1c1c}
     <div style="margin-top:1rem;text-align:center">
       <button onclick="recuperarSenha()" style="background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--cinza-claro);text-decoration:underline;text-underline-offset:3px">Esqueci minha senha</button>
     </div>
-    <div class="msg-sucesso" id="msg-recuperacao" style="margin-top:10px;display:none">
-      E-mail de recuperação enviado! Verifique sua caixa de entrada.
-    </div>
+    <div class="msg-sucesso" id="msg-recuperacao" style="display:none">E-mail de recuperação enviado! Verifique sua caixa de entrada.</div>
   </div>
 </div>
 
 
-<!-- ====== TELA REDEFINIÇÃO DE SENHA ====== -->
+<!-- TELA REDEFINIÇÃO DE SENHA -->
 <div id="tela-redefinir" style="display:none;align-items:center;justify-content:center;min-height:100vh;padding:2rem;background:var(--preto)">
   <div style="width:100%;max-width:420px">
     <div class="logo-area" style="margin-bottom:2rem">
@@ -288,15 +286,9 @@ tr:hover td{background:#1c1c1c}
       <div class="logo-sub">Clube de Afiliadas</div>
     </div>
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;color:var(--creme);margin-bottom:0.5rem;text-align:center">Nova Senha</div>
-    <div style="font-size:13px;color:var(--cinza-claro);text-align:center;margin-bottom:2rem;line-height:1.6">Digite e confirme sua nova senha abaixo.</div>
-    <div class="campo">
-      <label>Nova Senha</label>
-      <input type="password" id="redef-senha-nova" placeholder="Mínimo 6 caracteres">
-    </div>
-    <div class="campo" style="margin-bottom:1.5rem">
-      <label>Confirmar Nova Senha</label>
-      <input type="password" id="redef-senha-conf" placeholder="Repita a senha">
-    </div>
+    <div style="font-size:13px;color:var(--cinza-claro);text-align:center;margin-bottom:2rem">Digite e confirme sua nova senha.</div>
+    <div class="campo"><label>Nova Senha</label><input type="password" id="redef-senha-nova" placeholder="Mínimo 6 caracteres"></div>
+    <div class="campo" style="margin-bottom:1.5rem"><label>Confirmar Nova Senha</label><input type="password" id="redef-senha-conf" placeholder="Repita a senha"></div>
     <button class="btn-principal" onclick="confirmarRedefinicao()">Salvar Nova Senha</button>
     <div class="msg-sucesso" id="redef-ok" style="margin-top:12px;display:none">✅ Senha alterada! Redirecionando...</div>
     <div class="msg-erro" id="redef-err" style="margin-top:12px;display:none"></div>
@@ -304,7 +296,7 @@ tr:hover td{background:#1c1c1c}
 </div>
 
 <!-- ====== MÓDULO ADMIN ====== -->
-<div id="mod-admin" style="width:100%;min-height:100vh;background:#111010">
+<div id="mod-admin">
   <div class="admin-header">
     <div class="admin-logo">Entre <span>Elas</span> — Gestão</div>
     <div class="admin-nav">
@@ -317,125 +309,17 @@ tr:hover td{background:#1c1c1c}
     </div>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
-  <div class="admin-content" style="width:100%;padding:2rem;max-width:1200px;margin:0 auto;box-sizing:border-box">
+  <div class="admin-content">
 
     <!-- DASHBOARD -->
-    <div class="pagina-admin ativa" id="adm-dashboard" style="width:100%;display:block">
-      <div style="margin-bottom:1.5rem">
-        <div class="secao-titulo">Dashboard</div>
-        <div class="secao-desc">Visão geral do Clube Entre Elas — Maio 2025</div>
-      </div>
-      <div class="stats-grid" id="stats-admin"></div>
-      <div class="tabela-wrap">
-        <div class="tabela-header">
-          <div class="tabela-titulo">Top Afiliadas do Mês</div>
-        </div>
-        <table>
-          <thead><tr><th>#</th><th>Afiliada</th><th>Vendas</th><th>Comissão</th><th>Status</th></tr></thead>
-          <tbody id="top-afiliadas"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- AFILIADAS -->
-    <div class="pagina-admin" id="adm-afiliadas" style="width:100%;display:none">
-      <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between">
-        <div>
-          <div class="secao-titulo">Afiliadas</div>
-          <div class="secao-desc">Cadastro e gestão das afiliadas do clube</div>
-        </div>
-        <button class="btn-acao" onclick="abrirModalCadastro()">+ Nova Afiliada</button>
-      </div>
-      <div class="tabela-wrap"><div class="tabela-scroll">
-        <table>
-          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>
-          <tbody id="tabela-afiliadas"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- VENDAS -->
-    <div class="pagina-admin" id="adm-vendas" style="width:100%;display:none">
-      <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between">
-        <div>
-          <div class="secao-titulo">Lançamento de Vendas</div>
-          <div class="secao-desc">Registre vendas por cupom ou importe via planilha</div>
-        </div>
-        <button class="btn-acao" onclick="abrirModalVenda()">+ Registrar Venda</button>
-      </div>
-      <div class="tabela-wrap">
-        <table>
-          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>
-          <tbody id="tabela-vendas"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- COMISSÕES -->
-    <div class="pagina-admin" id="adm-comissoes" style="width:100%;display:none">
-      <div class="secao-titulo" style="margin-bottom:1.5rem">Regras de Comissão</div>
-      <div class="faixas-wrap" id="faixas-admin"></div>
-      <div style="margin-top:1.5rem">
-        <button class="btn-acao" onclick="abrirModalFaixas()">Editar Faixas</button>
-      </div>
-      <div class="divider"></div>
-      <div class="secao-titulo" style="margin-bottom:1.25rem">Fechamento Mensal</div>
-      <div class="tabela-wrap">
-        <table>
-          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>
-          <tbody id="tabela-fechamento"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- REGRAS -->
-    <div class="pagina-admin" id="adm-regras" style="width:100%;display:none">
-      <div class="secao-titulo" style="margin-bottom:0.5rem">Regras do Programa</div>
-      <div class="secao-desc">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>
-      <div class="tabela-wrap" style="padding:1.5rem">
-        <div class="form-campo" style="margin-bottom:1rem">
-          <label>Conteúdo das Regras</label>
-          <textarea class="regras-editor" id="editor-regras" rows="16"></textarea>
-        </div>
-        <button class="btn-acao" onclick="salvarRegras()">Publicar Regras</button>
-        <div class="aviso-regras" id="aviso-regras" style="display:none">
-          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.
-        </div>
-      </div>
-    </div>
-
-    <!-- NOTIFICAÇÕES -->
-    <div class="pagina-admin" id="adm-notificacoes" style="width:100%;display:none">
-      <div class="secao-titulo" style="margin-bottom:0.5rem">Notificações</div>
-      <div class="secao-desc">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>
-      <div class="tabela-wrap" style="padding:1.5rem;margin-bottom:1.5rem">
-        <div class="form-grid">
-          <div class="form-campo">
-            <label>Título</label>
-            <input type="text" id="notif-titulo-input" placeholder="Ex: Novidade do mês">
-          </div>
-          <div class="form-campo">
-            <label>Destinatário</label>
-            <select id="notif-dest">
-              <option value="todas">Todas as afiliadas</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-campo" style="margin-top:12px">
-          <label>Mensagem</label>
-          <textarea class="regras-editor" id="notif-texto-input" rows="4" style="min-height:80px" placeholder="Digite a mensagem..."></textarea>
-        </div>
-        <button class="btn-acao" style="margin-top:1rem" onclick="enviarNotificacao()">Enviar Notificação</button>
-      </div>
-      <div class="secao-titulo" style="font-size:20px;margin-bottom:1rem">Histórico</div>
-      <div id="lista-notificacoes-admin"></div>
-    </div>
+        <div id="admin-page-container" style="width:100%"></div>
+    
 
   </div>
 </div>
 
 <!-- ====== MÓDULO AFILIADA ====== -->
-<div id="mod-afiliada" style="width:100%;min-height:100vh;background:#111010">
+<div id="mod-afiliada">
   <div class="af-header">
     <div class="admin-logo">Entre <span>Elas</span></div>
     <div class="af-nav">
@@ -447,74 +331,11 @@ tr:hover td{background:#1c1c1c}
     </div>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
-  <div class="af-content" style="width:100%;padding:2rem;max-width:960px;margin:0 auto;box-sizing:border-box">
+  <div class="af-content">
 
     <!-- PAINEL -->
-    <div class="pagina-af ativa" id="af-painel">
-      <div class="af-boas-vindas">
-        <div style="font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px">Bem-vinda,</div>
-        <div class="af-nome" id="af-nome-display">Ana Silva</div>
-        <div class="af-cupom-tag" id="af-cupom-display">CUPOM: ANAENTREELAS</div>
-      </div>
-      <div class="prod-destaque">
-        <div class="prod-icon">✨</div>
-        <div>
-          <div class="prod-info-label">Seu produto mais vendido</div>
-          <div class="prod-info-nome" id="af-prod-destaque">Protetor Solar FPS 80</div>
-          <div class="prod-info-qtd" id="af-prod-qtd">12 unidades vendidas</div>
-        </div>
-      </div>
-      <div class="af-stats" id="af-stats-grid"></div>
-      <div class="divider"></div>
-      <div class="secao-titulo">Histórico de Vendas</div>
-      <div class="tabela-wrap">
-        <table>
-          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>
-          <tbody id="af-historico"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- RANKING -->
-    <div class="pagina-af" id="af-ranking">
-      <div class="secao-titulo" style="margin-bottom:0.5rem">Ranking de Afiliadas</div>
-      <div class="secao-desc">Classificação por volume de vendas — Maio 2025</div>
-      <div class="ranking-lista" id="lista-ranking"></div>
-    </div>
-
-    <!-- REGRAS AF -->
-    <div class="pagina-af" id="af-regras-af">
-      <div class="secao-titulo" style="margin-bottom:1.5rem">Regras do Clube</div>
-      <div id="regras-af-conteudo"></div>
-    </div>
-
-    <!-- MINHA CONTA -->
-    <div class="pagina-af" id="af-minha-conta">
-      <div class="secao-titulo" style="margin-bottom:0.5rem">Minha Conta</div>
-      <div class="secao-desc">Gerencie sua senha de acesso ao painel.</div>
-      <div class="senha-card">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em">ALTERAR SENHA</div>
-        <div class="form-grid uma-col" style="max-width:400px;gap:12px">
-          <div class="form-campo"><label>Senha Atual</label><input type="password" id="senha-atual" placeholder="••••••••"></div>
-          <div class="form-campo"><label>Nova Senha</label><input type="password" id="senha-nova" placeholder="Mínimo 6 caracteres"></div>
-          <div class="form-campo"><label>Confirmar Nova Senha</label><input type="password" id="senha-confirma" placeholder="Repita a nova senha"></div>
-        </div>
-        <button class="btn-acao" style="margin-top:1rem" onclick="alterarSenha()">Salvar Nova Senha</button>
-        <div class="msg-sucesso" id="msg-senha-ok">✓ Senha alterada com sucesso!</div>
-        <div class="msg-erro" id="msg-senha-err"></div>
-      </div>
-      <div class="senha-card">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em">MEUS DADOS</div>
-        <div id="minha-conta-dados"></div>
-      </div>
-    </div>
-
-    <!-- NOTIFICAÇÕES AF -->
-    <div class="pagina-af" id="af-notificacoes-af">
-      <div class="secao-titulo" style="margin-bottom:0.5rem">Avisos da Equipe</div>
-      <div class="secao-desc">Comunicados enviados pela equipe Entre Elas</div>
-      <div id="lista-notificacoes-af"></div>
-    </div>
+        <div id="af-page-container" style="width:100%"></div>
+    
 
   </div>
 </div>
@@ -625,6 +446,11 @@ tr:hover td{background:#1c1c1c}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+
+// CONTEÚDO DAS PÁGINAS
+const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Dashboard</div>\n        <div class=\"secao-desc\">Visão geral do Clube Entre Elas — Maio 2025</div>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Vendas</th><th>Comissão</th><th>Status</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Cadastro e gestão das afiliadas do clube</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\"><div class=\"tabela-scroll\">\n        <table>\n          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- VENDAS -->\n    <div class=\"pagina-admin\" id=\"adm-vendas\">\n      <div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- COMISSÕES -->\n    <div class=\"pagina-admin\" id=\"adm-comissoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- REGRAS -->\n    <div class=\"pagina-admin\" id=\"adm-regras\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>\n    </div>\n\n    <!-- NOTIFICAÇÕES -->\n    <div class=\"pagina-admin\" id=\"adm-notificacoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>\n    </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>"};
+const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"prod-destaque\">\n        <div class=\"prod-icon\">✨</div>\n        <div>\n          <div class=\"prod-info-label\">Seu produto mais vendido</div>\n          <div class=\"prod-info-nome\" id=\"af-prod-destaque\">Protetor Solar FPS 80</div>\n          <div class=\"prod-info-qtd\" id=\"af-prod-qtd\">12 unidades vendidas</div>\n        </div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\">Classificação por volume de vendas — Maio 2025</div>\n      <div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras do Clube</div>\n      <div id=\"regras-af-conteudo\"></div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"••••••••\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"Mínimo 6 caracteres\"></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"Repita a nova senha\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
+
 // ============================================================
 // CONFIGURAÇÃO SUPABASE — PREENCHA AQUI APÓS CRIAR SUA CONTA
 // ============================================================
@@ -694,70 +520,59 @@ window.addEventListener('DOMContentLoaded', async () => {
   if(!_sb){ mostrarErroConfig(); return; }
   loading(true);
   try {
-    // Detectar se é um link de recuperação de senha (#type=recovery na URL)
-    const hash = window.location.hash;
-    if (hash.includes('type=recovery')) {
-      // Supabase SDK processa o token do hash automaticamente via onAuthStateChange
+    if(window.location.hash.includes('type=recovery')) {
       _sb.auth.onAuthStateChange((event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
+        if(event === 'PASSWORD_RECOVERY') {
           loading(false);
-          mostrarTelaRedefinir();
+          document.getElementById('tela-login').style.display = 'none';
+          document.getElementById('tela-redefinir').style.display = 'flex';
         }
       });
-      return; // Aguarda o evento, não continua o fluxo normal
+      return;
     }
     await carregarConfig();
     const { data: { session } } = await _sb.auth.getSession();
-    if (session) {
-      await carregarSessao(session.user);
-    }
+    if(session) await carregarSessao(session.user);
   } catch(e) {
-    console.error('Erro na inicialização:', e);
+    console.error('Init:', e);
   } finally {
     loading(false);
   }
 });
 
-function mostrarTelaRedefinir() {
-  document.getElementById('tela-login').style.display = 'none';
-  const tela = document.getElementById('tela-redefinir');
-  tela.style.display = 'flex';
-  history.replaceState(null, '', window.location.pathname);
+async function recuperarSenha() {
+  const email = document.getElementById('input-email').value.trim();
+  const ok = document.getElementById('msg-recuperacao');
+  const err = document.getElementById('erro-login');
+  ok.style.display = 'none';
+  if(!email) { err.textContent = 'Digite seu e-mail antes de recuperar a senha.'; setTimeout(()=>err.textContent='',4000); return; }
+  loading(true);
+  const { error } = await _sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+  loading(false);
+  if(error) { err.textContent = 'Erro: ' + error.message; setTimeout(()=>err.textContent='',5000); return; }
+  ok.style.display = 'block';
+  setTimeout(() => ok.style.display = 'none', 8000);
 }
 
 async function confirmarRedefinicao() {
   const nova = document.getElementById('redef-senha-nova').value;
   const conf = document.getElementById('redef-senha-conf').value;
-  const ok   = document.getElementById('redef-ok');
-  const err  = document.getElementById('redef-err');
-  ok.style.display = 'none';
-  err.style.display = 'none';
-  if (nova.length < 6) { err.textContent = 'A senha deve ter pelo menos 6 caracteres.'; err.style.display = 'block'; return; }
-  if (nova !== conf)   { err.textContent = 'As senhas não conferem.'; err.style.display = 'block'; return; }
+  const ok = document.getElementById('redef-ok');
+  const err = document.getElementById('redef-err');
+  ok.style.display = 'none'; err.style.display = 'none';
+  if(nova.length < 6) { err.textContent = 'A senha deve ter pelo menos 6 caracteres.'; err.style.display = 'block'; return; }
+  if(nova !== conf) { err.textContent = 'As senhas não conferem.'; err.style.display = 'block'; return; }
   loading(true);
   const { error } = await _sb.auth.updateUser({ password: nova });
   loading(false);
-  if (error) { err.textContent = 'Erro: ' + error.message; err.style.display = 'block'; return; }
+  if(error) { err.textContent = 'Erro: ' + error.message; err.style.display = 'block'; return; }
   ok.style.display = 'block';
   await _sb.auth.signOut();
   setTimeout(() => {
     document.getElementById('tela-redefinir').style.display = 'none';
     document.getElementById('tela-login').style.display = 'flex';
+    history.replaceState(null, '', window.location.pathname);
   }, 2500);
-}
-
-async function recuperarSenha() {
-  const email = document.getElementById('input-email').value.trim();
-  const msgOk  = document.getElementById('msg-recuperacao');
-  const msgErr = document.getElementById('erro-login');
-  msgOk.style.display = 'none';
-  if (!email) { msgErr.textContent = 'Digite seu e-mail antes de recuperar a senha.'; setTimeout(() => msgErr.textContent = '', 4000); return; }
-  loading(true);
-  const { error } = await _sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
-  loading(false);
-  if (error) { msgErr.textContent = 'Erro ao enviar e-mail: ' + error.message; setTimeout(() => msgErr.textContent = '', 5000); return; }
-  msgOk.style.display = 'block';
-  setTimeout(() => msgOk.style.display = 'none', 8000);
 }
 
 async function carregarConfig(){
@@ -780,13 +595,18 @@ async function carregarSessao(user){
   sessao.perfil = perfil;
   document.getElementById('tela-login').style.display='none';
   if(perfil.role === 'admin'){
-    document.getElementById('mod-admin').style.display='block';
+    const adm = document.getElementById('mod-admin');
+    adm.style.display='block'; adm.style.width='100%';
+    mudarPagAdmin('dashboard', document.querySelector('.admin-nav .nav-item'));
     await renderAdmin();
   } else {
     const {data: afiliada} = await _sb.from('afiliadas').select('*').eq('id', perfil.afiliada_id).single();
     if(!afiliada || afiliada.status !== 'ativo') { await _sb.auth.signOut(); return; }
     sessao.afiliada = afiliada;
-    document.getElementById('mod-afiliada').style.display='block';
+    const afm = document.getElementById('mod-afiliada');
+    afm.style.display='block'; afm.style.width='100%';
+    document.querySelectorAll('.pagina-af').forEach(p=>p.style.display='none');
+    document.getElementById('af-painel').style.display='block';
     await renderAfiliada(afiliada.id);
     if(configLocal.regrasPendentes && !perfil.regras_lidas){
       setTimeout(()=>abrirPopupRegras(), 600);
@@ -847,17 +667,16 @@ async function sair() {
 
 // ===== ADMIN: RENDER =====
 function mudarPagAdmin(pag,btn){
-  document.querySelectorAll('.pagina-admin').forEach(p=>{ p.classList.remove('ativa'); p.style.display='none'; });
+  const container = document.getElementById('admin-page-container');
+  container.innerHTML = '<div id="adm-'+pag+'" style="width:100%">'+PAGINAS_ADMIN['adm-'+pag]+'</div>';
   document.querySelectorAll('.admin-nav .nav-item').forEach(b=>b.classList.remove('ativo'));
-  const el = document.getElementById('adm-'+pag);
-  el.classList.add('ativa');
-  el.style.display='block';
   btn.classList.add('ativo');
   if(pag==='afiliadas') renderTabelaAfiliadas();
-  if(pag==='vendas') renderTabelaVendas();
-  if(pag==='comissoes') renderComissoes();
-  if(pag==='notificacoes') renderNotifAdmin();
-  if(pag==='regras') renderRegrasAdmin();
+  else if(pag==='vendas') renderTabelaVendas();
+  else if(pag==='comissoes') renderComissoes();
+  else if(pag==='notificacoes') renderNotifAdmin();
+  else if(pag==='regras') renderRegrasAdmin();
+  else if(pag==='dashboard') renderDashboard();
 }
 
 async function renderAdmin(){
@@ -1122,11 +941,9 @@ async function preencherSelectAfiliadas(){
 
 // ===== AFILIADA: RENDER =====
 function mudarPagAf(pag,btn){
-  document.querySelectorAll('.pagina-af').forEach(p=>{ p.classList.remove('ativa'); p.style.display='none'; });
+  const container = document.getElementById('af-page-container');
+  container.innerHTML = '<div id="af-'+pag+'" style="width:100%">'+PAGINAS_AF['af-'+pag]+'</div>';
   document.querySelectorAll('.af-nav .nav-item').forEach(b=>b.classList.remove('ativo'));
-  const el = document.getElementById('af-'+pag);
-  el.classList.add('ativa');
-  el.style.display='block';
   btn.classList.add('ativo');
 }
 
@@ -1279,6 +1096,6 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.0.8</div>
 </body>
-<!-- v1.0.3 -->
 </html>
