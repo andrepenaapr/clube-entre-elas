@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clube Entre Elas</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --preto:#111010;
+  --creme:#e8d5b0;
+  --creme-escuro:#c9b68a;
+  --creme-claro:#f5edd8;
+  --cinza:#2a2a2a;
+  --cinza-medio:#3d3d3d;
+  --cinza-claro:#5a5a5a;
+  --verde:#3a7d5a;
+  --vermelho:#9b3a3a;
+  --dourado:#c9933a;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--preto);color:var(--creme);min-height:100vh}
+h1,h2,h3,.display{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em}
+
+/* TELA DE LOGIN */
+#tela-login{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem;background:var(--preto)}
+.login-box{width:100%;max-width:420px}
+.logo-area{text-align:center;margin-bottom:2.5rem}
+.logo-symbol{font-size:48px;margin-bottom:8px}
+.logo-nome{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;letter-spacing:0.15em;text-transform:uppercase;color:var(--creme)}
+.logo-sub{font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:var(--cinza-claro);margin-top:4px}
+.tabs-login{display:flex;border:1px solid #2e2e2e;border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+.tab-btn{flex:1;padding:10px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.05em;color:var(--cinza-claro);transition:all 0.2s}
+.tab-btn.ativo{background:var(--creme);color:var(--preto)}
+.campo{margin-bottom:1rem}
+.campo label{display:block;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:6px}
+.campo input{width:100%;padding:12px 16px;background:#1e1e1e;border:1px solid #2e2e2e;border-radius:8px;color:var(--creme);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
+.campo input:focus{border-color:var(--creme-escuro)}
+.btn-principal{width:100%;padding:14px;background:var(--creme);color:var(--preto);border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.btn-principal:hover{background:var(--creme-claro)}
+.btn-principal:disabled{background:#3a3a3a;color:#666;cursor:not-allowed}
+.erro-login{color:#e05555;font-size:13px;text-align:center;margin-top:8px;min-height:18px}
+.bloqueio-aviso{background:#2e1a1a;border:1px solid #5a2a2a;border-radius:8px;padding:10px 14px;font-size:12px;color:#e08080;text-align:center;margin-top:10px;display:none}
+
+/* MÓDULO ADMIN */
+#mod-admin{display:none;min-height:100vh;background:var(--preto)}
+.admin-header{background:#171717;border-bottom:1px solid #252525;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.admin-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:0.12em;color:var(--creme)}
+.admin-logo span{color:var(--creme-escuro)}
+.admin-nav{display:flex;gap:4px}
+.nav-item{padding:8px 16px;border-radius:6px;background:transparent;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--cinza-claro);transition:all 0.2s;white-space:nowrap}
+.nav-item.ativo,.nav-item:hover{background:#252525;color:var(--creme)}
+.btn-sair{padding:8px 16px;background:transparent;border:1px solid #2e2e2e;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--cinza-claro);transition:all 0.2s}
+.btn-sair:hover{border-color:var(--creme-escuro);color:var(--creme)}
+.admin-content{padding:2rem;max-width:1200px;margin:0 auto}
+.pagina-admin{display:none}
+.pagina-admin.ativa{display:block}
+
+/* Cards de Estatísticas */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:2rem}
+.stat-card{background:#171717;border:1px solid #252525;border-radius:12px;padding:1.25rem}
+.stat-label{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:8px}
+.stat-value{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;color:var(--creme);line-height:1}
+.stat-sub{font-size:12px;color:var(--cinza-claro);margin-top:4px}
+.stat-card.destaque{border-color:var(--creme-escuro)}
+
+/* Tabelas */
+.tabela-wrap{background:#171717;border:1px solid #252525;border-radius:12px;overflow:hidden}
+.tabela-scroll{overflow-x:auto}
+.tabela-header{padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #252525}
+.tabela-titulo{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:0.05em;color:var(--creme)}
+.btn-acao{padding:8px 16px;background:var(--creme);color:var(--preto);border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.2s}
+.btn-acao:hover{background:var(--creme-claro)}
+.btn-acao.secundario{background:transparent;border:1px solid #3e3e3e;color:var(--creme)}
+.btn-acao.secundario:hover{border-color:var(--creme-escuro)}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 16px;text-align:left;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);border-bottom:1px solid #252525;font-weight:500}
+td{padding:14px 16px;font-size:13px;color:var(--creme);border-bottom:1px solid #1e1e1e}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#1c1c1c}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.05em}
+.badge.ativo{background:#1a3a2a;color:#5ab88a}
+.badge.inativo{background:#2e1a1a;color:#e08080}
+.badge.pendente{background:#2e2510;color:#d4a844}
+.btn-mini{padding:5px 10px;background:transparent;border:1px solid #2e2e2e;border-radius:5px;cursor:pointer;font-size:11px;color:var(--cinza-claro);transition:all 0.2s}
+.btn-mini:hover{border-color:var(--creme-escuro);color:var(--creme)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.aberto{display:flex}
+.modal{background:#1a1a1a;border:1px solid #2e2e2e;border-radius:16px;padding:2rem;width:100%;max-width:680px;max-height:90vh;overflow-y:auto}
+.modal-titulo{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;letter-spacing:0.05em;color:var(--creme);margin-bottom:1.5rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.uma-col{grid-template-columns:1fr}
+.form-campo{display:flex;flex-direction:column;gap:6px}
+.form-campo label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro)}
+.form-campo input,.form-campo select,.form-campo textarea{padding:10px 14px;background:#111;border:1px solid #2e2e2e;border-radius:8px;color:var(--creme);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s}
+.form-campo input:focus,.form-campo select:focus,.form-campo textarea:focus{border-color:var(--creme-escuro)}
+.form-campo select option{background:#1a1a1a}
+.form-grid.tres-col{grid-template-columns:1fr 1fr 1fr}
+.form-secao{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--creme-escuro);margin:1.25rem 0 0.75rem;border-top:1px solid #252525;padding-top:1rem}
+.modal-acoes{display:flex;gap:10px;margin-top:1.5rem;justify-content:flex-end}
+.btn-cancelar{padding:10px 20px;background:transparent;border:1px solid #3e3e3e;border-radius:8px;color:var(--cinza-claro);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px}
+.btn-salvar{padding:10px 24px;background:var(--creme);color:var(--preto);border:none;border-radius:8px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.05em}
+
+/* Faixas de Comissão */
+.faixas-wrap{background:#171717;border:1px solid #252525;border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.faixas-comissao-info{background:#171717;border:1px solid #252525;border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+.faixas-comissao-info .faixa-item{display:grid;grid-template-columns:1fr auto;align-items:center;padding:14px 1.5rem;border-bottom:1px solid #1e1e1e;gap:12px}
+.faixas-comissao-info .faixa-item:last-child{border-bottom:none}
+.faixa-item{display:grid;grid-template-columns:1fr 1fr 120px;align-items:center;padding:16px 1.5rem;border-bottom:1px solid #1e1e1e;gap:12px}
+.faixa-item:last-child{border-bottom:none}
+.faixa-label{font-size:13px;color:var(--cinza-claro)}
+.faixa-valor{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--creme)}
+.faixa-pct{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--creme-escuro);text-align:center}
+
+/* Regras */
+.regras-editor{background:#111;border:1px solid #2e2e2e;border-radius:8px;padding:1rem;width:100%;min-height:200px;color:var(--creme);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.8;outline:none;resize:vertical}
+.aviso-ok{background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;margin-top:1rem;display:none}
+.aviso-atencao{background:#1e1a0a;border:1px solid #4a3e10;border-radius:8px;padding:12px 16px;font-size:13px;color:#d4a844;margin-top:1rem}
+.senha-card{background:#171717;border:1px solid #252525;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.msg-sucesso{background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:10px 14px;font-size:13px;color:#5ab88a;margin-top:10px;display:none}
+.msg-erro{background:#2e1a1a;border:1px solid #5a2a2a;border-radius:8px;padding:10px 14px;font-size:13px;color:#e08080;margin-top:10px;display:none}
+
+/* Notificações Admin */
+.notif-item{background:#171717;border:1px solid #252525;border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px}
+.notif-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.notif-titulo{font-size:14px;font-weight:600;color:var(--creme)}
+.notif-data{font-size:11px;color:var(--cinza-claro)}
+.notif-texto{font-size:13px;color:var(--cinza-claro);line-height:1.5}
+
+/* MÓDULO AFILIADA */
+#mod-afiliada{display:none;min-height:100vh;background:var(--preto)}
+.af-header{background:#171717;border-bottom:1px solid #252525;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.af-nav{display:flex;gap:4px}
+.af-content{padding:2rem;max-width:960px;margin:0 auto}
+.pagina-af{display:none}
+.pagina-af.ativa{display:block}
+
+/* Painel afiliada - cards */
+.af-boas-vindas{margin-bottom:1.5rem}
+.af-nome{font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;line-height:1;text-transform:uppercase}
+.af-cupom-tag{display:inline-block;margin-top:6px;padding:4px 14px;background:#1e1e1e;border:1px solid #3e3e3e;border-radius:20px;font-size:12px;letter-spacing:0.15em;color:var(--creme-escuro)}
+.af-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:2rem}
+.af-stat{background:#171717;border:1px solid #252525;border-radius:12px;padding:1.25rem}
+.af-stat.principal{border-color:var(--creme-escuro);background:#1a1800}
+.af-stat-label{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:6px}
+.af-stat-valor{font-family:'Barlow Condensed',sans-serif;font-size:34px;font-weight:800;color:var(--creme);line-height:1}
+.af-stat.principal .af-stat-valor{color:var(--creme)}
+.af-stat-detalhe{font-size:12px;color:var(--cinza-claro);margin-top:4px}
+.progresso-wrap{margin-top:10px}
+.progresso-barra{height:4px;background:#2a2a2a;border-radius:2px;overflow:hidden}
+.progresso-fill{height:100%;background:var(--creme-escuro);border-radius:2px;transition:width 0.6s ease}
+.progresso-texto{font-size:11px;color:var(--cinza-claro);margin-top:4px}
+
+/* Ranking */
+.ranking-lista{background:#171717;border:1px solid #252525;border-radius:12px;overflow:hidden}
+.ranking-item{display:grid;grid-template-columns:44px 1fr auto;align-items:center;padding:14px 1.5rem;border-bottom:1px solid #1e1e1e;gap:12px}
+.ranking-item:last-child{border-bottom:none}
+.ranking-item.destaque-eu{background:#1a1800}
+.posicao{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--cinza-claro);text-align:center}
+.posicao.top1{color:#f5c842}
+.posicao.top2{color:#b0b0b0}
+.posicao.top3{color:#c9764a}
+.rank-nome{font-size:14px;font-weight:500;color:var(--creme)}
+.rank-sub{font-size:12px;color:var(--cinza-claro)}
+.rank-valor{text-align:right}
+.rank-vendas{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme)}
+.rank-comissao{font-size:11px;color:var(--cinza-claro)}
+.rank-eu-badge{display:inline-block;padding:2px 8px;background:#1e1800;border:1px solid var(--creme-escuro);border-radius:10px;font-size:10px;color:var(--creme-escuro);margin-left:6px}
+
+/* Regras page */
+.regras-secao{background:#171717;border:1px solid #252525;border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+.regras-secao-titulo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--creme);margin-bottom:1rem;letter-spacing:0.05em}
+.regras-texto{font-size:14px;color:#b0a898;line-height:1.8}
+.faixas-mini{margin:1rem 0}
+.faixa-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1e1e1e}
+.faixa-row:last-child{border-bottom:none}
+.faixa-range{font-size:13px;color:var(--cinza-claro)}
+.faixa-pct-mini{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--creme-escuro)}
+
+/* Popup de regras alteradas */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2000;align-items:center;justify-content:center;padding:1rem}
+.popup-overlay.aberto{display:flex}
+.popup{background:#1a1a1a;border:1px solid var(--creme-escuro);border-radius:16px;padding:2rem;width:100%;max-width:460px}
+.popup-icon{font-size:36px;margin-bottom:1rem}
+.popup-titulo{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--creme);margin-bottom:0.5rem}
+.popup-subtitulo{font-size:13px;color:var(--cinza-claro);margin-bottom:1.5rem;line-height:1.5}
+.popup-data{font-size:12px;color:var(--dourado);margin-bottom:1rem}
+.popup-btn{width:100%;padding:14px;background:var(--creme);color:var(--preto);border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer}
+
+/* Notificações afiliada */
+.notif-af-item{background:#171717;border:1px solid #252525;border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;display:flex;gap:12px}
+.notif-af-dot{width:8px;height:8px;border-radius:50%;background:var(--creme-escuro);flex-shrink:0;margin-top:4px}
+.notif-af-dot.lida{background:#3a3a3a}
+.notif-af-body{}
+.notif-af-titulo{font-size:14px;font-weight:600;color:var(--creme);margin-bottom:2px}
+.notif-af-texto{font-size:13px;color:var(--cinza-claro);line-height:1.5}
+.notif-af-data{font-size:11px;color:var(--cinza-claro);margin-top:4px}
+
+/* Produto mais vendido */
+.prod-destaque{background:#171717;border:1px solid var(--creme-escuro);border-radius:12px;padding:1.25rem;display:flex;align-items:center;gap:1rem;margin-bottom:2rem}
+.prod-icon{width:52px;height:52px;border-radius:10px;background:#2a2010;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.prod-info-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--cinza-claro)}
+.prod-info-nome{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--creme)}
+.prod-info-qtd{font-size:12px;color:var(--creme-escuro)}
+
+/* Histórico */
+.hist-item{display:grid;grid-template-columns:1fr auto;align-items:center;padding:14px 1.5rem;border-bottom:1px solid #1e1e1e;gap:12px}
+.hist-item:last-child{border-bottom:none}
+.hist-produto{font-size:13px;color:var(--creme)}
+.hist-data{font-size:11px;color:var(--cinza-claro)}
+.hist-valor{text-align:right}
+.hist-venda{font-size:14px;font-weight:600;color:var(--creme)}
+.hist-status{font-size:11px}
+
+/* Seção título */
+.secao-titulo{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;letter-spacing:0.05em;color:var(--creme);margin-bottom:1.25rem;text-transform:uppercase}
+.secao-desc{font-size:13px;color:var(--cinza-claro);margin-bottom:1.5rem;line-height:1.6}
+.divider{height:1px;background:#1e1e1e;margin:1.5rem 0}
+
+/* Responsivo */
+@media(max-width:600px){
+  .admin-nav{display:none}
+  .form-grid{grid-template-columns:1fr}
+  .af-nome{font-size:32px}
+  .faixa-item{grid-template-columns:1fr 80px}
+}
+
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-overlay.ativo{display:flex}
+.loading-spinner{width:40px;height:40px;border:3px solid #2a2a2a;border-top-color:var(--creme);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-texto{font-size:13px;color:var(--cinza-claro);letter-spacing:0.1em}
+.config-aviso{background:#1e1a0a;border:1px solid #4a3e10;border-radius:12px;padding:2rem;max-width:500px;margin:2rem auto;text-align:center}
+.config-aviso-titulo{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--creme);margin-bottom:0.75rem}
+.config-aviso-texto{font-size:13px;color:#b0a070;line-height:1.7}
+.config-aviso code{background:#111;padding:2px 8px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--creme-escuro)}
+
+</style>
+</head>
+<body>
+
+<!-- ====== TELA DE LOGIN ====== -->
+<!-- LOADING -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-texto">Carregando...</div>
+</div>
+
+<div id="tela-login">
+  <div class="login-box">
+    <div class="logo-area">
+      <div class="logo-symbol">🌿</div>
+      <div class="logo-nome">Entre Elas</div>
+      <div class="logo-sub">Clube de Afiliadas</div>
+    </div>
+    <div class="tabs-login">
+      <button class="tab-btn ativo" onclick="trocarAbaLogin('admin',this)">Gestão Interna</button>
+      <button class="tab-btn" onclick="trocarAbaLogin('afiliada',this)">Área da Afiliada</button>
+    </div>
+    <input type="hidden" id="tipo-login" value="admin">
+    <div class="campo">
+      <label>E-mail</label>
+      <input type="email" id="input-email" placeholder="seu@email.com" value="admin@entreelas.com.br">
+    </div>
+    <div class="campo">
+      <label>Senha</label>
+      <input type="password" id="input-senha" placeholder="••••••••" value="admin123" onkeydown="if(event.key==='Enter')fazerLogin()">
+    </div>
+    <button class="btn-principal" id="btn-login" onclick="fazerLogin()">Entrar</button>
+    <div class="bloqueio-aviso" id="bloqueio-aviso"></div>
+    <div class="erro-login" id="erro-login"></div>
+    <div style="margin-top:1.5rem;text-align:center;font-size:12px;color:#4a4a4a;line-height:1.8">
+      Demo: Admin → admin@entreelas.com.br / admin123<br>
+      Afiliada → ana@email.com / 123456
+    </div>
+  </div>
+</div>
+
+<!-- ====== MÓDULO ADMIN ====== -->
+<div id="mod-admin">
+  <div class="admin-header">
+    <div class="admin-logo">Entre <span>Elas</span> — Gestão</div>
+    <div class="admin-nav">
+      <button class="nav-item ativo" onclick="mudarPagAdmin('dashboard',this)">Dashboard</button>
+      <button class="nav-item" onclick="mudarPagAdmin('afiliadas',this)">Afiliadas</button>
+      <button class="nav-item" onclick="mudarPagAdmin('vendas',this)">Vendas</button>
+      <button class="nav-item" onclick="mudarPagAdmin('comissoes',this)">Comissões</button>
+      <button class="nav-item" onclick="mudarPagAdmin('regras',this)">Regras</button>
+      <button class="nav-item" onclick="mudarPagAdmin('notificacoes',this)">Notificações</button>
+    </div>
+    <button class="btn-sair" onclick="sair()">Sair</button>
+  </div>
+  <div class="admin-content">
+
+    <!-- DASHBOARD -->
+    <div class="pagina-admin ativa" id="adm-dashboard">
+      <div style="margin-bottom:1.5rem">
+        <div class="secao-titulo">Dashboard</div>
+        <div class="secao-desc">Visão geral do Clube Entre Elas — Maio 2025</div>
+      </div>
+      <div class="stats-grid" id="stats-admin"></div>
+      <div class="tabela-wrap">
+        <div class="tabela-header">
+          <div class="tabela-titulo">Top Afiliadas do Mês</div>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Afiliada</th><th>Vendas</th><th>Comissão</th><th>Status</th></tr></thead>
+          <tbody id="top-afiliadas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AFILIADAS -->
+    <div class="pagina-admin" id="adm-afiliadas">
+      <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <div class="secao-titulo">Afiliadas</div>
+          <div class="secao-desc">Cadastro e gestão das afiliadas do clube</div>
+        </div>
+        <button class="btn-acao" onclick="abrirModalCadastro()">+ Nova Afiliada</button>
+      </div>
+      <div class="tabela-wrap"><div class="tabela-scroll">
+        <table>
+          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="tabela-afiliadas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VENDAS -->
+    <div class="pagina-admin" id="adm-vendas">
+      <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <div class="secao-titulo">Lançamento de Vendas</div>
+          <div class="secao-desc">Registre vendas por cupom ou importe via planilha</div>
+        </div>
+        <button class="btn-acao" onclick="abrirModalVenda()">+ Registrar Venda</button>
+      </div>
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>
+          <tbody id="tabela-vendas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COMISSÕES -->
+    <div class="pagina-admin" id="adm-comissoes">
+      <div class="secao-titulo" style="margin-bottom:1.5rem">Regras de Comissão</div>
+      <div class="faixas-wrap" id="faixas-admin"></div>
+      <div style="margin-top:1.5rem">
+        <button class="btn-acao" onclick="abrirModalFaixas()">Editar Faixas</button>
+      </div>
+      <div class="divider"></div>
+      <div class="secao-titulo" style="margin-bottom:1.25rem">Fechamento Mensal</div>
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>
+          <tbody id="tabela-fechamento"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REGRAS -->
+    <div class="pagina-admin" id="adm-regras">
+      <div class="secao-titulo" style="margin-bottom:0.5rem">Regras do Programa</div>
+      <div class="secao-desc">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>
+      <div class="tabela-wrap" style="padding:1.5rem">
+        <div class="form-campo" style="margin-bottom:1rem">
+          <label>Conteúdo das Regras</label>
+          <textarea class="regras-editor" id="editor-regras" rows="16"></textarea>
+        </div>
+        <button class="btn-acao" onclick="salvarRegras()">Publicar Regras</button>
+        <div class="aviso-regras" id="aviso-regras" style="display:none">
+          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICAÇÕES -->
+    <div class="pagina-admin" id="adm-notificacoes">
+      <div class="secao-titulo" style="margin-bottom:0.5rem">Notificações</div>
+      <div class="secao-desc">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>
+      <div class="tabela-wrap" style="padding:1.5rem;margin-bottom:1.5rem">
+        <div class="form-grid">
+          <div class="form-campo">
+            <label>Título</label>
+            <input type="text" id="notif-titulo-input" placeholder="Ex: Novidade do mês">
+          </div>
+          <div class="form-campo">
+            <label>Destinatário</label>
+            <select id="notif-dest">
+              <option value="todas">Todas as afiliadas</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-campo" style="margin-top:12px">
+          <label>Mensagem</label>
+          <textarea class="regras-editor" id="notif-texto-input" rows="4" style="min-height:80px" placeholder="Digite a mensagem..."></textarea>
+        </div>
+        <button class="btn-acao" style="margin-top:1rem" onclick="enviarNotificacao()">Enviar Notificação</button>
+      </div>
+      <div class="secao-titulo" style="font-size:20px;margin-bottom:1rem">Histórico</div>
+      <div id="lista-notificacoes-admin"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ====== MÓDULO AFILIADA ====== -->
+<div id="mod-afiliada">
+  <div class="af-header">
+    <div class="admin-logo">Entre <span>Elas</span></div>
+    <div class="af-nav">
+      <button class="nav-item ativo" onclick="mudarPagAf('painel',this)">Meu Painel</button>
+      <button class="nav-item" onclick="mudarPagAf('ranking',this)">Ranking</button>
+      <button class="nav-item" onclick="mudarPagAf('regras-af',this)">Regras</button>
+      <button class="nav-item" onclick="mudarPagAf('notificacoes-af',this)">Avisos</button>
+      <button class="nav-item" onclick="mudarPagAf('minha-conta',this)">Minha Conta</button>
+    </div>
+    <button class="btn-sair" onclick="sair()">Sair</button>
+  </div>
+  <div class="af-content">
+
+    <!-- PAINEL -->
+    <div class="pagina-af ativa" id="af-painel">
+      <div class="af-boas-vindas">
+        <div style="font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px">Bem-vinda,</div>
+        <div class="af-nome" id="af-nome-display">Ana Silva</div>
+        <div class="af-cupom-tag" id="af-cupom-display">CUPOM: ANAENTREELAS</div>
+      </div>
+      <div class="prod-destaque">
+        <div class="prod-icon">✨</div>
+        <div>
+          <div class="prod-info-label">Seu produto mais vendido</div>
+          <div class="prod-info-nome" id="af-prod-destaque">Protetor Solar FPS 80</div>
+          <div class="prod-info-qtd" id="af-prod-qtd">12 unidades vendidas</div>
+        </div>
+      </div>
+      <div class="af-stats" id="af-stats-grid"></div>
+      <div class="divider"></div>
+      <div class="secao-titulo">Histórico de Vendas</div>
+      <div class="tabela-wrap">
+        <table>
+          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>
+          <tbody id="af-historico"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RANKING -->
+    <div class="pagina-af" id="af-ranking">
+      <div class="secao-titulo" style="margin-bottom:0.5rem">Ranking de Afiliadas</div>
+      <div class="secao-desc">Classificação por volume de vendas — Maio 2025</div>
+      <div class="ranking-lista" id="lista-ranking"></div>
+    </div>
+
+    <!-- REGRAS AF -->
+    <div class="pagina-af" id="af-regras-af">
+      <div class="secao-titulo" style="margin-bottom:1.5rem">Regras do Clube</div>
+      <div id="regras-af-conteudo"></div>
+    </div>
+
+    <!-- MINHA CONTA -->
+    <div class="pagina-af" id="af-minha-conta">
+      <div class="secao-titulo" style="margin-bottom:0.5rem">Minha Conta</div>
+      <div class="secao-desc">Gerencie sua senha de acesso ao painel.</div>
+      <div class="senha-card">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em">ALTERAR SENHA</div>
+        <div class="form-grid uma-col" style="max-width:400px;gap:12px">
+          <div class="form-campo"><label>Senha Atual</label><input type="password" id="senha-atual" placeholder="••••••••"></div>
+          <div class="form-campo"><label>Nova Senha</label><input type="password" id="senha-nova" placeholder="Mínimo 6 caracteres"></div>
+          <div class="form-campo"><label>Confirmar Nova Senha</label><input type="password" id="senha-confirma" placeholder="Repita a nova senha"></div>
+        </div>
+        <button class="btn-acao" style="margin-top:1rem" onclick="alterarSenha()">Salvar Nova Senha</button>
+        <div class="msg-sucesso" id="msg-senha-ok">✓ Senha alterada com sucesso!</div>
+        <div class="msg-erro" id="msg-senha-err"></div>
+      </div>
+      <div class="senha-card">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em">MEUS DADOS</div>
+        <div id="minha-conta-dados"></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICAÇÕES AF -->
+    <div class="pagina-af" id="af-notificacoes-af">
+      <div class="secao-titulo" style="margin-bottom:0.5rem">Avisos da Equipe</div>
+      <div class="secao-desc">Comunicados enviados pela equipe Entre Elas</div>
+      <div id="lista-notificacoes-af"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ====== MODAIS ====== -->
+<div class="modal-overlay" id="modal-cadastro">
+  <div class="modal">
+    <div class="modal-titulo" id="modal-cad-titulo">Nova Afiliada</div>
+    <div class="form-secao" style="margin-top:0;border-top:none;padding-top:0">Dados Pessoais e Acesso</div>
+    <div class="form-grid">
+      <div class="form-campo"><label>Nome Completo</label><input type="text" id="cad-nome" placeholder="Nome da afiliada"></div>
+      <div class="form-campo"><label>E-mail</label><input type="email" id="cad-email" placeholder="email@email.com"></div>
+      <div class="form-campo"><label>Cupom Personalizado</label><input type="text" id="cad-cupom" placeholder="NOMEENTREELAS"></div>
+      <div class="form-campo"><label>Link de Divulgação</label><input type="text" id="cad-link" placeholder="https://useentreelas.com.br?ref=..."></div>
+      <div class="form-campo"><label>Instagram</label><input type="text" id="cad-insta" placeholder="@usuario"></div>
+      <div class="form-campo"><label>WhatsApp</label><input type="text" id="cad-whats" placeholder="(00) 00000-0000"></div>
+    </div>
+    <div class="form-secao">Dados Fiscais</div>
+    <div class="form-grid">
+      <div class="form-campo"><label>CNPJ / CPF</label><input type="text" id="cad-cnpj" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
+      <div class="form-campo"><label>Razão Social / Nome para NF</label><input type="text" id="cad-razao" placeholder="Nome completo ou Razão Social"></div>
+    </div>
+    <div class="form-secao">Dados Bancários</div>
+    <div class="form-grid tres-col">
+      <div class="form-campo"><label>Banco</label><input type="text" id="cad-banco" placeholder="Ex: Nubank"></div>
+      <div class="form-campo"><label>Agência</label><input type="text" id="cad-agencia" placeholder="0000"></div>
+      <div class="form-campo"><label>Conta</label><input type="text" id="cad-conta" placeholder="00000-0"></div>
+    </div>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="form-campo"><label>Chave Pix</label><input type="text" id="cad-pix" placeholder="CPF, e-mail ou telefone"></div>
+      <div class="form-campo"><label>Tipo de Conta</label>
+        <select id="cad-tipo-conta"><option value="corrente">Corrente</option><option value="poupanca">Poupança</option><option value="pix">Somente Pix</option></select>
+      </div>
+    </div>
+    <div class="form-secao">Acesso ao Sistema</div>
+    <div class="form-grid">
+      <div class="form-campo"><label>Senha de Acesso</label><input type="text" id="cad-senha" placeholder="Senha inicial"></div>
+      <div class="form-campo"><label>Status</label>
+        <select id="cad-status">
+          <option value="ativo">Ativa</option>
+          <option value="pendente">Pendente aprovação</option>
+          <option value="inativo">Inativa</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-acoes">
+      <button class="btn-cancelar" onclick="fecharModal('modal-cadastro')">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarAfiliada()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-venda">
+  <div class="modal">
+    <div class="modal-titulo">Registrar Venda</div>
+    <div class="form-grid">
+      <div class="form-campo"><label>Afiliada</label><select id="venda-afiliada"></select></div>
+      <div class="form-campo"><label>Produto</label><select id="venda-produto">
+        <option>Protetor Solar FPS 80</option>
+        <option>Kit Própolis Shampoo + Máscara</option>
+        <option>Kit Goiabeira Completo</option>
+        <option>Loção Hidratante Ultra Ve</option>
+        <option>Creme Defrizante</option>
+        <option>Reparador de Pontas 60ml</option>
+        <option>Renew Skin Colágeno</option>
+        <option>Dermaphill Kit Hidratante</option>
+      </select></div>
+      <div class="form-campo"><label>Valor (R$)</label><input type="number" id="venda-valor" placeholder="0,00"></div>
+      <div class="form-campo"><label>Data</label><input type="date" id="venda-data"></div>
+    </div>
+    <div class="form-grid uma-col" style="margin-top:12px">
+      <div class="form-campo"><label>Status</label>
+        <select id="venda-status">
+          <option value="aprovado">Aprovado</option>
+          <option value="pendente">Pendente</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-acoes">
+      <button class="btn-cancelar" onclick="fecharModal('modal-venda')">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarVenda()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-faixas">
+  <div class="modal">
+    <div class="modal-titulo">Editar Faixas de Comissão</div>
+    <div id="faixas-form"></div>
+    <div class="modal-acoes">
+      <button class="btn-cancelar" onclick="fecharModal('modal-faixas')">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarFaixas()">Salvar Faixas</button>
+    </div>
+  </div>
+</div>
+
+<!-- POPUP REGRAS ALTERADAS -->
+<div class="popup-overlay" id="popup-regras">
+  <div class="popup">
+    <div class="popup-icon">📋</div>
+    <div class="popup-titulo">Regras Atualizadas!</div>
+    <div class="popup-subtitulo">A equipe Entre Elas atualizou as regras do programa de afiliadas. Por favor, leia as mudanças antes de continuar.</div>
+    <div class="popup-data" id="popup-regras-data"></div>
+    <button class="popup-btn" onclick="confirmarLeituraRegras()">Li e Entendi as Novas Regras</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ============================================================
+// CONFIGURAÇÃO SUPABASE — PREENCHA AQUI APÓS CRIAR SUA CONTA
+// ============================================================
+const SUPABASE_URL = 'https://srquvjuvhmphyezzfukw.supabase.co/rest/v1/';         // Ex: https://xyzabc.supabase.co
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNycXV2anV2aG1waHllenpmdWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMjM2NDAsImV4cCI6MjA5NTU5OTY0MH0.vjoOsMKwYcl7Oh2M3fiIqXpzrNsXKQSpZ9e6gEwKbY4';  // A chave "anon public"
+// ============================================================
+
+const _sb = (SUPABASE_URL !== 'COLE_SUA_URL_AQUI')
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+// ===== ESTADO DA SESSÃO =====
+let sessao = {
+  usuario: null,    // objeto retornado pelo Supabase Auth
+  perfil: null,     // linha da tabela perfis (role, afiliada_id, etc)
+  afiliada: null,   // linha completa da tabela afiliadas (se for afiliada)
+};
+
+// ===== UTILITÁRIOS =====
+function fmtBRL(v){return'R$ '+(+v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
+function fmtData(s){if(!s)return'';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`}
+function loading(on){document.getElementById('loading-overlay').classList.toggle('ativo',on)}
+
+function mostrarErroConfig(){
+  document.getElementById('tela-login').innerHTML=`
+    <div class="config-aviso">
+      <div class="config-aviso-titulo">⚙️ Configure o Supabase</div>
+      <div class="config-aviso-texto">
+        Antes de usar o sistema, você precisa preencher suas credenciais do Supabase no arquivo HTML.<br><br>
+        Abra o arquivo e encontre estas duas linhas no início do JavaScript:<br><br>
+        <code>SUPABASE_URL = 'COLE_SUA_URL_AQUI'</code><br>
+        <code>SUPABASE_ANON_KEY = 'COLE_SUA_CHAVE_AQUI'</code><br><br>
+        Substitua pelos valores do seu projeto em <strong>supabase.com → Project Settings → API</strong>.
+      </div>
+    </div>`;
+}
+
+// ===== FAIXAS E COMISSÃO (config local, editável pelo admin e salva no Supabase) =====
+let configLocal = {
+  faixas: [
+    {label:'Até R$ 2.000,00',min:0,pct:5},
+    {label:'R$ 2.000,01 a R$ 5.000,00',min:2000.01,pct:8},
+    {label:'Acima de R$ 5.000,01',min:5000.01,pct:12},
+  ],
+  regras: '',
+  regrasData: '',
+  regrasPendentes: false,
+};
+
+function getFaixaAtual(total){
+  return configLocal.faixas.slice().sort((a,b)=>b.min-a.min).find(f=>total>=f.min)||configLocal.faixas[0];
+}
+function calcComissao(total){return total*getFaixaAtual(total).pct/100;}
+function pctComissao(total){return getFaixaAtual(total).pct;}
+function labelFaixa(total){return getFaixaAtual(total).label;}
+
+// ===== SEGURANÇA: CONTROLE DE TENTATIVAS =====
+const loginSec = {
+  tentativas:0, maxTentativas:5, bloqueioAte:0,
+  incrementar(){this.tentativas++;if(this.tentativas>=this.maxTentativas){this.bloqueioAte=Date.now()+30000;this.tentativas=0;}},
+  estaBloqueado(){if(this.bloqueioAte>Date.now())return true;if(this.bloqueioAte&&this.bloqueioAte<=Date.now())this.bloqueioAte=0;return false;},
+  tempoRestante(){return Math.ceil((this.bloqueioAte-Date.now())/1000);}
+};
+
+// ===== INICIALIZAÇÃO =====
+window.addEventListener('DOMContentLoaded', async () => {
+  if(!_sb){ mostrarErroConfig(); return; }
+  loading(true);
+  // Verifica se já há sessão ativa (usuário já logado)
+  const { data: { session } } = await _sb.auth.getSession();
+  if(session){
+    await carregarSessao(session.user);
+  }
+  await carregarConfig();
+  loading(false);
+});
+
+async function carregarConfig(){
+  if(!_sb) return;
+  const {data} = await _sb.from('configuracoes').select('*');
+  if(data){
+    data.forEach(row => {
+      if(row.chave === 'faixas') configLocal.faixas = JSON.parse(row.valor);
+      if(row.chave === 'regras') configLocal.regras = row.valor;
+      if(row.chave === 'regras_data') configLocal.regrasData = row.valor;
+      if(row.chave === 'regras_pendentes') configLocal.regrasPendentes = row.valor === 'true';
+    });
+  }
+}
+
+async function carregarSessao(user){
+  const {data: perfil} = await _sb.from('perfis').select('*').eq('user_id', user.id).single();
+  if(!perfil) return;
+  sessao.usuario = user;
+  sessao.perfil = perfil;
+  document.getElementById('tela-login').style.display='none';
+  if(perfil.role === 'admin'){
+    document.getElementById('mod-admin').style.display='block';
+    await renderAdmin();
+  } else {
+    const {data: afiliada} = await _sb.from('afiliadas').select('*').eq('id', perfil.afiliada_id).single();
+    if(!afiliada || afiliada.status !== 'ativo') { await _sb.auth.signOut(); return; }
+    sessao.afiliada = afiliada;
+    document.getElementById('mod-afiliada').style.display='block';
+    await renderAfiliada(afiliada.id);
+    if(configLocal.regrasPendentes && !perfil.regras_lidas){
+      setTimeout(()=>abrirPopupRegras(), 600);
+    }
+  }
+}
+
+// ===== LOGIN =====
+function trocarAbaLogin(tipo, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  document.getElementById('tipo-login').value=tipo;
+  document.getElementById('input-email').value='';
+  document.getElementById('input-senha').value='';
+  document.getElementById('erro-login').textContent='';
+}
+
+async function fazerLogin() {
+  if(!_sb){ mostrarErroConfig(); return; }
+  if(loginSec.estaBloqueado()){
+    const av=document.getElementById('bloqueio-aviso');
+    av.style.display='block';
+    av.textContent='Muitas tentativas. Aguarde '+loginSec.tempoRestante()+'s.';
+    return;
+  }
+  const email=document.getElementById('input-email').value.trim();
+  const senha=document.getElementById('input-senha').value.trim();
+  const erro=document.getElementById('erro-login');
+  document.getElementById('bloqueio-aviso').style.display='none';
+  if(!email||!senha){erro.textContent='Preencha e-mail e senha.';return;}
+  loading(true);
+  const {data, error} = await _sb.auth.signInWithPassword({email, password: senha});
+  loading(false);
+  if(error){
+    loginSec.incrementar();
+    const rest=loginSec.maxTentativas-loginSec.tentativas;
+    erro.textContent='E-mail ou senha incorretos.'+(loginSec.tentativas>2?' ('+rest+' tentativas restantes)':'');
+    return;
+  }
+  loginSec.tentativas=0;
+  loading(true);
+  await carregarSessao(data.user);
+  loading(false);
+}
+
+async function sair() {
+  loading(true);
+  await _sb.auth.signOut();
+  sessao = {usuario:null, perfil:null, afiliada:null};
+  document.getElementById('mod-admin').style.display='none';
+  document.getElementById('mod-afiliada').style.display='none';
+  document.getElementById('tela-login').style.display='flex';
+  document.getElementById('erro-login').textContent='';
+  document.getElementById('input-email').value='';
+  document.getElementById('input-senha').value='';
+  loading(false);
+}
+
+// ===== ADMIN: RENDER =====
+function mudarPagAdmin(pag,btn){
+  document.querySelectorAll('.pagina-admin').forEach(p=>p.classList.remove('ativa'));
+  document.querySelectorAll('.admin-nav .nav-item').forEach(b=>b.classList.remove('ativo'));
+  document.getElementById('adm-'+pag).classList.add('ativa');
+  btn.classList.add('ativo');
+  if(pag==='afiliadas') renderTabelaAfiliadas();
+  if(pag==='vendas') renderTabelaVendas();
+  if(pag==='comissoes') renderComissoes();
+  if(pag==='notificacoes') renderNotifAdmin();
+  if(pag==='regras') renderRegrasAdmin();
+}
+
+async function renderAdmin(){
+  await Promise.all([renderDashboard(), renderTabelaAfiliadas(), renderTabelaVendas(), renderComissoes(), renderNotifAdmin(), renderRegrasAdmin(), preencherSelectAfiliadas()]);
+}
+
+// ---- Dashboard ----
+async function renderDashboard(){
+  const [{data:afiliadas},{data:vendas}] = await Promise.all([
+    _sb.from('afiliadas').select('*'),
+    _sb.from('vendas').select('*').eq('status','aprovado'),
+  ]);
+  const ativas=(afiliadas||[]).filter(a=>a.status==='ativo').length;
+  const totalVendas=(vendas||[]).reduce((s,v)=>s+(+v.valor),0);
+  const totalCom=(afiliadas||[]).reduce((s,a)=>{
+    const tv=(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((x,v)=>x+(+v.valor),0);
+    return s+calcComissao(tv);
+  },0);
+  const n=(vendas||[]).length;
+  document.getElementById('stats-admin').innerHTML=`
+    <div class="stat-card destaque"><div class="stat-label">Total Vendido (Mês)</div><div class="stat-value">${fmtBRL(totalVendas)}</div><div class="stat-sub">${n} vendas aprovadas</div></div>
+    <div class="stat-card"><div class="stat-label">Comissões a Pagar</div><div class="stat-value">${fmtBRL(totalCom)}</div><div class="stat-sub">Fechamento: dia 10</div></div>
+    <div class="stat-card"><div class="stat-label">Afiliadas Ativas</div><div class="stat-value">${ativas}</div><div class="stat-sub">${(afiliadas||[]).filter(a=>a.status==='pendente').length} pendente(s)</div></div>
+    <div class="stat-card"><div class="stat-label">Ticket Médio</div><div class="stat-value">${n>0?fmtBRL(totalVendas/n):'R$ 0,00'}</div><div class="stat-sub">Por venda aprovada</div></div>
+  `;
+  const ranking=(afiliadas||[]).map(a=>({
+    ...a,
+    vendas:(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0)
+  })).sort((a,b)=>b.vendas-a.vendas).slice(0,5);
+  document.getElementById('top-afiliadas').innerHTML=ranking.map((a,i)=>`
+    <tr><td style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:${i===0?'#f5c842':i===1?'#b0b0b0':i===2?'#c9764a':'var(--cinza-claro)'}">#${i+1}</td>
+    <td>${a.nome}</td><td>${fmtBRL(a.vendas)}</td><td>${pctComissao(a.vendas)}%</td>
+    <td style="color:var(--creme-escuro);font-weight:600">${fmtBRL(calcComissao(a.vendas))}</td>
+    <td><span class="badge ${a.status}">${a.status==='ativo'?'Ativa':a.status==='inativo'?'Inativa':'Pendente'}</span></td></tr>
+  `).join('');
+}
+
+// ---- Tabela Afiliadas ----
+async function renderTabelaAfiliadas(){
+  const {data:afiliadas} = await _sb.from('afiliadas').select('*').order('nome');
+  const {data:vendas} = await _sb.from('vendas').select('*').eq('status','aprovado');
+  document.getElementById('tabela-afiliadas').innerHTML=(afiliadas||[]).map(a=>{
+    const tv=(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0);
+    return`<tr>
+      <td>${a.nome}</td>
+      <td style="font-family:monospace;font-size:12px;color:var(--creme-escuro)">${a.cupom}</td>
+      <td>${a.email}</td>
+      <td style="font-family:monospace;font-size:12px">${a.cnpj||'—'}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${a.link?`<a href="${a.link}" style="color:var(--creme-escuro);font-size:11px" target="_blank">${a.link.replace('https://','')}</a>`:'—'}</td>
+      <td>${a.banco||'—'}</td><td>${a.agencia||'—'}</td><td>${a.conta||'—'}</td>
+      <td>${fmtBRL(tv)}</td>
+      <td><span class="badge ${a.status}">${a.status==='ativo'?'Ativa':a.status==='inativo'?'Inativa':'Pendente'}</span></td>
+      <td><button class="btn-mini" onclick="editarAfiliada('${a.id}')">Editar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- Tabela Vendas ----
+async function renderTabelaVendas(){
+  const {data:vendas} = await _sb.from('vendas').select('*, afiliadas(nome)').order('data',{ascending:false});
+  document.getElementById('tabela-vendas').innerHTML=(vendas||[]).map(v=>`
+    <tr><td>${fmtData(v.data)}</td><td>${v.afiliadas?.nome||'—'}</td><td>${v.produto}</td>
+    <td>${fmtBRL(v.valor)}</td>
+    <td><span class="badge ${v.status}">${v.status==='aprovado'?'Aprovado':v.status==='cancelado'?'Cancelado':'Pendente'}</span></td></tr>
+  `).join('');
+}
+
+// ---- Comissões ----
+async function renderComissoes(){
+  document.getElementById('faixas-admin').innerHTML=configLocal.faixas.map(f=>`
+    <div class="faixa-item">
+      <div><div class="faixa-label">${f.label}</div><div style="font-size:11px;color:#555;margin-top:2px">Comissão = total vendido × ${f.pct}%</div></div>
+      <div class="faixa-pct">${f.pct}%</div>
+    </div>
+  `).join('');
+  const [{data:afiliadas},{data:vendas}] = await Promise.all([
+    _sb.from('afiliadas').select('*'),
+    _sb.from('vendas').select('*').eq('status','aprovado'),
+  ]);
+  document.getElementById('tabela-fechamento').innerHTML=(afiliadas||[]).map(a=>{
+    const total=(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0);
+    const banco=a.banco&&a.conta?`${a.banco} / ${a.conta}`:(a.pix?`Pix: ${a.pix}`:'—');
+    return`<tr>
+      <td>${a.nome}</td><td>${fmtBRL(total)}</td>
+      <td style="font-size:12px;color:var(--cinza-claro)">${labelFaixa(total)}</td>
+      <td>${pctComissao(total)}%</td>
+      <td style="color:var(--creme-escuro);font-weight:600">${fmtBRL(calcComissao(total))}</td>
+      <td style="font-size:12px">${banco}</td>
+      <td><span class="badge ${a.status==='ativo'?'pendente':'inativo'}">${a.status==='ativo'?'A Pagar':'Inativa'}</span></td>
+      <td><button class="btn-mini">Marcar pago</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- Regras ----
+async function renderRegrasAdmin(){
+  document.getElementById('editor-regras').value=configLocal.regras;
+}
+async function salvarRegras(){
+  const texto=document.getElementById('editor-regras').value;
+  const data=new Date().toLocaleDateString('pt-BR');
+  loading(true);
+  await Promise.all([
+    _sb.from('configuracoes').upsert({chave:'regras',valor:texto}),
+    _sb.from('configuracoes').upsert({chave:'regras_data',valor:data}),
+    _sb.from('configuracoes').upsert({chave:'regras_pendentes',valor:'true'}),
+    _sb.from('perfis').update({regras_lidas:false}).eq('role','afiliada'),
+  ]);
+  configLocal.regras=texto; configLocal.regrasData=data; configLocal.regrasPendentes=true;
+  loading(false);
+  const av=document.getElementById('aviso-regras');
+  av.style.display='block';
+  setTimeout(()=>av.style.display='none',4000);
+}
+
+// ---- Notificações Admin ----
+async function renderNotifAdmin(){
+  const {data:afiliadas} = await _sb.from('afiliadas').select('id,nome');
+  const sel=document.getElementById('notif-dest');
+  sel.innerHTML='<option value="todas">Todas as afiliadas</option>'+(afiliadas||[]).map(a=>`<option value="${a.id}">${a.nome}</option>`).join('');
+  const {data:notifs} = await _sb.from('notificacoes').select('*').order('created_at',{ascending:false});
+  document.getElementById('lista-notificacoes-admin').innerHTML=(notifs||[]).map(n=>`
+    <div class="notif-item">
+      <div class="notif-item-header"><div class="notif-titulo">${n.titulo}</div><div class="notif-data">${fmtData(n.data)}</div></div>
+      <div class="notif-texto">${n.texto}</div>
+    </div>
+  `).join('');
+}
+async function enviarNotificacao(){
+  const titulo=document.getElementById('notif-titulo-input').value.trim();
+  const texto=document.getElementById('notif-texto-input').value.trim();
+  if(!titulo||!texto)return;
+  loading(true);
+  await _sb.from('notificacoes').insert({titulo, texto, dest:'todas', data:new Date().toISOString().split('T')[0]});
+  document.getElementById('notif-titulo-input').value='';
+  document.getElementById('notif-texto-input').value='';
+  loading(false);
+  const av=document.getElementById('aviso-notif');
+  av.style.display='block';
+  setTimeout(()=>av.style.display='none',3000);
+  await renderNotifAdmin();
+}
+
+// ---- Modal Afiliadas ----
+let editandoAfiliadaId=null;
+function abrirModalCadastro(){
+  editandoAfiliadaId=null;
+  document.getElementById('modal-cad-titulo').textContent='Nova Afiliada';
+  ['cad-nome','cad-email','cad-cupom','cad-link','cad-insta','cad-whats','cad-cnpj','cad-razao','cad-banco','cad-agencia','cad-conta','cad-pix','cad-senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('cad-status').value='ativo';
+  document.getElementById('cad-tipo-conta').value='corrente';
+  document.getElementById('modal-cadastro').classList.add('aberto');
+}
+async function editarAfiliada(id){
+  const {data:a}=await _sb.from('afiliadas').select('*').eq('id',id).single();
+  if(!a)return;
+  editandoAfiliadaId=id;
+  document.getElementById('modal-cad-titulo').textContent='Editar Afiliada';
+  document.getElementById('cad-nome').value=a.nome||'';
+  document.getElementById('cad-email').value=a.email||'';
+  document.getElementById('cad-cupom').value=a.cupom||'';
+  document.getElementById('cad-link').value=a.link||'';
+  document.getElementById('cad-insta').value=a.instagram||'';
+  document.getElementById('cad-whats').value=a.whatsapp||'';
+  document.getElementById('cad-cnpj').value=a.cnpj||'';
+  document.getElementById('cad-razao').value=a.razao_social||'';
+  document.getElementById('cad-banco').value=a.banco||'';
+  document.getElementById('cad-agencia').value=a.agencia||'';
+  document.getElementById('cad-conta').value=a.conta||'';
+  document.getElementById('cad-pix').value=a.pix||'';
+  document.getElementById('cad-tipo-conta').value=a.tipo_conta||'corrente';
+  document.getElementById('cad-status').value=a.status||'ativo';
+  document.getElementById('cad-senha').value='';
+  document.getElementById('modal-cadastro').classList.add('aberto');
+}
+async function salvarAfiliada(){
+  const nome=document.getElementById('cad-nome').value.trim();
+  const email=document.getElementById('cad-email').value.trim();
+  const senha=document.getElementById('cad-senha').value.trim();
+  if(!nome||!email)return;
+  loading(true);
+  const dados={
+    nome, email,
+    cupom:document.getElementById('cad-cupom').value.trim().toUpperCase(),
+    link:document.getElementById('cad-link').value.trim(),
+    instagram:document.getElementById('cad-insta').value.trim(),
+    whatsapp:document.getElementById('cad-whats').value.trim(),
+    cnpj:document.getElementById('cad-cnpj').value.trim(),
+    razao_social:document.getElementById('cad-razao').value.trim(),
+    banco:document.getElementById('cad-banco').value.trim(),
+    agencia:document.getElementById('cad-agencia').value.trim(),
+    conta:document.getElementById('cad-conta').value.trim(),
+    pix:document.getElementById('cad-pix').value.trim(),
+    tipo_conta:document.getElementById('cad-tipo-conta').value,
+    status:document.getElementById('cad-status').value,
+  };
+  if(editandoAfiliadaId){
+    await _sb.from('afiliadas').update(dados).eq('id',editandoAfiliadaId);
+  } else {
+    // Cria usuário no Supabase Auth + linha na tabela afiliadas
+    const {data:authData,error} = await _sb.auth.admin.createUser({email, password:senha||'Troque@123', email_confirm:true});
+    if(!error && authData.user){
+      const {data:af} = await _sb.from('afiliadas').insert(dados).select().single();
+      await _sb.from('perfis').insert({user_id:authData.user.id, role:'afiliada', afiliada_id:af.id});
+    }
+  }
+  fecharModal('modal-cadastro');
+  loading(false);
+  await renderTabelaAfiliadas();
+  await renderDashboard();
+  await preencherSelectAfiliadas();
+}
+
+// ---- Modal Vendas ----
+function abrirModalVenda(){
+  document.getElementById('venda-data').value=new Date().toISOString().split('T')[0];
+  document.getElementById('modal-venda').classList.add('aberto');
+}
+async function salvarVenda(){
+  const afId=document.getElementById('venda-afiliada').value;
+  const produto=document.getElementById('venda-produto').value;
+  const valor=parseFloat(document.getElementById('venda-valor').value)||0;
+  const data=document.getElementById('venda-data').value;
+  const status=document.getElementById('venda-status').value;
+  if(!afId||!valor)return;
+  loading(true);
+  await _sb.from('vendas').insert({afiliada_id:afId, produto, valor, data, status});
+  fecharModal('modal-venda');
+  loading(false);
+  await renderTabelaVendas();
+  await renderDashboard();
+  await renderComissoes();
+}
+
+// ---- Modal Faixas ----
+function abrirModalFaixas(){
+  document.getElementById('faixas-form').innerHTML=configLocal.faixas.map((f,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 90px;gap:12px;margin-bottom:12px;align-items:end">
+      <div class="form-campo"><label>Descrição</label><input type="text" id="f-label-${i}" value="${f.label}"></div>
+      <div class="form-campo"><label>%</label><input type="number" id="f-pct-${i}" value="${f.pct}" min="0" max="100" step="0.1"></div>
+    </div>
+  `).join('');
+  document.getElementById('modal-faixas').classList.add('aberto');
+}
+async function salvarFaixas(){
+  configLocal.faixas.forEach((f,i)=>{
+    f.label=document.getElementById('f-label-'+i).value;
+    f.pct=parseFloat(document.getElementById('f-pct-'+i).value)||f.pct;
+  });
+  loading(true);
+  await _sb.from('configuracoes').upsert({chave:'faixas',valor:JSON.stringify(configLocal.faixas)});
+  fecharModal('modal-faixas');
+  loading(false);
+  await renderComissoes();
+}
+
+function fecharModal(id){document.getElementById(id).classList.remove('aberto');}
+async function preencherSelectAfiliadas(){
+  const {data}=await _sb.from('afiliadas').select('id,nome').eq('status','ativo').order('nome');
+  document.getElementById('venda-afiliada').innerHTML=(data||[]).map(a=>`<option value="${a.id}">${a.nome}</option>`).join('');
+}
+
+// ===== AFILIADA: RENDER =====
+function mudarPagAf(pag,btn){
+  document.querySelectorAll('.pagina-af').forEach(p=>p.classList.remove('ativa'));
+  document.querySelectorAll('.af-nav .nav-item').forEach(b=>b.classList.remove('ativo'));
+  document.getElementById('af-'+pag).classList.add('ativa');
+  btn.classList.add('ativo');
+}
+
+async function renderAfiliada(afiliadaId){
+  const af = sessao.afiliada;
+  if(!af)return;
+  document.getElementById('af-nome-display').textContent=af.nome;
+  document.getElementById('af-cupom-display').textContent='CUPOM: '+af.cupom;
+  const {data:vendasAf}=await _sb.from('vendas').select('*').eq('afiliada_id',afiliadaId).order('data',{ascending:false});
+  const aprovadas=(vendasAf||[]).filter(v=>v.status==='aprovado');
+  const totalVendido=aprovadas.reduce((s,v)=>s+(+v.valor),0);
+  const comissao=calcComissao(totalVendido);
+  const pct=pctComissao(totalVendido);
+  // Produto mais vendido
+  const contagem={};
+  aprovadas.forEach(v=>contagem[v.produto]=(contagem[v.produto]||0)+1);
+  const prod=Object.entries(contagem).sort((a,b)=>b[1]-a[1])[0];
+  if(prod){
+    document.getElementById('af-prod-destaque').textContent=prod[0];
+    document.getElementById('af-prod-qtd').textContent=prod[1]+' venda(s) registrada(s)';
+  }
+  // Progresso para próxima faixa
+  const faixaAtual=getFaixaAtual(totalVendido);
+  const proxFaixa=configLocal.faixas.find(f=>f.min>faixaAtual.min);
+  let progresso=100, metaTexto='Faixa máxima atingida!';
+  if(proxFaixa){progresso=Math.min(100,Math.round((totalVendido/proxFaixa.min)*100));metaTexto=`Faltam ${fmtBRL(proxFaixa.min-totalVendido)} para ${proxFaixa.pct}% de comissão`;}
+  // Ranking
+  const {data:todasAfiliadas}=await _sb.from('afiliadas').select('id').eq('status','ativo');
+  const {data:todasVendas}=await _sb.from('vendas').select('afiliada_id,valor').eq('status','aprovado');
+  const ranked=(todasAfiliadas||[]).map(a=>({id:a.id,total:(todasVendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0)})).sort((a,b)=>b.total-a.total);
+  const pos=ranked.findIndex(a=>a.id===afiliadaId)+1;
+  document.getElementById('af-stats-grid').innerHTML=`
+    <div class="af-stat principal">
+      <div class="af-stat-label">Vendas do Mês</div>
+      <div class="af-stat-valor">${fmtBRL(totalVendido)}</div>
+      <div class="af-stat-detalhe">${aprovadas.length} pedidos aprovados</div>
+      <div class="progresso-wrap"><div class="progresso-barra"><div class="progresso-fill" style="width:${progresso}%"></div></div><div class="progresso-texto">${metaTexto}</div></div>
+    </div>
+    <div class="af-stat">
+      <div class="af-stat-label">Comissão a Receber</div>
+      <div class="af-stat-valor">${fmtBRL(comissao)}</div>
+      <div class="af-stat-detalhe">${pct}% — ${labelFaixa(totalVendido)}</div>
+    </div>
+    <div class="af-stat">
+      <div class="af-stat-label">Posição no Ranking</div>
+      <div class="af-stat-valor">#${pos}</div>
+      <div class="af-stat-detalhe">de ${(todasAfiliadas||[]).length} afiliadas ativas</div>
+    </div>
+    <div class="af-stat">
+      <div class="af-stat-label">Pagamento Previsto</div>
+      <div class="af-stat-valor" style="font-size:22px">Dia 10</div>
+      <div class="af-stat-detalhe">Envio de NF até dia 05</div>
+    </div>
+  `;
+  // Histórico
+  document.getElementById('af-historico').innerHTML=(vendasAf||[]).slice(0,10).map(v=>`
+    <tr><td>${v.produto}</td><td>${fmtData(v.data)}</td><td>${fmtBRL(v.valor)}</td>
+    <td><span class="badge ${v.status}">${v.status==='aprovado'?'Aprovado':v.status==='cancelado'?'Cancelado':'Pendente'}</span></td></tr>
+  `).join('');
+  await renderRanking(afiliadaId);
+  renderRegrasAf();
+  await renderNotifAf(afiliadaId);
+  renderMinhaContaDados(af);
+}
+
+async function renderRanking(afiliadaId){
+  const [{data:afiliadas},{data:vendas}]=await Promise.all([
+    _sb.from('afiliadas').select('id,nome,cupom').eq('status','ativo'),
+    _sb.from('vendas').select('afiliada_id,valor').eq('status','aprovado'),
+  ]);
+  const sorted=(afiliadas||[]).map(a=>({
+    ...a,
+    vendas:(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0)
+  })).sort((a,b)=>b.vendas-a.vendas);
+  document.getElementById('lista-ranking').innerHTML=sorted.map((a,i)=>`
+    <div class="ranking-item ${a.id===afiliadaId?'destaque-eu':''}">
+      <div class="posicao ${i===0?'top1':i===1?'top2':i===2?'top3':''}">#${i+1}</div>
+      <div><div class="rank-nome">${a.nome}${a.id===afiliadaId?'<span class="rank-eu-badge">você</span>':''}</div><div class="rank-sub">${a.cupom}</div></div>
+      <div class="rank-valor"><div class="rank-vendas">${fmtBRL(a.vendas)}</div><div class="rank-comissao">${fmtBRL(calcComissao(a.vendas))} comissão</div></div>
+    </div>
+  `).join('');
+}
+
+function renderRegrasAf(){
+  const secoes=configLocal.regras.split('\n\n').filter(Boolean);
+  document.getElementById('regras-af-conteudo').innerHTML=secoes.length
+    ? secoes.map(s=>{const l=s.trim().split('\n');return`<div class="regras-secao"><div class="regras-secao-titulo">${l[0]}</div><div class="regras-texto">${l.slice(1).join('\n').replace(/\n/g,'<br>')}</div></div>`;}).join('')
+    : '<div class="regras-secao"><div class="regras-texto">As regras do programa serão publicadas em breve.</div></div>';
+}
+
+async function renderNotifAf(afiliadaId){
+  const {data:notifs}=await _sb.from('notificacoes').select('*').or(`dest.eq.todas,dest.eq.${afiliadaId}`).order('created_at',{ascending:false});
+  const lista=document.getElementById('lista-notificacoes-af');
+  lista.innerHTML=!(notifs||[]).length
+    ?'<div style="color:var(--cinza-claro);font-size:13px;padding:1rem">Nenhum aviso por enquanto.</div>'
+    :(notifs||[]).map(n=>`<div class="notif-af-item"><div class="notif-af-dot"></div><div><div class="notif-af-titulo">${n.titulo}</div><div class="notif-af-texto">${n.texto}</div><div class="notif-af-data">${fmtData(n.data)}</div></div></div>`).join('');
+}
+
+function renderMinhaContaDados(af){
+  const el=document.getElementById('minha-conta-dados');
+  if(!el)return;
+  el.innerHTML=`
+    <div class="form-grid" style="pointer-events:none;opacity:0.7">
+      <div class="form-campo"><label>Nome</label><input type="text" value="${af.nome}" readonly></div>
+      <div class="form-campo"><label>E-mail</label><input type="text" value="${af.email}" readonly></div>
+      <div class="form-campo"><label>Cupom</label><input type="text" value="${af.cupom}" readonly></div>
+      <div class="form-campo"><label>Link</label><input type="text" value="${af.link||'—'}" readonly></div>
+    </div>
+    <p style="font-size:12px;color:var(--cinza-claro);margin-top:0.75rem">Para atualizar seus dados, entre em contato com a equipe Entre Elas.</p>
+  `;
+}
+
+// ===== ALTERAR SENHA (AFILIADA) =====
+async function alterarSenha(){
+  const ok=document.getElementById('msg-senha-ok');
+  const err=document.getElementById('msg-senha-err');
+  ok.style.display='none';err.style.display='none';
+  const nova=document.getElementById('senha-nova').value;
+  const conf=document.getElementById('senha-confirma').value;
+  if(nova.length<6){err.textContent='A nova senha deve ter pelo menos 6 caracteres.';err.style.display='block';return;}
+  if(nova!==conf){err.textContent='As senhas não conferem.';err.style.display='block';return;}
+  loading(true);
+  const {error}=await _sb.auth.updateUser({password:nova});
+  loading(false);
+  if(error){err.textContent='Erro ao alterar senha. Tente novamente.';err.style.display='block';return;}
+  document.getElementById('senha-atual').value='';
+  document.getElementById('senha-nova').value='';
+  document.getElementById('senha-confirma').value='';
+  ok.style.display='block';
+  setTimeout(()=>ok.style.display='none',4000);
+}
+
+// ===== POPUP REGRAS =====
+function abrirPopupRegras(){
+  document.getElementById('popup-regras-data').textContent='Atualizado em: '+configLocal.regrasData;
+  document.getElementById('popup-regras').classList.add('aberto');
+}
+async function confirmarLeituraRegras(){
+  document.getElementById('popup-regras').classList.remove('aberto');
+  if(sessao.perfil){
+    await _sb.from('perfis').update({regras_lidas:true}).eq('user_id',sessao.usuario.id);
+    await _sb.from('configuracoes').upsert({chave:'regras_pendentes',valor:'false'});
+  }
+}
+
+// Fechar modal clicando fora
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',function(e){if(e.target===el&&el.id!=='popup-regras')fecharModal(el.id);});
+});
+document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
+</script>
+
+</body>
+</html>
