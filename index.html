@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+html{width:100%;height:100%}
 :root{
   --preto:#111010;
   --creme:#e8d5b0;
@@ -19,7 +20,7 @@
   --vermelho:#9b3a3a;
   --dourado:#c9933a;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--preto);color:var(--creme);min-height:100vh;width:100%;display:block}
+body{font-family:'DM Sans',sans-serif;background:var(--preto);color:var(--creme);min-height:100vh;width:100%;min-width:320px}
 h1,h2,h3,.display{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.02em}
 
 /* TELA DE LOGIN */
@@ -43,7 +44,7 @@ h1,h2,h3,.display{font-family:'Barlow Condensed',sans-serif;text-transform:upper
 .bloqueio-aviso{background:#2e1a1a;border:1px solid #5a2a2a;border-radius:8px;padding:10px 14px;font-size:12px;color:#e08080;text-align:center;margin-top:10px;display:none}
 
 /* MÓDULO ADMIN */
-#mod-admin{display:none;min-height:100vh;width:100%;background:var(--preto)}
+#mod-admin{display:none;min-height:100vh;width:100%;max-width:100%;background:var(--preto);position:relative}
 .admin-header{background:#171717;border-bottom:1px solid #252525;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
 .admin-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:0.12em;color:var(--creme)}
 .admin-logo span{color:var(--creme-escuro)}
