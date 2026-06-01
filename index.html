@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.1.8">
+<meta name="app-version" content="1.2.5">
 <title>Clube Entre Elas</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -96,7 +96,7 @@ tr:hover td{background:#faf7f2}
 .btn-mini:hover{border-color:var(--creme-escuro);color:var(--creme)}
 
 /* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;padding:1rem}.modal-overlay.aberto{display:flex!important}
 .modal-overlay.aberto{display:flex}
 .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.15)}
 .modal-titulo{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:800;letter-spacing:0.05em;color:var(--text);margin-bottom:1.5rem}
@@ -271,11 +271,16 @@ tr:hover td{background:#faf7f2}
     <input type="hidden" id="tipo-login" value="admin">
     <div class="campo">
       <label>E-mail</label>
-      <input type="email" id="input-email" placeholder="seu@email.com" autocomplete="email">
+      <input type="email" id="input-email" placeholder="" autocomplete="off">
     </div>
     <div class="campo">
       <label>Senha</label>
-      <input type="password" id="input-senha" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')fazerLogin()">
+      <div style="position:relative">
+        <input type="password" id="input-senha" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')fazerLogin()" style="width:100%;padding:12px 44px 12px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+        <button type="button" onclick="toggleSenha()" id="btn-toggle-senha" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--cinza-medio);padding:4px;line-height:1;display:flex;align-items:center" title="Mostrar/ocultar senha">
+          <svg id="icon-olho" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
     </div>
     <button class="btn-principal" id="btn-login" onclick="fazerLogin()">Entrar</button>
     <div class="bloqueio-aviso" id="bloqueio-aviso"></div>
@@ -297,7 +302,8 @@ tr:hover td{background:#faf7f2}
     </div>
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;color:var(--creme);margin-bottom:0.5rem;text-align:center">Nova Senha</div>
     <div style="font-size:13px;color:var(--cinza-claro);text-align:center;margin-bottom:2rem">Digite e confirme sua nova senha.</div>
-    <div class="campo"><label>Nova Senha</label><input type="password" id="redef-senha-nova" placeholder="Mínimo 6 caracteres"></div>
+    <div class="campo"><label>Nova Senha</label><input type="password" id="redef-senha-nova" placeholder="Mínimo 8 caracteres"></div>
+    <div style="font-size:12px;color:#9a9a9a;margin:-6px 0 12px;line-height:1.6">Mínimo 8 caracteres, uma letra maiúscula e um número.</div>
     <div class="campo" style="margin-bottom:1.5rem"><label>Confirmar Nova Senha</label><input type="password" id="redef-senha-conf" placeholder="Repita a senha"></div>
     <button class="btn-principal" onclick="confirmarRedefinicao()">Salvar Nova Senha</button>
     <div class="msg-sucesso" id="redef-ok" style="margin-top:12px;display:none">✅ Senha alterada! Redirecionando...</div>
@@ -318,6 +324,7 @@ tr:hover td{background:#faf7f2}
       <button class="nav-item" onclick="mudarPagAdmin('notificacoes',this)">Notificações</button>
       <button class="nav-item" onclick="mudarPagAdmin('equipe',this)">Equipe</button>
     </div>
+    <div id="header-usuario" style="font-size:12px;color:rgba(255,255,255,0.5);margin-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px"></div>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
   <div class="admin-content">
@@ -340,6 +347,7 @@ tr:hover td{background:#faf7f2}
       <button class="nav-item" onclick="mudarPagAf('notificacoes-af',this)">Avisos</button>
       <button class="nav-item" onclick="mudarPagAf('minha-conta',this)">Minha Conta</button>
     </div>
+    <div id="header-usuario-af" style="font-size:12px;color:rgba(255,255,255,0.5);margin-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px"></div>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
   <div class="af-content">
@@ -353,30 +361,30 @@ tr:hover td{background:#faf7f2}
 
 <!-- ====== MODAIS ====== -->
 <div class="modal-overlay" id="modal-cadastro">
-  <div class="modal">
+  <div class="modal" autocomplete="off">
     <div class="modal-titulo" id="modal-cad-titulo">Nova Afiliada</div>
     <div class="form-secao" style="margin-top:0;border-top:none;padding-top:0">Dados Pessoais e Acesso</div>
     <div class="form-grid">
-      <div class="form-campo"><label>Nome Completo</label><input type="text" id="cad-nome" placeholder="Nome da afiliada"></div>
-      <div class="form-campo"><label>E-mail</label><input type="email" id="cad-email" placeholder="email@email.com"></div>
-      <div class="form-campo"><label>Cupom Personalizado</label><input type="text" id="cad-cupom" placeholder="NOMEENTREELAS"></div>
-      <div class="form-campo"><label>Link de Divulgação</label><input type="text" id="cad-link" placeholder="https://useentreelas.com.br?ref=..."></div>
-      <div class="form-campo"><label>Instagram</label><input type="text" id="cad-insta" placeholder="@usuario"></div>
-      <div class="form-campo"><label>WhatsApp</label><input type="text" id="cad-whats" placeholder="(00) 00000-0000"></div>
+      <div class="form-campo"><label>Nome Completo</label><input type="text" id="cad-nome" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>E-mail</label><input type="email" id="cad-email" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>Cupom Personalizado</label><input type="text" id="cad-cupom" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>Link de Divulgação</label><input type="text" id="cad-link" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>Instagram</label><input type="text" id="cad-insta" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>WhatsApp</label><input type="text" id="cad-whats" autocomplete="off" placeholder=""></div>
     </div>
     <div class="form-secao">Dados Fiscais</div>
     <div class="form-grid">
-      <div class="form-campo"><label>CNPJ / CPF</label><input type="text" id="cad-cnpj" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
-      <div class="form-campo"><label>Razão Social / Nome para NF</label><input type="text" id="cad-razao" placeholder="Nome completo ou Razão Social"></div>
+      <div class="form-campo"><label>CNPJ / CPF</label><input type="text" id="cad-cnpj" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
+      <div class="form-campo"><label>Razão Social / Nome para NF</label><input type="text" id="cad-razao" autocomplete="off" placeholder=""></div>
     </div>
     <div class="form-secao">Dados Bancários</div>
     <div class="form-grid tres-col">
-      <div class="form-campo"><label>Banco</label><input type="text" id="cad-banco" placeholder="Ex: Nubank"></div>
-      <div class="form-campo"><label>Agência</label><input type="text" id="cad-agencia" placeholder="0000"></div>
-      <div class="form-campo"><label>Conta</label><input type="text" id="cad-conta" placeholder="00000-0"></div>
+      <div class="form-campo"><label>Banco</label><input type="text" id="cad-banco" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>Agência</label><input type="text" id="cad-agencia" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>Conta</label><input type="text" id="cad-conta" autocomplete="off" placeholder=""></div>
     </div>
     <div class="form-grid" style="margin-top:12px">
-      <div class="form-campo"><label>Chave Pix</label><input type="text" id="cad-pix" placeholder="CPF, e-mail ou telefone"></div>
+      <div class="form-campo"><label>Chave Pix</label><input type="text" id="cad-pix" autocomplete="off" placeholder=""></div>
       <div class="form-campo"><label>Tipo de Conta</label>
         <select id="cad-tipo-conta"><option value="corrente">Corrente</option><option value="poupanca">Poupança</option><option value="pix">Somente Pix</option></select>
       </div>
@@ -461,7 +469,7 @@ tr:hover td{background:#faf7f2}
 <script>
 
 // CONTEÚDO DAS PÁGINAS
-const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Dashboard</div>\n        <div class=\"secao-desc\">Visão geral do Clube Entre Elas — Maio 2025</div>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Vendas</th><th>Comissão</th><th>Status</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Cadastro e gestão das afiliadas do clube</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\"><div class=\"tabela-scroll\">\n        <table>\n          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- VENDAS -->\n    <div class=\"pagina-admin\" id=\"adm-vendas\">\n      <div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- COMISSÕES -->\n    <div class=\"pagina-admin\" id=\"adm-comissoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- REGRAS -->\n    <div class=\"pagina-admin\" id=\"adm-regras\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>\n    </div>\n\n    <!-- NOTIFICAÇÕES -->\n    <div class=\"pagina-admin\" id=\"adm-notificacoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>\n    </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>E-mail</th><th>Criado em</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
+const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Dashboard</div>\n        <div class=\"secao-desc\">Visão geral do Clube Entre Elas — Maio 2025</div>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Vendas</th><th>Comissão</th><th>Status</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Cadastro e gestão das afiliadas do clube</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\"><div class=\"tabela-scroll\">\n        <table>\n          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- VENDAS -->\n    <div class=\"pagina-admin\" id=\"adm-vendas\">\n      <div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- COMISSÕES -->\n    <div class=\"pagina-admin\" id=\"adm-comissoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- REGRAS -->\n    <div class=\"pagina-admin\" id=\"adm-regras\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>\n    </div>\n\n    <!-- NOTIFICAÇÕES -->\n    <div class=\"pagina-admin\" id=\"adm-notificacoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>\n    </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
 const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"prod-destaque\">\n        <div class=\"prod-icon\">✨</div>\n        <div>\n          <div class=\"prod-info-label\">Seu produto mais vendido</div>\n          <div class=\"prod-info-nome\" id=\"af-prod-destaque\">Protetor Solar FPS 80</div>\n          <div class=\"prod-info-qtd\" id=\"af-prod-qtd\">12 unidades vendidas</div>\n        </div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\">Classificação por volume de vendas — Maio 2025</div>\n      <div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras do Clube</div>\n      <div id=\"regras-af-conteudo\"></div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"••••••••\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"Mínimo 6 caracteres\"></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"Repita a nova senha\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
 
 // ============================================================
@@ -528,56 +536,66 @@ const loginSec = {
   tempoRestante(){return Math.ceil((this.bloqueioAte-Date.now())/1000);}
 };
 
+function toggleSenha(){
+  const input = document.getElementById('input-senha');
+  const icon = document.getElementById('icon-olho');
+  if(input.type === 'password'){
+    input.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    input.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
 // ===== INICIALIZAÇÃO =====
 window.addEventListener('DOMContentLoaded', async () => {
   if(!_sb){ mostrarErroConfig(); return; }
   loading(true);
 
-  // Detectar magic link / recovery pelo hash ANTES do SDK limpar a URL
+  // Registrar onAuthStateChange SEMPRE — captura recovery e convite mesmo sem hash
+  _sb.auth.onAuthStateChange(async (event, session) => {
+    if(event === 'PASSWORD_RECOVERY') {
+      loading(false);
+      document.getElementById('tela-login').style.display = 'none';
+      document.getElementById('tela-redefinir').style.display = 'flex';
+      const titulo = document.querySelector('#tela-redefinir [style*="font-size:32px"]');
+      if(titulo) titulo.textContent = 'Redefinir Senha';
+      return;
+    }
+  });
+
+  // Detectar tipo pelo hash
   const hash = window.location.hash;
   const hashParams = new URLSearchParams(hash.replace('#','?'));
   const tipoAccess = hashParams.get('type') || '';
   const isConvite = tipoAccess === 'magiclink' || tipoAccess === 'signup' || tipoAccess === 'invite';
-  const isRecovery = tipoAccess === 'recovery';
-
-  // Registrar listener apenas para recovery e convite
-  if(isRecovery || isConvite) {
-    _sb.auth.onAuthStateChange(async (event, session) => {
-      if(event === 'PASSWORD_RECOVERY') {
-        loading(false);
-        document.getElementById('tela-login').style.display = 'none';
-        document.getElementById('tela-redefinir').style.display = 'flex';
-        return;
-      }
-      if(event === 'SIGNED_IN' && isConvite) {
-        // Primeiro acesso via convite — criar perfil se não existir
-        const {data:perfil} = await _sb.from('perfis').select('id').eq('user_id', session.user.id).single();
-        if(!perfil) {
-          const {data:af} = await _sb.from('afiliadas').select('id').eq('email', session.user.email).single();
-          if(af){
-            await _sb.from('perfis').insert({user_id: session.user.id, role:'afiliada', afiliada_id: af.id});
-          } else {
-            await _sb.from('perfis').insert({user_id: session.user.id, role:'admin'});
-          }
-        }
-        history.replaceState(null, '', window.location.pathname);
-        loading(false);
-        document.getElementById('tela-login').style.display = 'none';
-        document.getElementById('tela-redefinir').style.display = 'flex';
-        const titulo = document.querySelector('#tela-redefinir [style*="font-size:32px"]');
-        if(titulo) titulo.textContent = 'Defina sua Senha';
-      }
-    });
-    return; // Aguarda o evento — não continua o fluxo normal
-  }
 
   // Fluxo normal — verificar sessão existente
   try {
     await carregarConfig();
     const {data:{session}} = await _sb.auth.getSession();
-    if(session){
-      await carregarSessao(session.user);
+    if(!session){ loading(false); return; }
+
+    // Se é convite (primeiro acesso) — criar perfil e mostrar tela de definição de senha
+    if(isConvite) {
+      const {data:perfil} = await _sb.from('perfis').select('id').eq('user_id', session.user.id).single();
+      if(!perfil) {
+        const {data:af} = await _sb.from('afiliadas').select('id').eq('email', session.user.email).single();
+        if(af) await _sb.from('perfis').insert({user_id: session.user.id, role:'afiliada', afiliada_id: af.id});
+        else await _sb.from('perfis').insert({user_id: session.user.id, role:'admin', email: session.user.email});
+      }
+      history.replaceState(null, '', window.location.pathname);
+      loading(false);
+      document.getElementById('tela-login').style.display = 'none';
+      document.getElementById('tela-redefinir').style.display = 'flex';
+      const titulo = document.querySelector('#tela-redefinir [style*="font-size:32px"]');
+      if(titulo) titulo.textContent = 'Defina sua Senha';
+      return;
     }
+
+    // Sessão normal — carregar painel
+    await carregarSessao(session.user);
   } catch(e) {
     console.error('Init:', e);
   } finally {
@@ -592,9 +610,15 @@ async function recuperarSenha() {
   ok.style.display = 'none';
   if(!email) { err.textContent = 'Digite seu e-mail antes de recuperar a senha.'; setTimeout(()=>err.textContent='',4000); return; }
   loading(true);
-  const { error } = await _sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+  // Usar Edge Function para gerar link de recuperação via Resend (sem rate limit)
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+    body: JSON.stringify({ email, nome: '', tipo: 'recovery' })
+  });
+  const dados = await resp.json();
   loading(false);
-  if(error) { err.textContent = 'Erro: ' + error.message; setTimeout(()=>err.textContent='',5000); return; }
+  if(dados.error) { err.textContent = 'Erro: ' + dados.error; setTimeout(()=>err.textContent='',5000); return; }
   ok.style.display = 'block';
   setTimeout(() => ok.style.display = 'none', 8000);
 }
@@ -605,21 +629,34 @@ async function confirmarRedefinicao() {
   const ok = document.getElementById('redef-ok');
   const err = document.getElementById('redef-err');
   ok.style.display = 'none'; err.style.display = 'none';
-  if(nova.length < 6) { err.textContent = 'A senha deve ter pelo menos 6 caracteres.'; err.style.display = 'block'; return; }
+  if(nova.length < 8) { err.textContent = 'A senha deve ter pelo menos 8 caracteres.'; err.style.display = 'block'; return; }
+  if(!/[A-Z]/.test(nova)) { err.textContent = 'A senha deve conter pelo menos uma letra maiúscula.'; err.style.display = 'block'; return; }
+  if(!/[0-9]/.test(nova)) { err.textContent = 'A senha deve conter pelo menos um número.'; err.style.display = 'block'; return; }
   if(nova !== conf) { err.textContent = 'As senhas não conferem.'; err.style.display = 'block'; return; }
   loading(true);
   const { error } = await _sb.auth.updateUser({ password: nova });
   loading(false);
   if(error) { err.textContent = 'Erro: ' + error.message; err.style.display = 'block'; return; }
   ok.style.display = 'block';
-  // Não faz logout — carrega o painel direto após salvar a senha
   setTimeout(async () => {
     document.getElementById('tela-redefinir').style.display = 'none';
     loading(true);
-    await carregarConfig();
-    const {data:{session}} = await _sb.auth.getSession();
-    if(session) await carregarSessao(session.user);
-    else document.getElementById('tela-login').style.display = 'flex';
+    try {
+      await carregarConfig();
+      const {data:{session}} = await _sb.auth.getSession();
+      if(session){
+        // Garantir que o perfil existe antes de carregar
+        const {data:perfil} = await _sb.from('perfis').select('id').eq('user_id', session.user.id).single();
+        if(!perfil){
+          const {data:af} = await _sb.from('afiliadas').select('id').eq('email', session.user.email).single();
+          if(af) await _sb.from('perfis').insert({user_id: session.user.id, role:'afiliada', afiliada_id: af.id});
+          else await _sb.from('perfis').insert({user_id: session.user.id, role:'admin', email: session.user.email});
+        }
+        await carregarSessao(session.user);
+      } else {
+        document.getElementById('tela-login').style.display = 'flex';
+      }
+    } catch(e){ console.error(e); document.getElementById('tela-login').style.display = 'flex'; }
     loading(false);
   }, 1500);
 }
@@ -639,13 +676,52 @@ async function carregarConfig(){
 
 async function carregarSessao(user){
   const {data: perfil, error: errPerfil} = await _sb.from('perfis').select('*').eq('user_id', user.id).single();
-  if(errPerfil || !perfil){ document.getElementById('tela-login').style.display='flex'; return; }
+  if(errPerfil || !perfil){
+    // Pode ser um admin recém convidado cujo perfil ainda não foi criado
+    // Tentar criar o perfil automaticamente
+    const {data:af} = await _sb.from('afiliadas').select('id').eq('email', user.email).single();
+    if(af){
+      await _sb.from('perfis').insert({user_id: user.id, role:'afiliada', afiliada_id: af.id});
+    } else {
+      await _sb.from('perfis').insert({user_id: user.id, role:'admin', email: user.email});
+    }
+    // Recarregar sessão após criar perfil
+    const {data:perfilNovo} = await _sb.from('perfis').select('*').eq('user_id', user.id).single();
+    if(!perfilNovo){ document.getElementById('tela-login').style.display='flex'; loading(false); return; }
+    sessao.usuario = user;
+    sessao.perfil = perfilNovo;
+    // Continuar com perfilNovo
+    document.getElementById('tela-login').style.display='none';
+    if(perfilNovo.role === 'admin' || perfilNovo.role === 'equipe'){
+      const adm = document.getElementById('mod-admin');
+      adm.style.display='block'; adm.style.width='100%';
+      const huEl2 = document.getElementById('header-usuario');
+      if(huEl2) huEl2.textContent = user.user_metadata?.nome || user.user_metadata?.full_name || user.email;
+      mudarPagAdmin('dashboard', document.querySelector('.admin-nav .nav-item'));
+      await renderAdmin();
+    } else {
+      const {data:afiliadaNova} = await _sb.from('afiliadas').select('*').eq('id', perfilNovo.afiliada_id).single();
+      if(!afiliadaNova || afiliadaNova.status !== 'ativo'){ await _sb.auth.signOut(); loading(false); return; }
+      sessao.afiliada = afiliadaNova;
+      const afm = document.getElementById('mod-afiliada');
+      afm.style.display='block'; afm.style.width='100%';
+      const huAfEl2 = document.getElementById('header-usuario-af');
+      if(huAfEl2) huAfEl2.textContent = afiliadaNova.nome || user.email;
+      document.querySelectorAll('.pagina-af').forEach(p=>p.style.display='none');
+      document.getElementById('af-painel').style.display='block';
+      await renderAfiliada(afiliadaNova.id);
+    }
+    loading(false);
+    return;
+  }
   sessao.usuario = user;
   sessao.perfil = perfil;
   document.getElementById('tela-login').style.display='none';
-  if(perfil.role === 'admin'){
+  if(perfil.role === 'admin' || perfil.role === 'equipe'){
     const adm = document.getElementById('mod-admin');
     adm.style.display='block'; adm.style.width='100%';
+    const huEl = document.getElementById('header-usuario');
+    if(huEl) huEl.textContent = user.user_metadata?.nome || user.user_metadata?.full_name || user.email;
     mudarPagAdmin('dashboard', document.querySelector('.admin-nav .nav-item'));
     await renderAdmin();
   } else {
@@ -654,6 +730,8 @@ async function carregarSessao(user){
     sessao.afiliada = afiliada;
     const afm = document.getElementById('mod-afiliada');
     afm.style.display='block'; afm.style.width='100%';
+    const huAfEl = document.getElementById('header-usuario-af');
+    if(huAfEl) huAfEl.textContent = afiliada.nome || user.email;
     document.querySelectorAll('.pagina-af').forEach(p=>p.style.display='none');
     document.getElementById('af-painel').style.display='block';
     await renderAfiliada(afiliada.id);
@@ -773,7 +851,7 @@ async function renderTabelaAfiliadas(){
   document.getElementById('tabela-afiliadas').innerHTML=(afiliadas||[]).map(a=>{
     const tv=(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0);
     return`<tr>
-      <td>${a.nome}</td>
+      <td><span style='font-family:monospace;font-size:11px;color:var(--cinza-medio);margin-right:6px'>#${a.codigo||'—'}</span>${a.nome}</td>
       <td style="font-family:monospace;font-size:12px;color:var(--creme-escuro)">${a.cupom}</td>
       <td>${a.email}</td>
       <td style="font-family:monospace;font-size:12px">${a.cnpj||'—'}</td>
@@ -909,6 +987,13 @@ async function salvarAfiliada(){
   const email = document.getElementById('cad-email').value.trim();
   if(!nome || !email){ alert('Nome e e-mail são obrigatórios.'); return; }
   loading(true);
+  // Gerar código sequencial de 4 dígitos se for novo cadastro
+  let codigoAfiliada = null;
+  if(!editandoAfiliadaId){
+    const {data:ultima} = await _sb.from('afiliadas').select('codigo').order('codigo', {ascending:false}).limit(1).single();
+    const ultimoCodigo = ultima?.codigo ? parseInt(ultima.codigo) : 0;
+    codigoAfiliada = String(ultimoCodigo + 1).padStart(4, '0');
+  }
   const dados = {
     nome, email,
     cupom: document.getElementById('cad-cupom').value.trim().toUpperCase(),
@@ -924,6 +1009,8 @@ async function salvarAfiliada(){
     tipo_conta: document.getElementById('cad-tipo-conta').value,
     status: document.getElementById('cad-status').value,
   };
+  // Adicionar codigo separadamente após confirmar que coluna existe
+  if(codigoAfiliada) dados.codigo = codigoAfiliada;
   if(editandoAfiliadaId){
     // Edição — apenas atualiza dados, não mexe no Auth
     await _sb.from('afiliadas').update(dados).eq('id', editandoAfiliadaId);
@@ -942,23 +1029,17 @@ async function salvarAfiliada(){
     // 2. Envia Magic Link de convite para o e-mail da afiliada
     //    Quando ela clicar, o Supabase cria a conta e redireciona para o sistema
     //    O trigger no banco (ou o onAuthStateChange) vincula o user_id ao perfil
-    const redirectTo = window.location.origin + window.location.pathname;
-    // Enviar magic link via Supabase Auth
-    const {error:errInvite} = await _sb.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectTo, shouldCreateUser: true }
+    // Edge Function gera o Magic Link e envia o e-mail via Resend (sem rate limit)
+    const respConvite = await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ email, nome, tipo: 'afiliada' })
     });
-    // Enviar e-mail de boas-vindas via Edge Function (sem limite de envio)
-    if(!errInvite){
-      await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ email, nome, tipo: 'afiliada' })
-      }).catch(e => console.warn('Edge Function:', e));
-    }
+    const dadosConvite = await respConvite.json();
+    const errInvite = dadosConvite.error ? {message: dadosConvite.error} : null;
 
     if(errInvite){
       // Convite falhou mas afiliada já está cadastrada — avisar admin
@@ -1003,24 +1084,17 @@ async function convidarAdmin(){
   loading(true);
   // Enviar Magic Link — ao acessar, o onAuthStateChange detecta 'invite'/'magiclink'
   // e cria o perfil como admin se não existir
-  const { error } = await _sb.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: window.location.origin + window.location.pathname,
-      shouldCreateUser: true,
-    }
+  // Edge Function gera o Magic Link e envia o e-mail via Resend (sem rate limit)
+  const respAdmin = await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify({ email, nome, tipo: 'admin' })
   });
-  // Enviar e-mail de boas-vindas via Edge Function
-  if(!error){
-    await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify({ email, nome, tipo: 'admin' })
-    }).catch(e => console.warn('Edge Function:', e));
-  }
+  const dadosAdmin = await respAdmin.json();
+  const error = dadosAdmin.error ? {message: dadosAdmin.error} : null;
   loading(false);
   if(error){
     aviso.style.cssText = 'display:block;margin-top:1rem;background:#2e1a1a;border:1px solid #5a2a2a;border-radius:8px;padding:12px 16px;font-size:13px;color:#e08080;line-height:1.6';
@@ -1038,34 +1112,39 @@ async function renderAdmins(){
   const tbody = document.getElementById('tabela-admins');
   if(!tbody) return;
   const { data } = await _sb.from('perfis')
-    .select('user_id, created_at')
-    .eq('role', 'admin');
-  if(!data || !data.length){ tbody.innerHTML = '<tr><td colspan="2" style="color:var(--cinza-claro);text-align:center">Nenhum admin cadastrado.</td></tr>'; return; }
-  // Buscar e-mails — só temos user_id, vamos exibir o que temos
+    .select('user_id, nome, email, created_at')
+    .in('role', ['admin','equipe']);
+  if(!data || !data.length){ tbody.innerHTML = '<tr><td colspan="3" style="color:var(--cinza-medio);text-align:center;padding:1rem">Nenhum admin cadastrado.</td></tr>'; return; }
   tbody.innerHTML = data.map(p => `
     <tr>
-      <td style="font-family:monospace;font-size:12px">${p.user_id}</td>
+      <td style="font-size:13px">${p.nome || '—'}</td>
+      <td style="font-size:13px;color:var(--cinza-medio)">${p.email || p.user_id}</td>
       <td>${fmtData(p.created_at)}</td>
+      <td>${p.user_id !== sessao.usuario?.id ? `<button class="btn-mini" style="color:#e05555;border-color:#e05555" onclick="excluirAdmin('${p.user_id}')">Excluir</button>` : '<span style="font-size:11px;color:var(--cinza-medio)">Você</span>'}</td>
     </tr>
   `).join('');
+}
+
+async function excluirAdmin(userId){
+  if(!confirm('Excluir este administrador? Ele perderá o acesso ao sistema.')) return;
+  loading(true);
+  await _sb.from('perfis').delete().eq('user_id', userId);
+  loading(false);
+  await renderAdmins();
 }
 
 async function reenviarConvite(email, nome){
   if(!confirm('Reenviar e-mail de convite para ' + nome + '?')) return;
   loading(true);
-  const {error} = await _sb.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: window.location.origin + window.location.pathname, shouldCreateUser: true }
+  const respReenvio = await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+    body: JSON.stringify({ email, nome, tipo: 'afiliada' })
   });
-  if(!error){
-    await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
-      body: JSON.stringify({ email, nome, tipo: 'afiliada' })
-    }).catch(e => console.warn(e));
-  }
+  const dadosReenvio = await respReenvio.json();
+  const error = dadosReenvio.error;
   loading(false);
-  alert(error ? 'Erro ao reenviar: ' + error.message : 'Convite reenviado para ' + email + '!');
+  alert(error ? 'Erro ao reenviar: ' + error : 'Convite reenviado para ' + email + '!');
 }
 
 async function excluirAfiliada(id, nome){
@@ -1289,6 +1368,6 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.1.8</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.2.5</div>
 </body>
 </html>
