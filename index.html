@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.1.4">
+<meta name="app-version" content="1.1.8">
 <title>Clube Entre Elas</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -532,34 +532,27 @@ const loginSec = {
 window.addEventListener('DOMContentLoaded', async () => {
   if(!_sb){ mostrarErroConfig(); return; }
   loading(true);
-  try {
-    // Detectar tipo de acesso pelo hash da URL
-    // Detectar tipo de acesso pelo hash da URL
-    const hashParams = new URLSearchParams(window.location.hash.replace('#','?'));
-    const tipoAccess = hashParams.get('type') || '';
 
-    // Recuperação de senha
-    if(tipoAccess === 'recovery') {
-      _sb.auth.onAuthStateChange((event, session) => {
-        if(event === 'PASSWORD_RECOVERY') {
-          loading(false);
-          document.getElementById('tela-login').style.display = 'none';
-          document.getElementById('tela-redefinir').style.display = 'flex';
-        }
-      });
-      return;
-    }
+  // Detectar magic link / recovery pelo hash ANTES do SDK limpar a URL
+  const hash = window.location.hash;
+  const hashParams = new URLSearchParams(hash.replace('#','?'));
+  const tipoAccess = hashParams.get('type') || '';
+  const isConvite = tipoAccess === 'magiclink' || tipoAccess === 'signup' || tipoAccess === 'invite';
+  const isRecovery = tipoAccess === 'recovery';
 
-    // Convite (Magic Link) — afiliada ou admin
-    if(tipoAccess === 'magiclink' || tipoAccess === 'signup' || tipoAccess === 'invite') {
-      const {data:{session}} = await _sb.auth.getSession();
-      if(session){
-        // Verificar se já tem perfil
-        const {data:perfil} = await _sb.from('perfis').select('*').eq('user_id', session.user.id).single();
-        if(!perfil){
-          // Primeiro acesso — vincular pelo e-mail
-          // Se o e-mail existir na tabela afiliadas → é afiliada
-          // Senão → é admin
+  // Registrar listener apenas para recovery e convite
+  if(isRecovery || isConvite) {
+    _sb.auth.onAuthStateChange(async (event, session) => {
+      if(event === 'PASSWORD_RECOVERY') {
+        loading(false);
+        document.getElementById('tela-login').style.display = 'none';
+        document.getElementById('tela-redefinir').style.display = 'flex';
+        return;
+      }
+      if(event === 'SIGNED_IN' && isConvite) {
+        // Primeiro acesso via convite — criar perfil se não existir
+        const {data:perfil} = await _sb.from('perfis').select('id').eq('user_id', session.user.id).single();
+        if(!perfil) {
           const {data:af} = await _sb.from('afiliadas').select('id').eq('email', session.user.email).single();
           if(af){
             await _sb.from('perfis').insert({user_id: session.user.id, role:'afiliada', afiliada_id: af.id});
@@ -567,21 +560,24 @@ window.addEventListener('DOMContentLoaded', async () => {
             await _sb.from('perfis').insert({user_id: session.user.id, role:'admin'});
           }
         }
-        // Redirecionar para tela de definição de senha
-        history.replaceState(null,'',window.location.pathname);
+        history.replaceState(null, '', window.location.pathname);
         loading(false);
         document.getElementById('tela-login').style.display = 'none';
-        const telaRedef = document.getElementById('tela-redefinir');
-        telaRedef.style.display = 'flex';
-        const titulo = telaRedef.querySelector('[style*="font-size:32px"]');
+        document.getElementById('tela-redefinir').style.display = 'flex';
+        const titulo = document.querySelector('#tela-redefinir [style*="font-size:32px"]');
         if(titulo) titulo.textContent = 'Defina sua Senha';
-        return;
       }
-    }
+    });
+    return; // Aguarda o evento — não continua o fluxo normal
+  }
 
+  // Fluxo normal — verificar sessão existente
+  try {
     await carregarConfig();
-    const { data: { session } } = await _sb.auth.getSession();
-    if(session) await carregarSessao(session.user);
+    const {data:{session}} = await _sb.auth.getSession();
+    if(session){
+      await carregarSessao(session.user);
+    }
   } catch(e) {
     console.error('Init:', e);
   } finally {
@@ -642,8 +638,8 @@ async function carregarConfig(){
 }
 
 async function carregarSessao(user){
-  const {data: perfil} = await _sb.from('perfis').select('*').eq('user_id', user.id).single();
-  if(!perfil) return;
+  const {data: perfil, error: errPerfil} = await _sb.from('perfis').select('*').eq('user_id', user.id).single();
+  if(errPerfil || !perfil){ document.getElementById('tela-login').style.display='flex'; return; }
   sessao.usuario = user;
   sessao.perfil = perfil;
   document.getElementById('tela-login').style.display='none';
@@ -734,7 +730,9 @@ function mudarPagAdmin(pag,btn){
 }
 
 async function renderAdmin(){
-  await Promise.all([renderDashboard(), renderTabelaAfiliadas(), renderTabelaVendas(), renderComissoes(), renderNotifAdmin(), renderRegrasAdmin(), preencherSelectAfiliadas()]);
+  // Renderizar apenas dashboard e dados globais no carregamento inicial
+  // As outras abas são renderizadas sob demanda ao clicar
+  await Promise.all([renderDashboard(), preencherSelectAfiliadas()]);
 }
 
 // ---- Dashboard ----
@@ -783,7 +781,7 @@ async function renderTabelaAfiliadas(){
       <td>${a.banco||'—'}</td><td>${a.agencia||'—'}</td><td>${a.conta||'—'}</td>
       <td>${fmtBRL(tv)}</td>
       <td><span class="badge ${a.status}">${a.status==='ativo'?'Ativa':a.status==='inativo'?'Inativa':'Pendente'}</span></td>
-      <td><button class="btn-mini" onclick="editarAfiliada('${a.id}')">Editar</button></td>
+      <td style="display:flex;gap:6px"><button class="btn-mini" onclick="editarAfiliada('${a.id}')">Editar</button><button class="btn-mini" onclick="reenviarConvite('${a.email}','${a.nome}')">Reenviar</button><button class="btn-mini" style="color:#e05555;border-color:#e05555" onclick="excluirAfiliada('${a.id}','${a.nome}')">Excluir</button></td>
     </tr>`;
   }).join('');
 }
@@ -903,8 +901,8 @@ async function editarAfiliada(id){
   document.getElementById('cad-pix').value=a.pix||'';
   document.getElementById('cad-tipo-conta').value=a.tipo_conta||'corrente';
   document.getElementById('cad-status').value=a.status||'ativo';
-  document.getElementById('cad-senha').value='';
   document.getElementById('modal-cadastro').classList.add('aberto');
+  document.getElementById('modal-cadastro').style.display='flex';
 }
 async function salvarAfiliada(){
   const nome = document.getElementById('cad-nome').value.trim();
@@ -932,6 +930,12 @@ async function salvarAfiliada(){
   } else {
     // Novo cadastro:
     // 1. Insere os dados da afiliada na tabela
+    // Verificar se cupom já existe
+    const cupom = dados.cupom;
+    if(cupom){
+      const {data:cupomExiste} = await _sb.from('afiliadas').select('id').eq('cupom', cupom).single();
+      if(cupomExiste){ loading(false); alert('Este cupom já está em uso. Escolha outro.'); return; }
+    }
     const {data:af, error:errAf} = await _sb.from('afiliadas').insert(dados).select().single();
     if(errAf){ loading(false); alert('Erro ao cadastrar afiliada: ' + errAf.message); return; }
 
@@ -939,13 +943,22 @@ async function salvarAfiliada(){
     //    Quando ela clicar, o Supabase cria a conta e redireciona para o sistema
     //    O trigger no banco (ou o onAuthStateChange) vincula o user_id ao perfil
     const redirectTo = window.location.origin + window.location.pathname;
+    // Enviar magic link via Supabase Auth
     const {error:errInvite} = await _sb.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: redirectTo,
-        shouldCreateUser: true,
-      }
+      options: { emailRedirectTo: redirectTo, shouldCreateUser: true }
     });
+    // Enviar e-mail de boas-vindas via Edge Function (sem limite de envio)
+    if(!errInvite){
+      await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({ email, nome, tipo: 'afiliada' })
+      }).catch(e => console.warn('Edge Function:', e));
+    }
 
     if(errInvite){
       // Convite falhou mas afiliada já está cadastrada — avisar admin
@@ -997,6 +1010,17 @@ async function convidarAdmin(){
       shouldCreateUser: true,
     }
   });
+  // Enviar e-mail de boas-vindas via Edge Function
+  if(!error){
+    await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ email, nome, tipo: 'admin' })
+    }).catch(e => console.warn('Edge Function:', e));
+  }
   loading(false);
   if(error){
     aviso.style.cssText = 'display:block;margin-top:1rem;background:#2e1a1a;border:1px solid #5a2a2a;border-radius:8px;padding:12px 16px;font-size:13px;color:#e08080;line-height:1.6';
@@ -1024,6 +1048,39 @@ async function renderAdmins(){
       <td>${fmtData(p.created_at)}</td>
     </tr>
   `).join('');
+}
+
+async function reenviarConvite(email, nome){
+  if(!confirm('Reenviar e-mail de convite para ' + nome + '?')) return;
+  loading(true);
+  const {error} = await _sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.origin + window.location.pathname, shouldCreateUser: true }
+  });
+  if(!error){
+    await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+      body: JSON.stringify({ email, nome, tipo: 'afiliada' })
+    }).catch(e => console.warn(e));
+  }
+  loading(false);
+  alert(error ? 'Erro ao reenviar: ' + error.message : 'Convite reenviado para ' + email + '!');
+}
+
+async function excluirAfiliada(id, nome){
+  if(!confirm('Excluir a afiliada ' + nome + '? Esta ação não pode ser desfeita.')) return;
+  loading(true);
+  // Excluir perfil vinculado
+  await _sb.from('perfis').delete().eq('afiliada_id', id);
+  // Excluir vendas vinculadas
+  await _sb.from('vendas').delete().eq('afiliada_id', id);
+  // Excluir afiliada
+  const {error} = await _sb.from('afiliadas').delete().eq('id', id);
+  loading(false);
+  if(error){ alert('Erro ao excluir: ' + error.message); return; }
+  await renderTabelaAfiliadas();
+  await renderDashboard();
 }
 
 // ---- Modal Vendas ----
@@ -1069,7 +1126,7 @@ async function salvarFaixas(){
   await renderComissoes();
 }
 
-function fecharModal(id){document.getElementById(id).classList.remove('aberto');}
+function fecharModal(id){const el=document.getElementById(id);el.classList.remove('aberto');el.style.display='none';}
 async function preencherSelectAfiliadas(){
   const {data}=await _sb.from('afiliadas').select('id,nome').eq('status','ativo').order('nome');
   document.getElementById('venda-afiliada').innerHTML=(data||[]).map(a=>`<option value="${a.id}">${a.nome}</option>`).join('');
@@ -1232,6 +1289,6 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.1.4</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.1.8</div>
 </body>
 </html>
