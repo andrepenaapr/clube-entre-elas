@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.2.6">
+<meta name="app-version" content="1.2.8">
 <title>Clube Entre Elas</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -443,6 +443,48 @@ tr:hover td{background:#faf7f2}
   </div>
 </div>
 
+<!-- MODAL LOG IMPORTAÇÃO -->
+<div class="modal-overlay" id="modal-log">
+  <div class="modal" style="max-width:780px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+      <div class="modal-titulo" style="margin:0">Log de Importações</div>
+      <button class="btn-cancelar" onclick="fecharModal('modal-log')">Fechar</button>
+    </div>
+    <div class="tabela-wrap">
+      <table>
+        <thead><tr><th>Data/Hora</th><th>Usuário</th><th>Lançamentos</th><th>Valor Total</th><th>Inseridos</th><th>Ignorados</th></tr></thead>
+        <tbody id="tabela-log"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR VENDA -->
+<div class="modal-overlay" id="modal-editar-venda">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-titulo">Editar Venda</div>
+    <input type="hidden" id="edit-venda-id">
+    <div class="form-grid">
+      <div class="form-campo"><label>Número do Pedido</label><input type="text" id="edit-venda-pedido" autocomplete="off"></div>
+      <div class="form-campo"><label>Data</label><input type="date" id="edit-venda-data"></div>
+      <div class="form-campo"><label>Hora</label><input type="text" id="edit-venda-hora" placeholder="00:00" autocomplete="off"></div>
+      <div class="form-campo"><label>Valor (R$)</label><input type="number" id="edit-venda-valor" step="0.01" autocomplete="off"></div>
+    </div>
+    <div class="form-grid uma-col" style="margin-top:12px">
+      <div class="form-campo"><label>Status</label>
+        <select id="edit-venda-status">
+          <option value="aprovado">Aprovado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-acoes">
+      <button class="btn-cancelar" onclick="fecharModal('modal-editar-venda')">Cancelar</button>
+      <button class="btn-salvar" onclick="salvarEdicaoVenda()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-faixas">
   <div class="modal">
     <div class="modal-titulo">Editar Faixas de Comissão</div>
@@ -469,8 +511,8 @@ tr:hover td{background:#faf7f2}
 <script>
 
 // CONTEÚDO DAS PÁGINAS
-const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Dashboard</div>\n        <div class=\"secao-desc\">Visão geral do Clube Entre Elas — Maio 2025</div>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Vendas</th><th>Comissão</th><th>Status</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Cadastro e gestão das afiliadas do clube</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\"><div class=\"tabela-scroll\">\n        <table>\n          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- VENDAS -->\n    <div class=\"pagina-admin\" id=\"adm-vendas\">\n      <div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- COMISSÕES -->\n    <div class=\"pagina-admin\" id=\"adm-comissoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- REGRAS -->\n    <div class=\"pagina-admin\" id=\"adm-regras\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>\n    </div>\n\n    <!-- NOTIFICAÇÕES -->\n    <div class=\"pagina-admin\" id=\"adm-notificacoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>\n    </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
-const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"prod-destaque\">\n        <div class=\"prod-icon\">✨</div>\n        <div>\n          <div class=\"prod-info-label\">Seu produto mais vendido</div>\n          <div class=\"prod-info-nome\" id=\"af-prod-destaque\">Protetor Solar FPS 80</div>\n          <div class=\"prod-info-qtd\" id=\"af-prod-qtd\">12 unidades vendidas</div>\n        </div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\">Classificação por volume de vendas — Maio 2025</div>\n      <div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras do Clube</div>\n      <div id=\"regras-af-conteudo\"></div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"••••••••\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"Mínimo 6 caracteres\"></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"Repita a nova senha\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
+const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Dashboard</div>\n        <div class=\"secao-desc\">Visão geral do Clube Entre Elas — Maio 2025</div>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Vendas</th><th>Comissão</th><th>Status</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Cadastro e gestão das afiliadas do clube</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\"><div class=\"tabela-scroll\">\n        <table>\n          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- VENDAS -->\n    <div class=\"pagina-admin\" id=\"adm-vendas\">\n      <div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- COMISSÕES -->\n    <div class=\"pagina-admin\" id=\"adm-comissoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- REGRAS -->\n    <div class=\"pagina-admin\" id=\"adm-regras\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>\n    </div>\n\n    <!-- NOTIFICAÇÕES -->\n    <div class=\"pagina-admin\" id=\"adm-notificacoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>\n    </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <label class=\"btn-acao\" style=\"cursor:pointer;margin:0\">\n            &#8593; Importar Planilha\n            <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls,.csv\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n          </label>\n        </div>\n      </div>\n      <div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
+const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\">Classificação por volume de vendas — Maio 2025</div>\n      <div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras do Clube</div>\n      <div id=\"regras-af-conteudo\"></div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"••••••••\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"Mínimo 6 caracteres\"></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"Repita a nova senha\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
 
 // ============================================================
 // CONFIGURAÇÃO SUPABASE — PREENCHA AQUI APÓS CRIAR SUA CONTA
@@ -872,12 +914,24 @@ async function renderTabelaAfiliadas(){
 
 // ---- Tabela Vendas ----
 async function renderTabelaVendas(){
-  const {data:vendas} = await _sb.from('vendas').select('*, afiliadas(nome)').order('data',{ascending:false});
-  document.getElementById('tabela-vendas').innerHTML=(vendas||[]).map(v=>`
-    <tr><td>${fmtData(v.data)}</td><td>${v.afiliadas?.nome||'—'}</td><td>${v.produto}</td>
-    <td>${fmtBRL(v.valor)}</td>
-    <td><span class="badge ${v.status}">${v.status==='aprovado'?'Aprovado':v.status==='cancelado'?'Cancelado':'Pendente'}</span></td></tr>
-  `).join('');
+  const {data:vendas} = await _sb.from('vendas').select('*, afiliadas(nome,cupom)').order('data',{ascending:false});
+  const tbody = document.getElementById('tabela-vendas');
+  if(!tbody) return;
+  tbody.innerHTML=(vendas||[]).map(v=>`
+    <tr>
+      <td style="font-family:monospace;font-size:12px">${v.numero_pedido||'—'}</td>
+      <td>${fmtData(v.data)}</td>
+      <td style="font-size:12px;color:var(--cinza-medio)">${v.hora||'—'}</td>
+      <td style="font-family:monospace;font-size:12px;color:var(--dourado)">${v.afiliadas?.cupom||v.cupom||'—'}</td>
+      <td>${v.afiliadas?.nome||'—'}</td>
+      <td>${fmtBRL(v.valor)}</td>
+      <td><span class="badge ${v.status||'aprovado'}">${v.status==='cancelado'?'Cancelado':'Aprovado'}</span></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn-mini" onclick="abrirEditarVenda('${v.id}','${v.numero_pedido||''}','${v.data||''}','${v.hora||''}',${v.valor||0},'${v.status||'aprovado'}')">Editar</button>
+        <button class="btn-mini" style="color:#e05555;border-color:#e05555" onclick="apagarVenda('${v.id}','${v.numero_pedido||v.id}')">Apagar</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma venda registrada.</td></tr>';
 }
 
 // ---- Comissões ----
@@ -1168,6 +1222,194 @@ async function excluirAfiliada(id, nome){
   await renderDashboard();
 }
 
+// ---- Importar / Exportar Planilha ----
+// ---- Log de Importação ----
+async function abrirLogImportacao(){
+  document.getElementById('modal-log').classList.add('aberto');
+  document.getElementById('modal-log').style.display='flex';
+  const {data:logs} = await _sb.from('log_importacoes').select('*').order('criado_em',{ascending:false});
+  const tbody = document.getElementById('tabela-log');
+  tbody.innerHTML = (logs||[]).length ? (logs||[]).map(l=>`
+    <tr>
+      <td style="font-size:12px">${new Date(l.criado_em).toLocaleString('pt-BR')}</td>
+      <td style="font-size:12px">${l.usuario||'—'}</td>
+      <td style="text-align:center">${l.total_planilha||0}</td>
+      <td>${fmtBRL(l.valor_total||0)}</td>
+      <td style="color:#5ab88a;text-align:center">${l.inseridos||0}</td>
+      <td style="color:#e08080;text-align:center">${l.ignorados||0}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhum log registrado.</td></tr>';
+}
+
+// ---- Editar / Apagar Venda ----
+function abrirEditarVenda(id, pedido, data, hora, valor, status){
+  document.getElementById('edit-venda-id').value = id;
+  document.getElementById('edit-venda-pedido').value = pedido;
+  document.getElementById('edit-venda-data').value = data;
+  document.getElementById('edit-venda-hora').value = hora;
+  document.getElementById('edit-venda-valor').value = valor;
+  document.getElementById('edit-venda-status').value = status;
+  document.getElementById('modal-editar-venda').classList.add('aberto');
+  document.getElementById('modal-editar-venda').style.display='flex';
+}
+
+async function salvarEdicaoVenda(){
+  const id = document.getElementById('edit-venda-id').value;
+  const dados = {
+    numero_pedido: document.getElementById('edit-venda-pedido').value,
+    data: document.getElementById('edit-venda-data').value,
+    hora: document.getElementById('edit-venda-hora').value,
+    valor: parseFloat(document.getElementById('edit-venda-valor').value)||0,
+    status: document.getElementById('edit-venda-status').value,
+  };
+  loading(true);
+  const {error} = await _sb.from('vendas').update(dados).eq('id',id);
+  loading(false);
+  if(error){alert('Erro: '+error.message);return;}
+  fecharModal('modal-editar-venda');
+  await renderTabelaVendas();
+  await renderDashboard();
+}
+
+async function apagarVenda(id, pedido){
+  if(!confirm(`Apagar a venda do pedido #${pedido}? Esta ação não pode ser desfeita.`)) return;
+  loading(true);
+  const {error} = await _sb.from('vendas').delete().eq('id',id);
+  loading(false);
+  if(error){alert('Erro: '+error.message);return;}
+  await renderTabelaVendas();
+  await renderDashboard();
+}
+
+function exportarPlanilha(){
+  // Gerar CSV modelo com os campos esperados
+  const cabecalho = 'PEDIDO,DATA,HORA,SUBTOTAL DOS PRODUTOS,CUPOM DE DESCONTO\n';
+  const exemplo = '12345,01/06/2026,14:30,150.00,CUPOM123\n';
+  const blob = new Blob([cabecalho + exemplo], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'modelo_vendas_entre_elas.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function importarPlanilha(input){
+  const file = input.files[0];
+  if(!file) return;
+  const aviso = document.getElementById('aviso-importacao');
+  aviso.style.display = 'block';
+  aviso.style.cssText = 'display:block;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6;background:#1a1800;border:1px solid #3a3000;color:#c9a840';
+  aviso.textContent = 'Processando planilha...';
+  loading(true);
+
+  try {
+    const texto = await file.text();
+    const linhas = texto.split('\n').map(l=>l.trim()).filter(Boolean);
+    if(linhas.length < 2){ throw new Error('Planilha vazia ou sem dados.'); }
+
+    // Detectar separador (vírgula ou ponto e vírgula)
+    const sep = linhas[0].includes(';') ? ';' : ',';
+    const header = linhas[0].split(sep).map(h=>h.trim().toUpperCase().replace(/[^A-Z0-9 ]/g,''));
+
+    // Mapear colunas pelos nomes
+    const colPedido  = header.findIndex(h=>h.includes('PEDIDO'));
+    const colData    = header.findIndex(h=>h.includes('DATA'));
+    const colHora    = header.findIndex(h=>h.includes('HORA'));
+    const colValor   = header.findIndex(h=>h.includes('SUBTOTAL')||h.includes('VALOR'));
+    const colCupom   = header.findIndex(h=>h.includes('CUPOM'));
+
+    if(colPedido<0||colData<0||colValor<0||colCupom<0){
+      throw new Error('Colunas obrigatórias não encontradas. Use o modelo exportado.');
+    }
+
+    // Buscar cupons cadastrados
+    const {data:afiliadas} = await _sb.from('afiliadas').select('id,cupom').eq('status','ativo');
+    const mapaCupons = {};
+    (afiliadas||[]).forEach(a=>{ mapaCupons[a.cupom.toUpperCase()] = a.id; });
+
+    // Buscar pedidos já cadastrados para evitar duplicatas
+    const {data:pedidosExist} = await _sb.from('vendas').select('numero_pedido');
+    const pedidosCad = new Set((pedidosExist||[]).map(v=>String(v.numero_pedido)));
+
+    let inseridos=0, ignorados=0, duplicados=0, semCupom=0;
+    const registros = [];
+
+    for(let i=1; i<linhas.length; i++){
+      const cols = linhas[i].split(sep).map(c=>c.trim().replace(/^"|"$/g,''));
+      const pedido  = cols[colPedido]||'';
+      const dataStr = cols[colData]||'';
+      const hora    = colHora>=0 ? (cols[colHora]||'') : '';
+      const valorStr= cols[colValor]||'0';
+      const cupom   = (cols[colCupom]||'').toUpperCase().trim();
+
+      // Ignorar cupom vazio ou não cadastrado
+      if(!cupom){ semCupom++; continue; }
+      const afiliadaId = mapaCupons[cupom];
+      if(!afiliadaId){ semCupom++; continue; }
+
+      // Ignorar pedido duplicado
+      if(pedido && pedidosCad.has(String(pedido))){ duplicados++; continue; }
+
+      // Converter data para ISO
+      let dataISO = dataStr;
+      if(dataStr.includes('/')){
+        const p = dataStr.split('/');
+        if(p.length===3) dataISO = p[2].length===4 ? `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}` : `20${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+      }
+
+      // Converter valor
+      const valor = parseFloat(valorStr.replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
+      if(valor <= 0){ ignorados++; continue; }
+
+      registros.push({
+        numero_pedido: pedido,
+        data: dataISO,
+        hora: hora,
+        valor: valor,
+        cupom: cupom,
+        afiliada_id: afiliadaId,
+        status: 'aprovado',
+        produto: 'Importação'
+      });
+      if(pedido) pedidosCad.add(String(pedido));
+      inseridos++;
+    }
+
+    // Inserir em lotes
+    if(registros.length > 0){
+      const {error} = await _sb.from('vendas').insert(registros);
+      if(error) throw new Error('Erro ao salvar: ' + error.message);
+    }
+
+    aviso.style.cssText = 'display:block;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6;background:#0e2818;border:1px solid #1a5a30;color:#5ab88a';
+    aviso.innerHTML = `✅ Importação concluída!<br>
+      <strong>${inseridos}</strong> vendas importadas &nbsp;|&nbsp;
+      <strong>${duplicados}</strong> pedidos duplicados ignorados &nbsp;|&nbsp;
+      <strong>${semCupom}</strong> registros sem cupom válido ignorados`;
+
+    // Registrar log de importação
+    const valorTotal = registros.reduce((s,r)=>s+r.valor,0);
+    await _sb.from('log_importacoes').insert({
+      usuario: sessao.usuario?.email || 'admin',
+      total_planilha: linhas.length - 1,
+      valor_total: valorTotal,
+      inseridos: inseridos,
+      ignorados: ignorados + semCupom + duplicados,
+    }).catch(()=>{});
+
+    await renderTabelaVendas();
+    await renderDashboard();
+
+  } catch(e){
+    aviso.style.cssText = 'display:block;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6;background:#2e1a1a;border:1px solid #5a2a2a;color:#e08080';
+    aviso.textContent = '❌ Erro: ' + e.message;
+  }
+
+  loading(false);
+  input.value = ''; // Limpar input para permitir reimportar mesmo arquivo
+}
+
 // ---- Modal Vendas ----
 function abrirModalVenda(){
   document.getElementById('venda-data').value=new Date().toISOString().split('T')[0];
@@ -1236,13 +1478,7 @@ async function renderAfiliada(afiliadaId){
   const comissao=calcComissao(totalVendido);
   const pct=pctComissao(totalVendido);
   // Produto mais vendido
-  const contagem={};
-  aprovadas.forEach(v=>contagem[v.produto]=(contagem[v.produto]||0)+1);
-  const prod=Object.entries(contagem).sort((a,b)=>b[1]-a[1])[0];
-  if(prod){
-    document.getElementById('af-prod-destaque').textContent=prod[0];
-    document.getElementById('af-prod-qtd').textContent=prod[1]+' venda(s) registrada(s)';
-  }
+
   // Progresso para próxima faixa
   const faixaAtual=getFaixaAtual(totalVendido);
   const proxFaixa=configLocal.faixas.find(f=>f.min>faixaAtual.min);
@@ -1375,6 +1611,6 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.2.6</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.2.8</div>
 </body>
 </html>
