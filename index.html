@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.4.3">
+<meta name="app-version" content="1.4.4">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -347,8 +347,7 @@ tr:hover td{background:#faf7f2}
         <div class="form-campo" style="grid-column:1/-1"><label>Nome Completo *</label><input type="text" id="cad-pub-nome" autocomplete="off"></div>
         <div class="form-campo"><label>E-mail *</label><input type="email" id="cad-pub-email" autocomplete="off"></div>
         <div class="form-campo"><label>Telefone com DDD *</label><input type="tel" id="cad-pub-telefone" autocomplete="off"></div>
-        <div class="form-campo"><label>Instagram *</label><input type="text" id="cad-pub-instagram" autocomplete="off" placeholder="@seu_usuario"></div>
-        <div class="form-campo"><label>CPF *</label><input type="text" id="cad-pub-cpf" autocomplete="off"></div>
+        <div class="form-campo" style="grid-column:1/-1"><label>Instagram *</label><input type="text" id="cad-pub-instagram" autocomplete="off" placeholder="@seu_usuario"></div>
         <div class="form-campo" style="grid-column:1/-1"><label>Endereço Completo * <span style="font-size:11px;font-weight:400;color:var(--cinza-medio)">(Rua, número, bairro, cidade, estado, CEP)</span></label><input type="text" id="cad-pub-endereco" autocomplete="off"></div>
       </div>
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin:1.5rem 0 1rem;border-top:1px solid var(--border);padding-top:1.25rem;text-transform:uppercase">Dados Empresariais <span style="font-size:13px;font-weight:400;color:var(--cinza-medio)">(opcional)</span></div>
@@ -359,7 +358,10 @@ tr:hover td{background:#faf7f2}
     </div>
     <div class="tabela-wrap" style="padding:2rem;margin-bottom:1.5rem">
       <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:0.5rem;text-transform:uppercase">Prints do Instagram *</div>
-      <div style="font-size:13px;color:var(--cinza-medio);margin-bottom:1.25rem;line-height:1.6">Envie prints ou PDF mostrando seu perfil (seguidores, engajamento, bio).</div>
+      <div style="font-size:13px;color:var(--cinza-medio);margin-bottom:1.25rem;line-height:1.6">
+        Envie prints ou PDF mostrando seu perfil do Instagram.<br>
+        <span style="color:var(--dourado);font-weight:600">📹 Assista ao vídeo acima</span> para saber exatamente quais informações devem constar nos prints (seguidores, engajamento, bio e publicações recentes).
+      </div>
       <div id="drop-prints" onclick="document.getElementById('input-prints').click()" ondragover="event.preventDefault();this.style.borderColor='var(--dourado)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleDropPrints(event)" style="border:2px dashed var(--border);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;background:#faf7f2;transition:border-color 0.2s">
         <div style="font-size:32px;margin-bottom:8px">📎</div>
         <div style="font-size:14px;color:var(--cinza-medio)">Clique ou arraste arquivos aqui</div>
@@ -382,9 +384,7 @@ tr:hover td{background:#faf7f2}
           <button type="button" onclick="abrirDocumento('contrato')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--dourado);text-decoration:underline;padding:0;font-family:'DM Sans',sans-serif">📄 Visualizar Contrato</button></div>
         </div>
       </div>
-      <div style="margin-top:1rem;padding:12px 16px;background:#f5f0e8;border-radius:8px;font-size:12px;color:var(--cinza-medio);line-height:1.6">
-        🔒 Seus dados são protegidos pela LGPD (Lei nº 13.709/2018). Utilizamos suas informações exclusivamente para o programa de afiliadas.
-      </div>
+
     </div>
     <div id="cad-pub-erro" style="display:none;background:#2e1a1a;border:1px solid #5a2a2a;border-radius:8px;padding:14px 18px;font-size:13px;color:#e08080;margin-bottom:1rem;line-height:1.6"></div>
     <div id="cad-pub-sucesso" style="display:none;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:20px 24px;font-size:14px;color:#5ab88a;margin-bottom:1rem;line-height:1.8;text-align:center">
@@ -857,8 +857,7 @@ async function carregarSessao(user){
       afm.style.display='block'; afm.style.width='100%';
       const huAfEl2 = document.getElementById('header-usuario-af');
       if(huAfEl2) huAfEl2.textContent = afiliadaNova.nome || user.email;
-      document.querySelectorAll('.pagina-af').forEach(p=>p.style.display='none');
-      document.getElementById('af-painel').style.display='block';
+      mudarPagAf('painel', document.querySelector('.af-nav .nav-item'));
       await renderAfiliada(afiliadaNova.id);
     }
     loading(false);
@@ -882,8 +881,8 @@ async function carregarSessao(user){
     afm.style.display='block'; afm.style.width='100%';
     const huAfEl = document.getElementById('header-usuario-af');
     if(huAfEl) huAfEl.textContent = afiliada.nome || user.email;
-    document.querySelectorAll('.pagina-af').forEach(p=>p.style.display='none');
-    document.getElementById('af-painel').style.display='block';
+    // Injetar HTML do painel via mudarPagAf antes de renderizar
+    mudarPagAf('painel', document.querySelector('.af-nav .nav-item'));
     await renderAfiliada(afiliada.id);
     if(configLocal.regrasPendentes && !perfil.regras_lidas){
       setTimeout(()=>abrirPopupRegras(), 600);
@@ -1421,13 +1420,12 @@ async function enviarCandidatura(){
     email:    document.getElementById('cad-pub-email').value.trim(),
     telefone: document.getElementById('cad-pub-telefone').value.trim(),
     instagram:document.getElementById('cad-pub-instagram').value.trim(),
-    cpf:      document.getElementById('cad-pub-cpf').value.trim(),
     endereco: document.getElementById('cad-pub-endereco').value.trim(),
     razao:    document.getElementById('cad-pub-razao').value.trim(),
     cnpj:     document.getElementById('cad-pub-cnpj').value.trim(),
   };
 
-  if(!campos.nome||!campos.email||!campos.telefone||!campos.instagram||!campos.cpf||!campos.endereco){
+  if(!campos.nome||!campos.email||!campos.telefone||!campos.instagram||!campos.endereco){
     erro.textContent='Preencha todos os campos obrigatórios (*).';erro.style.display='block';return;
   }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campos.email)){
@@ -1450,7 +1448,7 @@ async function enviarCandidatura(){
 
     const {data:af,error:errAf}=await _sb.from('afiliadas').insert({
       nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
-      instagram:campos.instagram, cpf:campos.cpf||null,
+      instagram:campos.instagram,
       endereco:campos.endereco||null,
       razao_social:campos.razao||null, cnpj:campos.cnpj||null,
       codigo, tipo:'candidata', status:'pendente',
@@ -1468,7 +1466,7 @@ async function enviarCandidatura(){
     sucesso.style.display='block';
     printsCandidata=[];
     document.getElementById('lista-prints').innerHTML='';
-    ['cad-pub-nome','cad-pub-email','cad-pub-telefone','cad-pub-instagram','cad-pub-cpf','cad-pub-endereco','cad-pub-razao','cad-pub-cnpj'].forEach(id=>{
+    ['cad-pub-nome','cad-pub-email','cad-pub-telefone','cad-pub-instagram','cad-pub-endereco','cad-pub-razao','cad-pub-cnpj'].forEach(id=>{
       const el=document.getElementById(id);if(el)el.value='';
     });
     document.getElementById('chk-regras').checked=false;
@@ -2175,6 +2173,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.4.3</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.4.4</div>
 </body>
 </html>
