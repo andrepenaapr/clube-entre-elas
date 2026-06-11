@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.3.2">
+<meta name="app-version" content="1.4.0">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -324,6 +324,132 @@ tr:hover td{background:#faf7f2}
   </div>
 </div>
 
+
+<!-- ====== TELA CADASTRO PÚBLICO ====== -->
+<div id="tela-cadastro" style="display:none;min-height:100vh;background:var(--bg);padding:0">
+
+  <!-- Header -->
+  <div style="background:var(--bg-header);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:0.12em;color:#fff">
+      ENTRE <span style="color:var(--dourado)">ELAS</span> — Programa de Afiliadas
+    </div>
+    <a href="javascript:void(0)" onclick="document.getElementById('tela-cadastro').style.display='none';document.getElementById('tela-login').style.display='flex'" style="font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none">← Voltar ao login</a>
+  </div>
+
+  <div style="max-width:780px;margin:0 auto;padding:2.5rem 1.5rem">
+
+    <!-- Título -->
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:42px;font-weight:900;color:var(--text);text-transform:uppercase;letter-spacing:0.05em;line-height:1">Quero ser Afiliada</div>
+      <div style="font-size:15px;color:var(--cinza-medio);margin-top:8px">Preencha o formulário abaixo para se candidatar ao Clube Entre Elas.</div>
+    </div>
+
+    <!-- Vídeo Tutorial -->
+    <div id="wrap-video-cadastro" style="display:none;margin-bottom:2rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase">📹 Como fazer os prints do Instagram</div>
+      <div id="container-video-cadastro" style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;background:#000"></div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="tabela-wrap" style="padding:2rem;margin-bottom:1.5rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:1.5rem;letter-spacing:0.05em;text-transform:uppercase">Dados Pessoais</div>
+
+      <div class="form-grid">
+        <div class="form-campo" style="grid-column:1/-1">
+          <label>Nome Completo *</label>
+          <input type="text" id="cad-pub-nome" autocomplete="off" placeholder="">
+        </div>
+        <div class="form-campo">
+          <label>E-mail *</label>
+          <input type="email" id="cad-pub-email" autocomplete="off" placeholder="">
+        </div>
+        <div class="form-campo">
+          <label>Telefone com DDD *</label>
+          <input type="tel" id="cad-pub-telefone" autocomplete="off" placeholder="">
+        </div>
+        <div class="form-campo">
+          <label>Instagram *</label>
+          <input type="text" id="cad-pub-instagram" autocomplete="off" placeholder="@seu_usuario">
+        </div>
+        <div class="form-campo">
+          <label>CPF *</label>
+          <input type="text" id="cad-pub-cpf" autocomplete="off" placeholder="">
+        </div>
+      </div>
+
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin:1.5rem 0 1rem;letter-spacing:0.05em;text-transform:uppercase;border-top:1px solid var(--border);padding-top:1.25rem">Endereço</div>
+      <div class="form-grid">
+        <div class="form-campo" style="grid-column:1/-1">
+          <label>Endereço Completo * <span style="font-size:11px;color:var(--cinza-medio)">(Rua, número, complemento, bairro, cidade, estado, CEP)</span></label>
+          <input type="text" id="cad-pub-endereco" autocomplete="off" placeholder="">
+        </div>
+      </div>
+
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin:1.5rem 0 1rem;letter-spacing:0.05em;text-transform:uppercase;border-top:1px solid var(--border);padding-top:1.25rem">Dados Empresariais <span style="font-size:14px;font-weight:400;color:var(--cinza-medio)">(opcional)</span></div>
+      <div class="form-grid">
+        <div class="form-campo">
+          <label>Razão Social</label>
+          <input type="text" id="cad-pub-razao" autocomplete="off" placeholder="">
+        </div>
+        <div class="form-campo">
+          <label>CNPJ</label>
+          <input type="text" id="cad-pub-cnpj" autocomplete="off" placeholder="">
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload prints Instagram -->
+    <div class="tabela-wrap" style="padding:2rem;margin-bottom:1.5rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:0.5rem;letter-spacing:0.05em;text-transform:uppercase">Prints do Instagram *</div>
+      <div style="font-size:13px;color:var(--cinza-medio);margin-bottom:1.25rem;line-height:1.6">Envie prints ou PDF mostrando seu perfil do Instagram (seguidores, engajamento, bio). Assista ao vídeo acima para saber o que enviar.</div>
+      <div id="drop-prints" style="border:2px dashed var(--border);border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:border-color 0.2s;background:#faf7f2" onclick="document.getElementById('input-prints').click()" ondragover="event.preventDefault();this.style.borderColor='var(--dourado)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleDropPrints(event)">
+        <div style="font-size:32px;margin-bottom:8px">📎</div>
+        <div style="font-size:14px;color:var(--cinza-medio)">Clique ou arraste arquivos aqui</div>
+        <div style="font-size:12px;color:var(--cinza-claro);margin-top:4px">JPG, PNG, PDF — máx. 5MB por arquivo</div>
+      </div>
+      <input type="file" id="input-prints" accept="image/*,.pdf" multiple style="display:none" onchange="adicionarPrints(this.files)">
+      <div id="lista-prints" style="margin-top:1rem;display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+
+    <!-- Documentos: Regras e Contrato -->
+    <div class="tabela-wrap" style="padding:2rem;margin-bottom:1.5rem">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:1.25rem;letter-spacing:0.05em;text-transform:uppercase">Termos e Documentos</div>
+
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:1rem;background:#faf7f2;border-radius:8px;border:1px solid var(--border)">
+          <input type="checkbox" id="chk-regras" style="width:18px;height:18px;margin-top:2px;cursor:pointer;accent-color:var(--preto);flex-shrink:0">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Li e aceito o Livro de Regras do Programa *</div>
+            <button type="button" onclick="abrirDocumento('regras')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--dourado);text-decoration:underline;padding:0;font-family:'DM Sans',sans-serif">📄 Visualizar Livro de Regras</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:1rem;background:#faf7f2;border-radius:8px;border:1px solid var(--border)">
+          <input type="checkbox" id="chk-contrato" style="width:18px;height:18px;margin-top:2px;cursor:pointer;accent-color:var(--preto);flex-shrink:0">
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Li e aceito o Contrato de Afiliada *</div>
+            <button type="button" onclick="abrirDocumento('contrato')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--dourado);text-decoration:underline;padding:0;font-family:'DM Sans',sans-serif">📄 Visualizar Contrato</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;padding:12px 16px;background:#f5f0e8;border-radius:8px;font-size:12px;color:var(--cinza-medio);line-height:1.6">
+        🔒 Seus dados são protegidos pela LGPD (Lei nº 13.709/2018). Utilizamos suas informações exclusivamente para o programa de afiliadas e não as compartilhamos com terceiros.
+      </div>
+    </div>
+
+    <!-- Mensagem de erro / sucesso -->
+    <div id="cad-pub-erro" style="display:none;background:#2e1a1a;border:1px solid #5a2a2a;border-radius:8px;padding:14px 18px;font-size:13px;color:#e08080;margin-bottom:1rem;line-height:1.6"></div>
+    <div id="cad-pub-sucesso" style="display:none;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:20px 24px;font-size:14px;color:#5ab88a;margin-bottom:1rem;line-height:1.8;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <strong>Candidatura enviada com sucesso!</strong><br>
+      Nossa equipe analisará seu perfil e entrará em contato em breve.
+    </div>
+
+    <!-- Botão Cadastrar -->
+    <button id="btn-cadastrar-pub" class="btn-principal" onclick="enviarCandidatura()" style="margin-bottom:3rem">Enviar Candidatura</button>
+  </div>
+</div>
+
 <!-- ====== MÓDULO ADMIN ====== -->
 <div id="mod-admin">
   <div class="admin-header">
@@ -524,7 +650,7 @@ tr:hover td{background:#faf7f2}
 <script>
 
 // CONTEÚDO DAS PÁGINAS
-const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Dashboard</div>\n          <div class=\"secao-desc\" id=\"desc-dashboard\">Visão geral do Clube Entre Elas</div>\n        </div>\n        <select id=\"sel-mes-dashboard\" onchange=\"renderDashboard()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;align-self:center\"></select>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Cupom</th><th>Total Vendido</th><th>Comissão</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Cadastro e gestão das afiliadas do clube</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\"><div class=\"tabela-scroll\">\n        <table style=\"min-width:calc(100% + 152px)\">\n          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- VENDAS -->\n    <div class=\"pagina-admin\" id=\"adm-vendas\">\n      <div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- COMISSÕES -->\n    <div class=\"pagina-admin\" id=\"adm-comissoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- REGRAS -->\n    <div class=\"pagina-admin\" id=\"adm-regras\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>\n    </div>\n\n    <!-- NOTIFICAÇÕES -->\n    <div class=\"pagina-admin\" id=\"adm-notificacoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>\n    </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('input-importar').click()\">&#8593; Importar Planilha</button>\n          <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n        </div>\n      </div>\n      <div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\" id=\"desc-comissoes\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
+const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Dashboard</div>\n          <div class=\"secao-desc\" id=\"desc-dashboard\">Visão geral do Clube Entre Elas</div>\n        </div>\n        <select id=\"sel-mes-dashboard\" onchange=\"renderDashboard()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;align-self:center\"></select>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Cupom</th><th>Total Vendido</th><th>Comissão</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Cadastro e gestão das afiliadas do clube</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\"><div class=\"tabela-scroll\">\n        <table style=\"min-width:calc(100% + 152px)\">\n          <thead><tr><th>Nome</th><th>Cupom</th><th>E-mail</th><th>CNPJ/CPF</th><th>Link</th><th>Banco</th><th>Agência</th><th>Conta</th><th>Vendas (mês)</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- VENDAS -->\n    <div class=\"pagina-admin\" id=\"adm-vendas\">\n      <div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Lançamento de Vendas</div>\n          <div class=\"secao-desc\">Registre vendas por cupom ou importe via planilha</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalVenda()\">+ Registrar Venda</button>\n      </div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Data</th><th>Afiliada</th><th>Produto</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- COMISSÕES -->\n    <div class=\"pagina-admin\" id=\"adm-comissoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras de Comissão</div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div style=\"margin-top:1.5rem\">\n        <button class=\"btn-acao\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n      </div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\" style=\"margin-bottom:1.25rem\">Fechamento Mensal</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Conta</th><th>Situação</th><th>Ação</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>\n    </div>\n\n    <!-- REGRAS -->\n    <div class=\"pagina-admin\" id=\"adm-regras\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras do Programa</div>\n      <div class=\"secao-desc\">Edite e publique as regras. As afiliadas verão um popup de aviso ao acessar.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div class=\"form-campo\" style=\"margin-bottom:1rem\">\n          <label>Conteúdo das Regras</label>\n          <textarea class=\"regras-editor\" id=\"editor-regras\" rows=\"16\"></textarea>\n        </div>\n        <button class=\"btn-acao\" onclick=\"salvarRegras()\">Publicar Regras</button>\n        <div class=\"aviso-regras\" id=\"aviso-regras\" style=\"display:none\">\n          ⚠️ Regras publicadas! As afiliadas verão o popup de atualização no próximo acesso.\n        </div>\n      </div>\n    </div>\n\n    <!-- NOTIFICAÇÕES -->\n    <div class=\"pagina-admin\" id=\"adm-notificacoes\">\n      <div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>\n    </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('input-importar').click()\">&#8593; Importar Planilha</button>\n          <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n        </div>\n      </div>\n      <div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\" id=\"desc-comissoes\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras e Documentos</div>\n      <div class=\"secao-desc\">Faça upload dos PDFs e configure o link do vídeo. Os arquivos ficam disponíveis na página de cadastro de candidatas.</div>\n\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem\">\n        <!-- PDF Regras -->\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.05em\">LIVRO DE REGRAS</div>\n          <div id=\"info-pdf-regras\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-regras').click()\" style=\"width:100%;margin-bottom:8px\">&#8593; Enviar PDF de Regras</button>\n          <input type=\"file\" id=\"upload-pdf-regras\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'regras')\">\n          <div id=\"aviso-upload-regras\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n        <!-- PDF Contrato -->\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.05em\">CONTRATO</div>\n          <div id=\"info-pdf-contrato\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-contrato').click()\" style=\"width:100%;margin-bottom:8px\">&#8593; Enviar PDF de Contrato</button>\n          <input type=\"file\" id=\"upload-pdf-contrato\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'contrato')\">\n          <div id=\"aviso-upload-contrato\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n      </div>\n\n      <!-- Link do vídeo -->\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.05em\">VÍDEO TUTORIAL</div>\n        <div class=\"form-campo\" style=\"max-width:600px\">\n          <label>Link do YouTube</label>\n          <input type=\"url\" id=\"input-link-video\" placeholder=\"https://www.youtube.com/watch?v=...\" autocomplete=\"off\">\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"salvarLinkVideo()\">Salvar Link</button>\n        <div id=\"aviso-video\" style=\"display:none;margin-top:8px;font-size:13px;color:#5ab88a\">✅ Link salvo!</div>\n      </div>\n\n      <!-- Notificação de regras -->\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem;letter-spacing:0.05em\">NOTIFICAR AFILIADAS</div>\n        <div class=\"secao-desc\" style=\"margin-bottom:1rem\">Ao publicar, as afiliadas verão um aviso de atualização no próximo acesso.</div>\n        <button class=\"btn-acao\" onclick=\"publicarAtualizacaoRegras()\">Publicar Atualização</button>\n        <div id=\"aviso-regras\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">\n          ✅ Afiliadas serão notificadas no próximo acesso.\n        </div>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
 const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\">Classificação por volume de vendas — Maio 2025</div>\n      <div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras do Clube</div>\n      <div id=\"regras-af-conteudo\"></div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"\" autocomplete=\"new-password\"><div style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\">Mínimo 8 caracteres, uma letra e um número.</div></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
 
 // ============================================================
@@ -1267,6 +1393,289 @@ function mostrarAvisoConvite(nome, email, sucesso){
   setTimeout(()=>div.remove(), 10000);
 }
 
+// ====== CADASTRO PÚBLICO ======
+let printsCandidata = [];
+
+function abrirCadastroPublico(){
+  document.getElementById('tela-login').style.display = 'none';
+  document.getElementById('tela-cadastro').style.display = 'block';
+  carregarDocumentosCadastro();
+}
+
+async function carregarDocumentosCadastro(){
+  const {data} = await _sb.from('configuracoes').select('chave,valor').in('chave',['url_pdf_regras','url_pdf_contrato','link_video']);
+  if(!data) return;
+  const cfg = {};
+  data.forEach(r=>cfg[r.chave]=r.valor);
+
+  // Vídeo
+  if(cfg.link_video){
+    const wrap = document.getElementById('wrap-video-cadastro');
+    const container = document.getElementById('container-video-cadastro');
+    if(wrap && container){
+      wrap.style.display = 'block';
+      // Converter URL do YouTube para embed
+      let videoId = '';
+      const m = cfg.link_video.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
+      if(m) videoId = m[1];
+      if(videoId){
+        container.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen></iframe>`;
+      }
+    }
+  }
+}
+
+function abrirDocumento(tipo){
+  _sb.from('configuracoes').select('valor').eq('chave', `url_pdf_${tipo}`).single().then(({data})=>{
+    if(data?.valor) window.open(data.valor, '_blank');
+    else alert('Documento não disponível ainda. Aguarde a equipe publicar o arquivo.');
+  });
+}
+
+function handleDropPrints(e){
+  e.preventDefault();
+  document.getElementById('drop-prints').style.borderColor = 'var(--border)';
+  adicionarPrints(e.dataTransfer.files);
+}
+
+function adicionarPrints(files){
+  const lista = document.getElementById('lista-prints');
+  Array.from(files).forEach(f=>{
+    if(f.size > 5*1024*1024){ alert(`Arquivo "${f.name}" excede 5MB.`); return; }
+    printsCandidata.push(f);
+    const tag = document.createElement('div');
+    tag.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0ebe3;border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--text)';
+    tag.innerHTML = `📎 ${f.name} <button onclick="removerPrint(this,'${f.name}')" style="background:none;border:none;cursor:pointer;color:#e05555;font-size:14px;line-height:1;padding:0">×</button>`;
+    lista.appendChild(tag);
+  });
+}
+
+function removerPrint(btn, nome){
+  printsCandidata = printsCandidata.filter(f=>f.name!==nome);
+  btn.parentElement.remove();
+}
+
+async function enviarCandidatura(){
+  const erro = document.getElementById('cad-pub-erro');
+  const sucesso = document.getElementById('cad-pub-sucesso');
+  const btnCad = document.getElementById('btn-cadastrar-pub');
+  erro.style.display='none'; sucesso.style.display='none';
+
+  const nome     = document.getElementById('cad-pub-nome').value.trim();
+  const email    = document.getElementById('cad-pub-email').value.trim();
+  const telefone = document.getElementById('cad-pub-telefone').value.trim();
+  const instagram= document.getElementById('cad-pub-instagram').value.trim();
+  const cpf      = document.getElementById('cad-pub-cpf').value.trim();
+  const endereco = document.getElementById('cad-pub-endereco').value.trim();
+  const razao    = document.getElementById('cad-pub-razao').value.trim();
+  const cnpj     = document.getElementById('cad-pub-cnpj').value.trim();
+  const chkReg   = document.getElementById('chk-regras').checked;
+  const chkCont  = document.getElementById('chk-contrato').checked;
+
+  // Validações
+  if(!nome||!email||!telefone||!instagram||!cpf||!endereco){
+    erro.textContent='Preencha todos os campos obrigatórios (*).' ;erro.style.display='block';return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    erro.textContent='E-mail inválido.';erro.style.display='block';return;
+  }
+  if(!chkReg||!chkCont){
+    erro.textContent='Você precisa ler e aceitar o Livro de Regras e o Contrato para prosseguir.';erro.style.display='block';return;
+  }
+  if(printsCandidata.length===0){
+    erro.textContent='Envie pelo menos um print do seu Instagram.';erro.style.display='block';return;
+  }
+
+  loading(true);
+  btnCad.disabled=true;
+
+  try{
+    // Verificar se e-mail já existe
+    const {data:existe} = await _sb.from('afiliadas').select('id').eq('email',email).single();
+    if(existe){ throw new Error('Este e-mail já está cadastrado.'); }
+
+    // Gerar código sequencial
+    const {data:ultima} = await _sb.from('afiliadas').select('codigo').order('codigo',{ascending:false}).limit(1).single();
+    const codigoNovo = String((ultima?.codigo?parseInt(ultima.codigo):0)+1).padStart(4,'0');
+
+    // Inserir candidata
+    const {data:af, error:errAf} = await _sb.from('afiliadas').insert({
+      nome, email, whatsapp:telefone, instagram,
+      cnpj:cnpj||null, razao_social:razao||null,
+      codigo:codigoNovo,
+      tipo:'candidata',
+      status:'pendente',
+      aceite_regras: true,
+      aceite_contrato: true,
+      data_candidatura: new Date().toISOString(),
+    }).select().single();
+    if(errAf) throw new Error(errAf.message);
+
+    // Upload dos prints no Supabase Storage
+    for(const file of printsCandidata){
+      const path = `candidatas/${af.id}/${Date.now()}_${file.name}`;
+      await _sb.storage.from('prints-afiliadas').upload(path, file, {cacheControl:'3600'});
+    }
+
+    // Sucesso
+    btnCad.style.display='none';
+    sucesso.style.display='block';
+    // Limpar formulário
+    ['cad-pub-nome','cad-pub-email','cad-pub-telefone','cad-pub-instagram','cad-pub-cpf','cad-pub-endereco','cad-pub-razao','cad-pub-cnpj'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    document.getElementById('chk-regras').checked=false;
+    document.getElementById('chk-contrato').checked=false;
+    document.getElementById('lista-prints').innerHTML='';
+    printsCandidata=[];
+
+  }catch(e){
+    erro.textContent='Erro: '+e.message;erro.style.display='block';
+    btnCad.disabled=false;
+  }
+  loading(false);
+}
+
+// ====== ACEITAR / RECUSAR CANDIDATA ======
+async function aceitarCandidata(id, nome, email){
+  if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
+
+  // Gerar cupom automático baseado no nome
+  const primeiroNome = nome.split(' ')[0].toUpperCase().replace(/[^A-Z]/g,'');
+  const cupomSugerido = primeiroNome + 'ENTREELAS';
+
+  // Popup de confirmação com cupom
+  const cupomConfirmado = prompt(
+    `Aceitar ${nome} como afiliada?
+
+Cupom gerado automaticamente:
+${cupomSugerido}
+
+Edite o cupom se desejar e clique em OK para confirmar:`,
+    cupomSugerido
+  );
+  if(cupomConfirmado === null) return; // Cancelou
+  const cupomFinal = cupomConfirmado.toUpperCase().trim();
+  if(!cupomFinal){ alert('O cupom não pode estar vazio.'); return; }
+
+  loading(true);
+
+  // Verificar se cupom já existe
+  const {data:cupomExiste} = await _sb.from('afiliadas').select('id').eq('cupom',cupomFinal).single();
+  if(cupomExiste){ loading(false); alert('Este cupom já está em uso. Tente outro.'); return; }
+
+  // Atualizar afiliada
+  const {error} = await _sb.from('afiliadas').update({
+    tipo: 'afiliada',
+    status: 'ativo',
+    cupom: cupomFinal,
+    data_aceite: new Date().toISOString(),
+  }).eq('id', id);
+
+  if(error){ loading(false); alert('Erro: '+error.message); return; }
+
+  // Enviar e-mail de convite via Edge Function
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON_KEY}`},
+    body:JSON.stringify({email, nome, tipo:'afiliada'})
+  });
+  const dadosResp = await resp.json();
+
+  loading(false);
+
+  if(dadosResp.error){
+    alert(`Afiliada aceita, mas houve erro no envio do e-mail: ${dadosResp.error}
+Envie o convite manualmente pela aba Afiliadas.`);
+  } else {
+    alert(`✅ ${nome} foi aceita como afiliada!
+O e-mail de convite foi enviado para ${email}.`);
+  }
+
+  await renderTabelaAfiliadas();
+  await renderDashboard();
+}
+
+async function recusarCandidata(id, nome){
+  if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
+  if(!confirm(`Recusar a candidatura de ${nome}?
+O status será alterado para Inativa.`)) return;
+  loading(true);
+  await _sb.from('afiliadas').update({status:'inativo', tipo:'candidata'}).eq('id',id);
+  loading(false);
+  await renderTabelaAfiliadas();
+}
+
+// ====== UPLOAD DOCUMENTOS (admin) ======
+async function uploadDocumento(input, tipo){
+  if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
+  const file = input.files[0];
+  if(!file) return;
+  const aviso = document.getElementById(`aviso-upload-${tipo}`);
+  aviso.style.cssText='display:block;color:#c9a840;font-size:12px';
+  aviso.textContent='Enviando...';
+  loading(true);
+
+  const path = `documentos/${tipo}_${Date.now()}.pdf`;
+  const {error:errUp} = await _sb.storage.from('documentos-clube').upload(path, file, {cacheControl:'3600', upsert:true});
+  if(errUp){ loading(false); aviso.style.color='#e05555'; aviso.textContent='Erro: '+errUp.message; return; }
+
+  const {data:urlData} = _sb.storage.from('documentos-clube').getPublicUrl(path);
+  const url = urlData?.publicUrl;
+  const dataHora = new Date().toLocaleString('pt-BR');
+
+  await _sb.from('configuracoes').upsert({chave:`url_pdf_${tipo}`, valor:url});
+  await _sb.from('configuracoes').upsert({chave:`data_pdf_${tipo}`, valor:dataHora});
+
+  loading(false);
+  aviso.style.color='#5ab88a';
+  aviso.textContent=`✅ Enviado em ${dataHora}`;
+  document.getElementById(`info-pdf-${tipo}`).innerHTML=
+    `<a href="${url}" target="_blank" style="color:var(--dourado);font-size:12px">📄 ${file.name}</a><span style="color:var(--cinza-medio);margin-left:8px;font-size:11px">Enviado em ${dataHora}</span>`;
+
+  input.value='';
+}
+
+async function salvarLinkVideo(){
+  if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
+  const link = document.getElementById('input-link-video').value.trim();
+  await _sb.from('configuracoes').upsert({chave:'link_video', valor:link});
+  const aviso = document.getElementById('aviso-video');
+  aviso.style.display='block';
+  setTimeout(()=>aviso.style.display='none',3000);
+}
+
+async function publicarAtualizacaoRegras(){
+  if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
+  loading(true);
+  const data = new Date().toLocaleDateString('pt-BR');
+  await Promise.all([
+    _sb.from('configuracoes').upsert({chave:'regras_data',valor:data}),
+    _sb.from('configuracoes').upsert({chave:'regras_pendentes',valor:'true'}),
+    _sb.from('perfis').update({regras_lidas:false}).eq('role','afiliada'),
+  ]);
+  loading(false);
+  const av=document.getElementById('aviso-regras');
+  av.style.display='block';
+  setTimeout(()=>av.style.display='none',4000);
+}
+
+async function renderRegrasAdmin(){
+  // Carregar dados dos PDFs
+  const {data} = await _sb.from('configuracoes').select('chave,valor').in('chave',['url_pdf_regras','url_pdf_contrato','data_pdf_regras','data_pdf_contrato','link_video']);
+  if(!data) return;
+  const cfg={};
+  data.forEach(r=>cfg[r.chave]=r.valor);
+
+  const infoR = document.getElementById('info-pdf-regras');
+  const infoC = document.getElementById('info-pdf-contrato');
+  const inputV = document.getElementById('input-link-video');
+
+  if(infoR && cfg.url_pdf_regras) infoR.innerHTML=`<a href="${cfg.url_pdf_regras}" target="_blank" style="color:var(--dourado);font-size:12px">📄 Arquivo atual</a><span style="color:var(--cinza-medio);margin-left:8px;font-size:11px">Enviado em ${cfg.data_pdf_regras||''}</span>`;
+  if(infoC && cfg.url_pdf_contrato) infoC.innerHTML=`<a href="${cfg.url_pdf_contrato}" target="_blank" style="color:var(--dourado);font-size:12px">📄 Arquivo atual</a><span style="color:var(--cinza-medio);margin-left:8px;font-size:11px">Enviado em ${cfg.data_pdf_contrato||''}</span>`;
+  if(inputV && cfg.link_video) inputV.value=cfg.link_video;
+}
+
 // ---- Equipe / Admins ----
 async function convidarAdmin(){
   if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
@@ -1766,6 +2175,6 @@ document.querySelectorAll('.modal-overlay').forEach(el=>{
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.3.2</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">v1.4.0</div>
 </body>
 </html>
