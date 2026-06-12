@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.5.4">
+<meta name="app-version" content="1.5.5">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1036,14 +1036,20 @@ async function renderDashboard(){
 
 // ---- Tabela Afiliadas ----
 async function renderTabelaAfiliadas(){
-  // Join com perfis para pegar dados de aceite
-  const {data:afiliadas} = await _sb.from('afiliadas').select('*, perfis(versao_regras_aceita,versao_contrato_aceita,data_aceite_regras)').order('nome');
-  // Flatten perfis data
+  // Buscar afiliadas e perfis separadamente para evitar falhas de JOIN
+  const [{data:afiliadas},{data:todosPerfis}] = await Promise.all([
+    _sb.from('afiliadas').select('*').order('nome'),
+    _sb.from('perfis').select('afiliada_id,versao_regras_aceita,versao_contrato_aceita,data_aceite_regras').eq('role','afiliada'),
+  ]);
+  // Mapear dados de aceite por afiliada_id
+  const mapaAceites = {};
+  (todosPerfis||[]).forEach(p=>{ if(p.afiliada_id) mapaAceites[p.afiliada_id] = p; });
   (afiliadas||[]).forEach(a=>{
-    if(a.perfis){
-      a.versao_regras_aceita = a.perfis.versao_regras_aceita;
-      a.versao_contrato_aceita = a.perfis.versao_contrato_aceita;
-      a.data_aceite_regras = a.perfis.data_aceite_regras;
+    const p = mapaAceites[a.id];
+    if(p){
+      a.versao_regras_aceita = p.versao_regras_aceita;
+      a.versao_contrato_aceita = p.versao_contrato_aceita;
+      a.data_aceite_regras = p.data_aceite_regras;
     }
   });
   const {data:vendas} = await _sb.from('vendas').select('*').eq('status','aprovado');
@@ -1470,23 +1476,43 @@ async function enviarCandidatura(){
 
   loading(true); btn.disabled=true;
   try{
-    const {data:existe}=await _sb.from('afiliadas').select('id').eq('email',campos.email).single();
-    if(existe) throw new Error('Este e-mail já está cadastrado.');
+    // Verificar e-mail duplicado via fetch direto
+    const checkResp = await fetch(
+      `${SUPABASE_URL}/rest/v1/afiliadas?select=id&email=eq.${encodeURIComponent(campos.email)}&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    const checkData = checkResp.ok ? await checkResp.json() : [];
+    if(checkData.length > 0) throw new Error('Este e-mail já está cadastrado.');
 
     let ultimoCodigo = 0;
     try{ const {data:ul}=await _sb.from('afiliadas').select('codigo').order('codigo',{ascending:false}).limit(1).single(); if(ul?.codigo) ultimoCodigo=parseInt(ul.codigo); }catch(e){}
     const codigo=String(ultimoCodigo+1).padStart(4,'0');
 
-    const {data:af,error:errAf}=await _sb.from('afiliadas').insert({
-      nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
-      instagram:campos.instagram,
-      endereco:campos.endereco||null,
-      razao_social:campos.razao||null, cnpj:campos.cnpj||null,
-      codigo, tipo:'candidata', status:'pendente',
-      aceite_regras:true, aceite_contrato:true,
-      data_candidatura:new Date().toISOString(),
-    }).select().single();
-    if(errAf) throw new Error(errAf.message);
+    // INSERT via fetch direto — funciona sem autenticação (política pública)
+    const insertResp = await fetch(`${SUPABASE_URL}/rest/v1/afiliadas`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
+        instagram:campos.instagram,
+        endereco:campos.endereco||null,
+        razao_social:campos.razao||null, cnpj:campos.cnpj||null,
+        codigo, tipo:'candidata', status:'pendente',
+        aceite_regras:true, aceite_contrato:true,
+        data_candidatura:new Date().toISOString(),
+      })
+    });
+    if(!insertResp.ok){
+      const errData = await insertResp.json().catch(()=>({}));
+      throw new Error(errData.message || errData.details || 'Erro ao cadastrar. Tente novamente.');
+    }
+    const [af] = await insertResp.json();
+    if(!af) throw new Error('Erro ao obter dados do cadastro.');
 
     for(const file of printsCandidata){
       const path=`candidatas/${af.id}/${Date.now()}_${file.name}`;
@@ -2253,6 +2279,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.5.4</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.5.5</div>
 </body>
 </html>
