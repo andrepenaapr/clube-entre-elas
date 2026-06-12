@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.5.3">
+<meta name="app-version" content="1.5.4">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1473,8 +1473,9 @@ async function enviarCandidatura(){
     const {data:existe}=await _sb.from('afiliadas').select('id').eq('email',campos.email).single();
     if(existe) throw new Error('Este e-mail já está cadastrado.');
 
-    const {data:ultima}=await _sb.from('afiliadas').select('codigo').order('codigo',{ascending:false}).limit(1).single().catch(()=>({data:null}));
-    const codigo=String((ultima?.codigo?parseInt(ultima.codigo):0)+1).padStart(4,'0');
+    let ultimoCodigo = 0;
+    try{ const {data:ul}=await _sb.from('afiliadas').select('codigo').order('codigo',{ascending:false}).limit(1).single(); if(ul?.codigo) ultimoCodigo=parseInt(ul.codigo); }catch(e){}
+    const codigo=String(ultimoCodigo+1).padStart(4,'0');
 
     const {data:af,error:errAf}=await _sb.from('afiliadas').insert({
       nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
@@ -2252,6 +2253,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.5.3</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.5.4</div>
 </body>
 </html>
