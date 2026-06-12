@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.5.5">
+<meta name="app-version" content="1.5.7">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1498,12 +1498,18 @@ async function enviarCandidatura(){
         'Prefer': 'return=representation'
       },
       body: JSON.stringify({
-        nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
+        nome:campos.nome,
+        email:campos.email,
+        whatsapp:campos.telefone,
         instagram:campos.instagram,
         endereco:campos.endereco||null,
-        razao_social:campos.razao||null, cnpj:campos.cnpj||null,
-        codigo, tipo:'candidata', status:'pendente',
-        aceite_regras:true, aceite_contrato:true,
+        razao_social:campos.razao||null,
+        cnpj:campos.cnpj||null,
+        codigo:codigo,
+        tipo:'candidata',
+        status:'pendente',
+        aceite_regras:true,
+        aceite_contrato:true,
         data_candidatura:new Date().toISOString(),
       })
     });
@@ -1538,21 +1544,30 @@ async function enviarCandidatura(){
 // ====== ACEITAR / RECUSAR CANDIDATA ======
 async function aceitarCandidata(id,nome,email){
   if(!sessao.perfil||!['admin','equipe'].includes(sessao.perfil.role))return;
+
   const primeiroNome=nome.split(' ')[0].toUpperCase().replace(/[^A-Z]/g,'');
   const cupomSugerido=primeiroNome+'ENTREELAS';
-  const cupomFinal=prompt(`Aceitar ${nome} como afiliada?
-
-Cupom gerado automaticamente — edite se desejar:`,cupomSugerido);
+  const cupomFinal=prompt(`Aceitar ${nome} como afiliada?\n\nCupom gerado automaticamente — edite se desejar:`,cupomSugerido);
   if(cupomFinal===null)return;
   const cupom=cupomFinal.toUpperCase().trim();
   if(!cupom){alert('O cupom não pode estar vazio.');return;}
+
   loading(true);
+
+  // Verificar cupom duplicado
   const {data:cupomExiste}=await _sb.from('afiliadas').select('id').eq('cupom',cupom).single().catch(()=>({data:null}));
   if(cupomExiste){loading(false);alert('Cupom já em uso. Tente outro.');return;}
+
+  // Promover candidata para afiliada
   const {error}=await _sb.from('afiliadas').update({
-    tipo:'afiliada',status:'ativo',cupom,data_aceite:new Date().toISOString()
+    tipo:'afiliada',
+    status:'ativo',
+    cupom:cupom,
+    data_aceite:new Date().toISOString()
   }).eq('id',id);
-  if(error){loading(false);alert('Erro: '+error.message);return;}
+  if(error){loading(false);alert('Erro ao aceitar: '+error.message);return;}
+
+  // Enviar convite por e-mail
   const resp=await fetch(`${SUPABASE_URL}/functions/v1/enviar-convite`,{
     method:'POST',
     headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON_KEY}`},
@@ -1560,10 +1575,15 @@ Cupom gerado automaticamente — edite se desejar:`,cupomSugerido);
   });
   const r=await resp.json();
   loading(false);
-  alert(r.error?`Afiliada aceita! Erro no e-mail: ${r.error}`:`✅ ${nome} aceita! Convite enviado para ${email}.`);
+
+  alert(r.error
+    ? `✅ ${nome} aceita como afiliada!\n\n⚠️ Erro no e-mail: ${r.error}\nUse "Reenviar" na lista para tentar novamente.`
+    : `✅ ${nome} aceita como afiliada!\nConvite enviado para ${email}.`
+  );
   await renderTabelaAfiliadas();
   await renderDashboard();
 }
+
 
 async function recusarCandidata(id,nome){
   if(!sessao.perfil||!['admin','equipe'].includes(sessao.perfil.role))return;
@@ -2279,6 +2299,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.5.5</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.5.7</div>
 </body>
 </html>
