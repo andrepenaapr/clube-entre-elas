@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.3">
+<meta name="app-version" content="1.6.4">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -2078,6 +2078,13 @@ async function renderAfiliada(afiliadaId){
 
 
 async function renderRanking(afiliadaId){
+  // BUGFIX v1.6.3 (pré-existente): esta função era chamada sempre no login,
+  // mesmo quando a afiliada não estava na página de Ranking — e como o elemento
+  // 'lista-ranking' só existe quando essa página está aberta, o innerHTML em
+  // elemento nulo quebrava o restante do carregamento da sessão. Agora sai
+  // silenciosamente se a página de Ranking não estiver na tela.
+  const listaEl=document.getElementById('lista-ranking');
+  if(!listaEl) return;
   // BUGFIX v1.6.3: ranking era acumulado desde sempre; agora é mensal (mês atual),
   // consistente com a comissão mostrada no painel e com o fechamento do admin.
   const hojeRk=new Date();
@@ -2152,8 +2159,12 @@ async function renderRegrasAf(){
 }
 
 async function renderNotifAf(afiliadaId){
-  const {data:notifs}=await _sb.from('notificacoes').select('*').or(`dest.eq.todas,dest.eq.${afiliadaId}`).order('created_at',{ascending:false});
+  // BUGFIX v1.6.3 (pré-existente): mesmo problema do renderRanking — essa função
+  // era chamada sempre no login, mas 'lista-notificacoes-af' só existe quando a
+  // página de Avisos está aberta. Agora sai silenciosamente se não estiver nela.
   const lista=document.getElementById('lista-notificacoes-af');
+  if(!lista) return;
+  const {data:notifs}=await _sb.from('notificacoes').select('*').or(`dest.eq.todas,dest.eq.${afiliadaId}`).order('created_at',{ascending:false});
   lista.innerHTML=!(notifs||[]).length
     ?'<div style="color:var(--cinza-claro);font-size:13px;padding:1rem">Nenhum aviso por enquanto.</div>'
     :(notifs||[]).map(n=>`<div class="notif-af-item"><div class="notif-af-dot"></div><div><div class="notif-af-titulo">${escapeHtml(n.titulo)}</div><div class="notif-af-texto">${escapeHtml(n.texto)}</div><div class="notif-af-data">${fmtData(n.data)}</div></div></div>`).join('');
@@ -2226,39 +2237,52 @@ async function abrirPopupRegras(){
 async function confirmarLeituraRegras(){
   if(!sessao.perfil||!sessao.afiliada) return;
   loading(true);
+  // BUGFIX v1.6.3: a função inteira agora está em try/finally — qualquer erro
+  // inesperado no meio do caminho não deixa mais a tela presa em "Carregando".
+  try{
+    const agora = new Date();
+    const dataHora = agora.toISOString();
 
-  const agora = new Date();
-  const dataHora = agora.toISOString();
+    // Buscar versões atuais
+    const {data:docs} = await _sb.from('configuracoes').select('chave,valor')
+      .in('chave',['data_pdf_regras','data_pdf_contrato','url_pdf_regras','url_pdf_contrato']);
+    const cfg={};
+    (docs||[]).forEach(r=>cfg[r.chave]=r.valor);
 
-  // Buscar versões atuais
-  const {data:docs} = await _sb.from('configuracoes').select('chave,valor')
-    .in('chave',['data_pdf_regras','data_pdf_contrato','url_pdf_regras','url_pdf_contrato']);
-  const cfg={};
-  (docs||[]).forEach(r=>cfg[r.chave]=r.valor);
+    // Registrar aceite na tabela de aceites
+    // BUGFIX v1.6.3 (pré-existente): .catch() não existe no objeto retornado pelo
+    // Supabase nessa versão da lib — isso lançava um erro não tratado que travava
+    // a função antes de chegar em loading(false), prendendo a tela em "Carregando".
+    try{
+      await _sb.from('aceites_documentos').insert({
+        afiliada_id: sessao.afiliada.id,
+        user_id: sessao.usuario.id,
+        data_aceite: dataHora,
+        versao_regras: (cfg.versao_pdf_regras||cfg.data_pdf_regras||'1.0'),
+        versao_contrato: (cfg.versao_pdf_contrato||cfg.data_pdf_contrato||'1.0'),
+        url_regras: cfg.url_pdf_regras||null,
+        url_contrato: cfg.url_pdf_contrato||null,
+      });
+    }catch(e){ console.warn('aceite:', e); }
 
-  // Registrar aceite na tabela de aceites
-  await _sb.from('aceites_documentos').insert({
-    afiliada_id: sessao.afiliada.id,
-    user_id: sessao.usuario.id,
-    data_aceite: dataHora,
-    versao_regras: (cfg.versao_pdf_regras||cfg.data_pdf_regras||'1.0'),
-    versao_contrato: (cfg.versao_pdf_contrato||cfg.data_pdf_contrato||'1.0'),
-    url_regras: cfg.url_pdf_regras||null,
-    url_contrato: cfg.url_pdf_contrato||null,
-  }).catch(e=>console.warn('aceite:',e));
+    // Marcar como lido no perfil
+    await _sb.from('perfis').update({
+      regras_lidas: true,
+      data_aceite_regras: dataHora,
+      versao_regras_aceita: (cfg.versao_pdf_regras||cfg.data_pdf_regras||'1.0'),
+      versao_contrato_aceita: (cfg.versao_pdf_contrato||cfg.data_pdf_contrato||'1.0'),
+    }).eq('user_id',sessao.usuario.id);
 
-  // Marcar como lido no perfil
-  await _sb.from('perfis').update({
-    regras_lidas: true,
-    data_aceite_regras: dataHora,
-    versao_regras_aceita: (cfg.versao_pdf_regras||cfg.data_pdf_regras||'1.0'),
-    versao_contrato_aceita: (cfg.versao_pdf_contrato||cfg.data_pdf_contrato||'1.0'),
-  }).eq('user_id',sessao.usuario.id);
-
-  loading(false);
-  const popup = document.getElementById('popup-regras');
-  popup.classList.remove('aberto');
-  popup.style.display = 'none';
+    if(sessao.perfil){
+      sessao.perfil.regras_lidas = true;
+    }
+  }catch(e){
+    console.error('confirmarLeituraRegras:', e);
+  }finally{
+    loading(false);
+    const popup = document.getElementById('popup-regras');
+    if(popup){ popup.classList.remove('aberto'); popup.style.display = 'none'; }
+  }
 }
 
 // Fechar modal clicando fora
@@ -2270,6 +2294,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.3</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.4</div>
 </body>
 </html>
