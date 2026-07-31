@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.5">
+<meta name="app-version" content="1.6.7">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -598,7 +598,7 @@ tr:hover td{background:#faf7f2}
 
 // CONTEÚDO DAS PÁGINAS
 const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Dashboard</div>\n          <div class=\"secao-desc\" id=\"desc-dashboard\">Visão geral do Clube Entre Elas</div>\n        </div>\n        <select id=\"sel-mes-dashboard\" onchange=\"renderDashboard()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;align-self:center\"></select>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Cupom</th><th>Total Vendido</th><th>Comissão</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Candidatas e afiliadas do clube. Candidatas aguardam aprovacao.</div>\n        </div>\n        <button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button>\n      </div>\n      <div class=\"tabela-wrap\" style=\"overflow-x:auto\">\n        <table style=\"width:100%;min-width:900px\">\n          <thead><tr>\n            <th>#</th><th>Nome</th><th>Tipo</th><th>Cupom</th><th>E-mail</th>\n            <th>Vendas</th><th>Status</th><th>Pix</th><th>Banco</th><th>Ag.</th><th>Conta</th>\n            <th>Aceite Regras</th><th>Aceite Contrato</th><th>Acoes</th>\n          </tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('input-importar').click()\">&#8593; Importar Planilha</button>\n          <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n        </div>\n      </div>\n      <div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\" id=\"desc-comissoes\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras e Documentos</div>\n      <div class=\"secao-desc\">Faça upload dos PDFs e configure o link do vídeo tutorial. O \"Notificar Afiliadas\" envia um aviso para as afiliadas já cadastradas sobre atualização de regras.</div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">LIVRO DE REGRAS</div>\n          <div id=\"info-pdf-regras\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-regras\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-regras').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-regras\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'regras')\">\n          <div id=\"aviso-upload-regras\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">CONTRATO</div>\n          <div id=\"info-pdf-contrato\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-contrato\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-contrato').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-contrato\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'contrato')\">\n          <div id=\"aviso-upload-contrato\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">VÍDEO TUTORIAL</div>\n        <div class=\"form-campo\" style=\"max-width:600px\">\n          <label>Link do YouTube</label>\n          <input type=\"url\" id=\"input-link-video\" placeholder=\"https://www.youtube.com/watch?v=...\" autocomplete=\"off\">\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"salvarLinkVideo()\">Salvar Link</button>\n        <div id=\"aviso-video\" style=\"display:none;margin-top:8px;font-size:13px;color:#5ab88a\">✅ Link salvo!</div>\n      </div>\n      <div id=\"aviso-regras\" style=\"display:none;margin-top:-1rem;margin-bottom:1.5rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">\n        ✅ Afiliadas verão o popup de aceite no próximo acesso.\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">HISTÓRICO DE ATUALIZAÇÕES</div>\n        <table style=\"width:100%\">\n          <thead><tr><th>Tipo</th><th>Arquivo</th><th>Data</th><th>Hora</th><th>Responsável</th></tr></thead>\n          <tbody id=\"tabela-historico-docs\"></tbody>\n        </table>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n        <div id=\"aviso-notif\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">✅ Notificação enviada!</div>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
-const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\" id=\"desc-ranking-af\">Classificação por volume de vendas do mês atual</div>\n      <div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras e Contrato</div>\n      <div id=\"regras-af-conteudo\"></div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem\" id=\"pdfs-af-wrap\" style=\"display:none\">\n        <div id=\"pdf-regras-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Livro de Regras</div>\n          <div id=\"pdf-regras-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-regras-af\"></span></div>\n        </div>\n        <div id=\"pdf-contrato-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Contrato</div>\n          <div id=\"pdf-contrato-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-contrato-af\"></span></div>\n        </div>\n      </div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"\" autocomplete=\"new-password\"><div style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\">Mínimo 8 caracteres, uma letra e um número.</div></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
+const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\" id=\"desc-ranking-af\">Classificação por volume de vendas do mês atual</div>\n      <div style=\"display:flex;gap:8px;margin-bottom:1rem\"><button class=\"btn-acao\" id=\"btn-ranking-atual\" onclick=\"trocarMesRanking('atual')\">Mês Atual</button><button class=\"btn-acao secundario\" id=\"btn-ranking-anterior\" onclick=\"trocarMesRanking('anterior')\">Mês Anterior</button></div><div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras e Contrato</div>\n      <div id=\"regras-af-conteudo\"></div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem\" id=\"pdfs-af-wrap\" style=\"display:none\">\n        <div id=\"pdf-regras-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Livro de Regras</div>\n          <div id=\"pdf-regras-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-regras-af\"></span></div>\n        </div>\n        <div id=\"pdf-contrato-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Contrato</div>\n          <div id=\"pdf-contrato-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-contrato-af\"></span></div>\n        </div>\n      </div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"\" autocomplete=\"new-password\"><div style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\">Mínimo 8 caracteres, uma letra e um número.</div></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
 
 // ============================================================
 // CONFIGURAÇÃO SUPABASE — PREENCHA AQUI APÓS CRIAR SUA CONTA
@@ -1824,12 +1824,15 @@ async function apagarVenda(id, pedido){
 
 function exportarPlanilha(){
   if(typeof XLSX === 'undefined'){ alert('Aguarde o carregamento da biblioteca XLSX.'); return; }
+  // FEATURE v1.6.6: coluna PRODUTO adicionada (opcional) — se vier preenchida na
+  // planilha importada, usa o nome real do produto em vez do texto genérico
+  // "Importação".
   const ws = XLSX.utils.aoa_to_sheet([
-    ['PEDIDO','DATA','HORA','SUBTOTAL DOS PRODUTOS','CUPOM DE DESCONTO'],
-    ['12345','01/06/2026','14:30','150.00','CUPOM123'],
+    ['PEDIDO','DATA','HORA','PRODUTO','SUBTOTAL DOS PRODUTOS','CUPOM DE DESCONTO'],
+    ['12345','01/06/2026','14:30','Nome do Produto','150.00','CUPOM123'],
   ]);
   // Largura das colunas
-  ws['!cols'] = [{wch:12},{wch:12},{wch:8},{wch:22},{wch:22}];
+  ws['!cols'] = [{wch:12},{wch:12},{wch:8},{wch:26},{wch:22},{wch:22}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vendas');
   XLSX.writeFile(wb, 'modelo_vendas_entre_elas.xlsx');
@@ -1862,6 +1865,10 @@ async function importarPlanilha(input){
     const colHora   = header.findIndex(h=>h.includes('HORA'));
     const colValor  = header.findIndex(h=>h.includes('SUBTOTAL')||h.includes('VALOR'));
     const colCupom  = header.findIndex(h=>h.includes('CUPOM'));
+    // FEATURE v1.6.6: coluna PRODUTO opcional. Cuidado pra não casar com
+    // "SUBTOTAL DOS PRODUTOS" (que contém a palavra PRODUTOS) — por isso o
+    // filtro exclui colunas que também tenham SUBTOTAL ou VALOR no nome.
+    const colProduto = header.findIndex(h=>h.includes('PRODUTO')&&!h.includes('SUBTOTAL')&&!h.includes('VALOR'));
 
     if(colPedido<0||colData<0||colValor<0||colCupom<0){
       throw new Error('Colunas obrigatórias não encontradas. Use o modelo exportado.');
@@ -1885,6 +1892,7 @@ async function importarPlanilha(input){
       const hora    = colHora>=0 ? String(row[colHora]||'').trim() : '';
       const valorRaw= row[colValor];
       const cupom   = String(row[colCupom]||'').toUpperCase().trim();
+      const produtoNome = colProduto>=0 ? String(row[colProduto]||'').trim() : '';
 
       if(!cupom){ semCupom++; continue; }
       const afiliadaId = mapaCupons[cupom];
@@ -1915,7 +1923,7 @@ async function importarPlanilha(input){
         cupom: cupom,
         afiliada_id: afiliadaId,
         status: 'aprovado',
-        produto: 'Importação'
+        produto: produtoNome || 'Importação'
       });
       if(pedido) pedidosCad.add(pedido);
       inseridos++;
@@ -1985,21 +1993,68 @@ async function salvarVenda(){
 }
 
 // ---- Modal Faixas ----
+// FEATURE v1.6.6: faixas de comissão agora são totalmente dinâmicas — dá pra
+// editar o valor mínimo de cada faixa, adicionar novas faixas e remover
+// faixas existentes (antes só dava pra editar descrição e %, com um número
+// fixo de faixas).
+let faixasEditando = [];
+
 function abrirModalFaixas(){
-  document.getElementById('faixas-form').innerHTML=configLocal.faixas.map((f,i)=>`
-    <div style="display:grid;grid-template-columns:1fr 90px;gap:12px;margin-bottom:12px;align-items:end">
-      <div class="form-campo"><label>Descrição</label><input type="text" id="f-label-${i}" value="${f.label}"></div>
-      <div class="form-campo"><label>%</label><input type="number" id="f-pct-${i}" value="${f.pct}" min="0" max="100" step="0.1"></div>
-    </div>
-  `).join('');
+  faixasEditando = JSON.parse(JSON.stringify(configLocal.faixas));
+  renderFormFaixas();
   document.getElementById('modal-faixas').classList.add('aberto');
 }
+
+function renderFormFaixas(){
+  const form=document.getElementById('faixas-form');
+  form.innerHTML = faixasEditando.map((f,i)=>`
+    <div style="display:grid;grid-template-columns:1fr 130px 80px 32px;gap:10px;margin-bottom:12px;align-items:end">
+      <div class="form-campo"><label>Descrição</label><input type="text" id="f-label-${i}" value="${escapeHtml(f.label)}"></div>
+      <div class="form-campo"><label>Valor mínimo (R$)</label><input type="number" id="f-min-${i}" value="${f.min}" min="0" step="0.01"></div>
+      <div class="form-campo"><label>%</label><input type="number" id="f-pct-${i}" value="${f.pct}" min="0" max="100" step="0.1"></div>
+      <button type="button" onclick="removerFaixa(${i})" title="Remover faixa" style="height:38px;border:1px solid var(--border);border-radius:8px;background:#fff;color:#c0392b;cursor:pointer;font-size:18px;line-height:1">&times;</button>
+    </div>
+  `).join('') + `<button type="button" class="btn-acao secundario" onclick="adicionarFaixa()" style="margin-top:4px">+ Adicionar Faixa</button>`;
+}
+
+function coletarFaixasDoForm(){
+  faixasEditando.forEach((f,i)=>{
+    const labelEl=document.getElementById('f-label-'+i);
+    const minEl=document.getElementById('f-min-'+i);
+    const pctEl=document.getElementById('f-pct-'+i);
+    if(labelEl) f.label=labelEl.value.trim();
+    if(minEl) f.min=parseFloat(minEl.value)||0;
+    if(pctEl) f.pct=parseFloat(pctEl.value)||0;
+  });
+}
+
+function adicionarFaixa(){
+  coletarFaixasDoForm();
+  faixasEditando.push({label:'Nova faixa', min:0, pct:0});
+  renderFormFaixas();
+}
+
+function removerFaixa(i){
+  if(faixasEditando.length<=1){ alert('É necessário manter pelo menos uma faixa.'); return; }
+  coletarFaixasDoForm();
+  faixasEditando.splice(i,1);
+  renderFormFaixas();
+}
+
 async function salvarFaixas(){
   if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
-  configLocal.faixas.forEach((f,i)=>{
-    f.label=document.getElementById('f-label-'+i).value;
-    f.pct=parseFloat(document.getElementById('f-pct-'+i).value)||f.pct;
-  });
+  coletarFaixasDoForm();
+  if(faixasEditando.length===0){ alert('Adicione pelo menos uma faixa.'); return; }
+  for(const f of faixasEditando){
+    if(!f.label){ alert('Preencha a descrição de todas as faixas.'); return; }
+    if(f.min<0){ alert('Valor mínimo não pode ser negativo.'); return; }
+    if(f.pct<0||f.pct>100){ alert('A porcentagem deve estar entre 0 e 100.'); return; }
+  }
+  const mins = faixasEditando.map(f=>f.min);
+  if(new Set(mins).size !== mins.length){ alert('Duas faixas não podem ter o mesmo valor mínimo.'); return; }
+
+  faixasEditando.sort((a,b)=>a.min-b.min);
+  configLocal.faixas = faixasEditando;
   loading(true);
   await _sb.from('configuracoes').upsert({chave:'faixas',valor:JSON.stringify(configLocal.faixas)});
   fecharModal('modal-faixas');
@@ -2027,7 +2082,13 @@ function mudarPagAf(pag,btn){
   }
   // Re-renderizar dados da aba ao trocar
   if(!sessao.afiliada) return;
-  if(pag==='ranking') renderRanking(sessao.afiliada.id);
+  // BUGFIX v1.6.6 (pré-existente): a página "Meu Painel" tem texto de placeholder
+  // fixo no HTML (ex: "Ana Silva") usado só de exemplo no design. Antes, ao voltar
+  // pra essa aba depois de visitar outra, esse placeholder nunca era substituído
+  // pelos dados reais da afiliada logada — mostrando nome/cupom errados e as
+  // estatísticas de vendas em branco até a página ser recarregada (F5).
+  if(pag==='painel') renderAfiliada(sessao.afiliada.id);
+  else if(pag==='ranking') renderRanking(sessao.afiliada.id);
   else if(pag==='regras-af') renderRegrasAf();
   else if(pag==='notificacoes-af') renderNotifAf(sessao.afiliada.id);
   else if(pag==='minha-conta') renderMinhaContaDados(sessao.afiliada);
@@ -2110,6 +2171,14 @@ async function renderAfiliada(afiliadaId){
 
 
 
+// FEATURE v1.6.6: Ranking agora permite alternar entre mês atual e mês anterior.
+let rankingMesSelecionado = 'atual';
+
+function trocarMesRanking(mes){
+  rankingMesSelecionado = mes;
+  if(sessao.afiliada) renderRanking(sessao.afiliada.id);
+}
+
 async function renderRanking(afiliadaId){
   // BUGFIX v1.6.3 (pré-existente): esta função era chamada sempre no login,
   // mesmo quando a afiliada não estava na página de Ranking — e como o elemento
@@ -2118,14 +2187,21 @@ async function renderRanking(afiliadaId){
   // silenciosamente se a página de Ranking não estiver na tela.
   const listaEl=document.getElementById('lista-ranking');
   if(!listaEl) return;
-  // BUGFIX v1.6.3: ranking era acumulado desde sempre; agora é mensal (mês atual),
-  // consistente com a comissão mostrada no painel e com o fechamento do admin.
+  // BUGFIX v1.6.3: ranking era acumulado desde sempre; agora é mensal, e desde
+  // a v1.6.6 dá pra alternar entre mês atual e mês anterior.
   const hojeRk=new Date();
-  const dataInicioRk=`${hojeRk.getFullYear()}-${String(hojeRk.getMonth()+1).padStart(2,'0')}-01`;
-  const dataFimRk=new Date(hojeRk.getFullYear(),hojeRk.getMonth()+1,0).toISOString().split('T')[0];
+  const refRk = rankingMesSelecionado==='anterior'
+    ? new Date(hojeRk.getFullYear(), hojeRk.getMonth()-1, 1)
+    : hojeRk;
+  const dataInicioRk=`${refRk.getFullYear()}-${String(refRk.getMonth()+1).padStart(2,'0')}-01`;
+  const dataFimRk=new Date(refRk.getFullYear(),refRk.getMonth()+1,0).toISOString().split('T')[0];
   const mesesRk=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const descRk=document.getElementById('desc-ranking-af');
-  if(descRk) descRk.textContent=`Classificação por volume de vendas — ${mesesRk[hojeRk.getMonth()]} ${hojeRk.getFullYear()}`;
+  if(descRk) descRk.textContent=`Classificação por volume de vendas — ${mesesRk[refRk.getMonth()]} ${refRk.getFullYear()}`;
+  const btnAtual=document.getElementById('btn-ranking-atual');
+  const btnAnterior=document.getElementById('btn-ranking-anterior');
+  if(btnAtual) btnAtual.className = 'btn-acao' + (rankingMesSelecionado==='atual' ? '' : ' secundario');
+  if(btnAnterior) btnAnterior.className = 'btn-acao' + (rankingMesSelecionado==='anterior' ? '' : ' secundario');
   const [{data:afiliadas},{data:vendas}]=await Promise.all([
     _sb.from('afiliadas').select('id,nome,cupom').eq('status','ativo'),
     _sb.from('vendas').select('afiliada_id,valor').eq('status','aprovado').gte('data',dataInicioRk).lte('data',dataFimRk),
@@ -2327,6 +2403,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.5</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.7</div>
 </body>
 </html>
