@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.8">
+<meta name="app-version" content="1.6.9">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -577,11 +577,11 @@ tr:hover td{background:#faf7f2}
 
 <!-- FEATURE v1.6.8 (P3): popup de detalhe da notificação da afiliada -->
 <div class="modal-overlay" id="modal-notif-af">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-titulo" id="popup-notif-titulo"></div>
-    <div style="font-size:11px;color:var(--cinza-medio);margin-bottom:12px" id="popup-notif-data"></div>
-    <div style="font-size:14px;line-height:1.6;white-space:pre-wrap" id="popup-notif-texto"></div>
-    <div id="popup-notif-anexo-wrap" style="display:none;margin-top:14px"></div>
+  <div class="modal" style="max-width:640px;min-height:320px">
+    <div class="modal-titulo" id="popup-notif-titulo" style="font-size:22px"></div>
+    <div style="font-size:12px;color:var(--cinza-medio);margin-bottom:16px" id="popup-notif-data"></div>
+    <div style="font-size:15px;line-height:1.7;white-space:pre-wrap" id="popup-notif-texto"></div>
+    <div id="popup-notif-anexo-wrap" style="display:none;margin-top:18px"></div>
     <div class="modal-acoes">
       <button class="btn-salvar" onclick="fecharModal('modal-notif-af')">Fechar</button>
     </div>
@@ -2373,6 +2373,20 @@ async function atualizarBadgeNotifAfLogin(afiliadaId){
   }catch(e){ console.warn('badge notif:', e); }
 }
 
+// FEATURE/BUGFIX v1.6.9: separa "montar a lista a partir do cache" de
+// "buscar dados novos no banco". Antes, marcar como lida chamava
+// renderNotifAf() de novo, que refaz a consulta ao Supabase — e como o
+// upsert de leitura ainda não tinha terminado nesse momento, a consulta
+// trazia o status "não lida" de volta e desfazia a atualização otimista.
+// Por isso o indicador só sumia depois de fechar e abrir outra notificação.
+function renderListaNotifsAfDoCache(){
+  const lista=document.getElementById('lista-notificacoes-af');
+  if(!lista) return;
+  lista.innerHTML=!notifsAfCache.length
+    ?'<div style="color:var(--cinza-claro);font-size:13px;padding:1rem">Nenhum aviso por enquanto.</div>'
+    :notifsAfCache.map(n=>`<div class="notif-af-item" style="cursor:pointer" onclick="abrirNotificacaoAf('${n.id}')"><div class="notif-af-dot${n.lida?' lida':''}"></div><div><div class="notif-af-titulo">${escapeHtml(n.titulo)}${n.anexo_url?' 📎':''}${n.lida?'':' <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:0.05em">● NOVO</span>'}</div><div class="notif-af-texto">${escapeHtml(n.texto)}</div><div class="notif-af-data">${fmtData(n.data)}</div></div></div>`).join('');
+}
+
 async function renderNotifAf(afiliadaId){
   // BUGFIX v1.6.3 (pré-existente): mesmo problema do renderRanking — essa função
   // era chamada sempre no login, mas 'lista-notificacoes-af' só existe quando a
@@ -2381,9 +2395,7 @@ async function renderNotifAf(afiliadaId){
   if(!lista) return;
   await calcularNotifsAf(afiliadaId);
   atualizarBadgeNotifAf();
-  lista.innerHTML=!notifsAfCache.length
-    ?'<div style="color:var(--cinza-claro);font-size:13px;padding:1rem">Nenhum aviso por enquanto.</div>'
-    :notifsAfCache.map(n=>`<div class="notif-af-item" style="cursor:pointer" onclick="abrirNotificacaoAf('${n.id}')"><div class="notif-af-dot${n.lida?' lida':''}"></div><div><div class="notif-af-titulo">${escapeHtml(n.titulo)}${n.anexo_url?' 📎':''}${n.lida?'':' <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:0.05em">● NOVO</span>'}</div><div class="notif-af-texto">${escapeHtml(n.texto)}</div><div class="notif-af-data">${fmtData(n.data)}</div></div></div>`).join('');
+  renderListaNotifsAfDoCache();
 }
 
 async function abrirNotificacaoAf(id){
@@ -2408,8 +2420,7 @@ async function abrirNotificacaoAf(id){
   if(!n.lida && sessao.afiliada){
     n.lida = true; // atualização otimista, pra sumir o indicador na hora
     atualizarBadgeNotifAf();
-    const listaEl=document.getElementById('lista-notificacoes-af');
-    if(listaEl) renderNotifAf(sessao.afiliada.id);
+    renderListaNotifsAfDoCache();
     try{
       await _sb.from('notificacoes_lidas').upsert({notificacao_id:id, afiliada_id:sessao.afiliada.id, lida_em:new Date().toISOString()});
     }catch(e){ console.warn('marcar notificação como lida:', e); }
@@ -2540,6 +2551,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.8</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.9</div>
 </body>
 </html>
