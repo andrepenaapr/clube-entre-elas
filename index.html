@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.9">
+<meta name="app-version" content="1.6.11">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -202,7 +202,7 @@ tr:hover td{background:#faf7f2}
 
 /* Notificações afiliada */
 .notif-af-item{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;display:flex;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
-.notif-af-dot{width:8px;height:8px;border-radius:50%;background:var(--creme-escuro);flex-shrink:0;margin-top:4px}
+.notif-af-dot{width:8px;height:8px;border-radius:50%;background:#c0392b;flex-shrink:0;margin-top:4px}
 .notif-af-dot.lida{background:#3a3a3a}
 .notif-af-body{}
 .notif-af-titulo{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
@@ -686,12 +686,61 @@ let configLocal = {
   regrasPendentes: false,
 };
 
-function getFaixaAtual(total){
-  return configLocal.faixas.slice().sort((a,b)=>b.min-a.min).find(f=>total>=f.min)||configLocal.faixas[0];
+// FEATURE v1.6.10 (P9): faixas de comissão agora têm histórico de vigência —
+// alterar uma faixa não recalcula vendas antigas com a regra nova. Cada uma
+// dessas funções aceita opcionalmente um array de faixas específico (de uma
+// vigência antiga); se não for passado, usa o conjunto atual (configLocal.faixas).
+function getFaixaAtual(total, faixasArr){
+  const arr = faixasArr || configLocal.faixas;
+  return arr.slice().sort((a,b)=>b.min-a.min).find(f=>total>=f.min)||arr[0];
 }
-function calcComissao(total){return total*getFaixaAtual(total).pct/100;}
-function pctComissao(total){return getFaixaAtual(total).pct;}
-function labelFaixa(total){return getFaixaAtual(total).label;}
+function calcComissao(total, faixasArr){return total*getFaixaAtual(total, faixasArr).pct/100;}
+function pctComissao(total, faixasArr){return getFaixaAtual(total, faixasArr).pct;}
+function labelFaixa(total, faixasArr){return getFaixaAtual(total, faixasArr).label;}
+
+// historicoFaixas: lista de {faixas, vigente_desde}, ordenada do mais antigo
+// pro mais recente. Carregada em carregarConfig().
+let historicoFaixas = [];
+
+// Devolve o array de faixas que estava valendo numa determinada data (string
+// 'YYYY-MM-DD'). Se não houver histórico (sistema recém-migrado, sem nenhuma
+// alteração de faixa registrada ainda), cai para as faixas atuais.
+function faixasVigentesEm(dataStr){
+  if(!historicoFaixas.length) return configLocal.faixas;
+  let aplicavel = historicoFaixas[0].faixas;
+  for(const h of historicoFaixas){
+    if(h.vigente_desde <= dataStr) aplicavel = h.faixas;
+    else break;
+  }
+  return aplicavel;
+}
+
+// Recebe uma lista de vendas (cada uma com .valor e .data) e calcula a
+// comissão total respeitando a regra vigente na data de CADA venda — agrupa
+// as vendas por vigência, soma cada grupo, aplica a faixa daquele grupo, e
+// soma as comissões. Isso garante que uma alteração de faixa não afeta o
+// cálculo de vendas anteriores à data da alteração.
+function calcularComissaoPeriodo(vendas){
+  const grupos = new Map(); // chave: vigente_desde do grupo -> {faixas, total}
+  for(const v of (vendas||[])){
+    const dataV = v.data || '9999-12-31';
+    let entrada = historicoFaixas.length ? historicoFaixas[0] : {faixas:configLocal.faixas, vigente_desde:'0001-01-01'};
+    for(const h of historicoFaixas){ if(h.vigente_desde <= dataV) entrada = h; else break; }
+    const chave = entrada.vigente_desde;
+    if(!grupos.has(chave)) grupos.set(chave, {faixas: entrada.faixas, total: 0});
+    grupos.get(chave).total += (+v.valor);
+  }
+  let totalVendido = 0, totalComissao = 0;
+  for(const {faixas, total} of grupos.values()){
+    totalVendido += total;
+    totalComissao += calcComissao(total, faixas);
+  }
+  return {
+    totalVendido,
+    totalComissao,
+    misto: grupos.size > 1, // true = a venda do período cruzou mais de uma vigência de faixas
+  };
+}
 
 // ===== SEGURANÇA: CONTROLE DE TENTATIVAS =====
 const loginSec = {
@@ -867,6 +916,17 @@ async function carregarConfig(){
       if(row.chave === 'regras_pendentes') configLocal.regrasPendentes = row.valor === 'true';
     });
   }
+  // FEATURE v1.6.10 (P9): carrega o histórico de vigência das faixas, usado
+  // por calcularComissaoPeriodo() pra não recalcular vendas antigas com a
+  // regra nova. Se a tabela não existir ainda (antes de rodar o SQL de
+  // configuração), simplesmente ignora e o sistema usa só as faixas atuais
+  // pra tudo, como já funcionava antes desta versão.
+  try{
+    const {data:hist, error:errHist} = await _sb.from('historico_faixas').select('faixas,vigente_desde').order('vigente_desde',{ascending:true});
+    if(!errHist && hist){
+      historicoFaixas = hist.map(h=>({faixas: typeof h.faixas==='string'?JSON.parse(h.faixas):h.faixas, vigente_desde: h.vigente_desde}));
+    }
+  }catch(e){ console.warn('historico_faixas indisponível ainda:', e); }
 }
 
 async function carregarSessao(user){
@@ -1040,9 +1100,12 @@ async function renderDashboard(){
   ]);
   const ativas=(afiliadas||[]).filter(a=>a.status==='ativo').length;
   const totalVendas=(vendas||[]).reduce((s,v)=>s+(+v.valor),0);
+  // FEATURE v1.6.10 (P9): usa calcularComissaoPeriodo (respeita a data de cada
+  // venda contra o histórico de faixas), em vez de aplicar a faixa atual a
+  // tudo de uma vez.
   const totalCom=(afiliadas||[]).filter(a=>a.status==='ativo').reduce((s,a)=>{
-    const tv=(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((x,v)=>x+(+v.valor),0);
-    return s+calcComissao(tv);
+    const vendasA=(vendas||[]).filter(v=>v.afiliada_id===a.id);
+    return s+calcularComissaoPeriodo(vendasA).totalComissao;
   },0);
   const n=(vendas||[]).length;
   const statsEl = document.getElementById('stats-admin');
@@ -1053,8 +1116,9 @@ async function renderDashboard(){
     <div class="stat-card"><div class="stat-label">Ticket Médio</div><div class="stat-value">${n>0?fmtBRL(totalVendas/n):'R$ 0,00'}</div><div class="stat-sub">Por venda aprovada</div></div>
   `;
   const ranking=(afiliadas||[]).filter(a=>a.status==='ativo').map(a=>{
-    const tv=(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0);
-    return{...a,tv};
+    const vendasA=(vendas||[]).filter(v=>v.afiliada_id===a.id);
+    const tv=vendasA.reduce((s,v)=>s+(+v.valor),0);
+    return{...a,tv,comissaoPeriodo:calcularComissaoPeriodo(vendasA).totalComissao};
   }).sort((a,b)=>b.tv-a.tv).slice(0,10);
   const topEl = document.getElementById('top-afiliadas');
   if(topEl) topEl.innerHTML=ranking.map((a,i)=>`
@@ -1063,7 +1127,7 @@ async function renderDashboard(){
       <td>${escapeHtml(a.nome)}</td>
       <td style="font-family:monospace;font-size:12px;color:var(--dourado)">${escapeHtml(a.cupom)}</td>
       <td>${fmtBRL(a.tv)}</td>
-      <td style="color:var(--dourado);font-weight:600">${fmtBRL(calcComissao(a.tv))}</td>
+      <td style="color:var(--dourado);font-weight:600">${fmtBRL(a.comissaoPeriodo)}</td>
     </tr>
   `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma venda no período.</td></tr>';
 }
@@ -1093,7 +1157,7 @@ async function renderTabelaAfiliadas(){
     const aceiteC     = a.versao_contrato_aceita  ? '<span class="badge ativo" title="'+fmtData(a.data_aceite_regras)+'">'+a.versao_contrato_aceita+'</span>'  : semAceite;
     const acoes = isCandidata
       ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Aceitar" onclick="aceitarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\',\'' + a.email + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Recusar" onclick="recusarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
-      : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Editar" onclick="editarAfiliada(\'' + a.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Reenviar convite" onclick="reenviarConvite(\'' + a.email + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
+      : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Editar" onclick="editarAfiliada(\'' + a.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Reenviar convite" onclick="reenviarConvite(\'' + a.email + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>  ' + (a.status==='ativo' ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Desativar" onclick="desativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="9" y2="15"/><line x1="15" y1="9" x2="15" y2="15"/></svg></button>' : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Reativar" onclick="reativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>') + '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
     return '<tr style="'+(isCandidata?'background:#fffbf0':'')+'"><td style="font-family:monospace;font-size:11px;color:var(--cinza-medio)">#'+(a.codigo||'-')+'</td><td style="font-weight:500">'+escapeHtml(a.nome)+'</td><td>'+badgeTipo+'</td><td style="font-family:monospace;font-size:12px;color:var(--dourado)">'+escapeHtml(a.cupom||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.email)+'</td><td>'+fmtBRL(tv)+'</td><td>'+badgeStatus+'</td><td style="font-size:12px">'+escapeHtml(a.pix||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.banco||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.agencia||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.conta||'-')+'</td><td style="font-size:11px">'+aceiteR+'</td><td style="font-size:11px">'+aceiteC+'</td><td><div style="display:flex;gap:4px">'+acoes+'</div></td></tr>';
   }).join('') || '<tr><td colspan="14" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma afiliada cadastrada.</td></tr>';
 }
@@ -1171,15 +1235,19 @@ async function renderComissoes(){
   (pagamentos||[]).forEach(p=>{ mapaPag[p.afiliada_id] = p; });
 
   fechEl.innerHTML = (afiliadas||[]).map(a=>{
-    const total = (vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0);
-    const comissao = calcComissao(total);
+    const vendasA = (vendas||[]).filter(v=>v.afiliada_id===a.id);
+    const total = vendasA.reduce((s,v)=>s+(+v.valor),0);
+    // FEATURE v1.6.10 (P9): calcula respeitando a regra vigente na data de
+    // cada venda, não a regra atual aplicada de uma vez ao total do mês.
+    const {totalComissao:comissao, misto} = calcularComissaoPeriodo(vendasA);
     const banco = a.banco&&a.conta ? `${a.banco} ag.${a.agencia} / ${a.conta}` : (a.pix ? `Pix: ${a.pix}` : '—');
     const pago = mapaPag[a.id];
+    const pctEfetivo = total>0 ? (comissao/total*100) : 0;
     return `<tr>
       <td><strong>${a.nome}</strong><div style="font-size:11px;color:var(--cinza-medio)">${a.cupom}</div></td>
       <td>${fmtBRL(total)}</td>
-      <td style="font-size:12px;color:var(--cinza-medio)">${labelFaixa(total)}</td>
-      <td style="font-weight:600">${pctComissao(total)}%</td>
+      <td style="font-size:12px;color:var(--cinza-medio)">${misto ? 'Múltiplas faixas no período' : labelFaixa(total)}</td>
+      <td style="font-weight:600">${misto ? pctEfetivo.toFixed(1)+'%*' : pctComissao(total)+'%'}</td>
       <td style="color:var(--dourado);font-weight:700;font-size:16px">${fmtBRL(comissao)}</td>
       <td style="font-size:12px;color:var(--cinza-medio)">${banco}</td>
       <td>
@@ -1652,6 +1720,20 @@ async function desativarAfiliada(id,nome){
     // checagem do sistema (só 'ativo'/'inativo'/'pendente' são tratados) — o badge
     // ficava mostrando "Pendente" incorretamente para quem fosse desativada.
     await _sb.from('afiliadas').update({status:'inativo'}).eq('id',id);
+    await renderTabelaAfiliadas();
+    await renderDashboard();
+  }catch(e){ alert('Erro: '+traduzirErro(e.message)); }
+  finally{ loading(false); }
+}
+
+// FEATURE v1.6.9: botão de reativar, para desfazer a desativação (o botão de
+// desativar já existia na função acima, mas nenhum botão o chamava até agora).
+async function reativarAfiliada(id,nome){
+  if(!sessao.perfil||!['admin','equipe'].includes(sessao.perfil.role))return;
+  if(!confirm('Reativar '+nome+' no programa?'))return;
+  loading(true);
+  try{
+    await _sb.from('afiliadas').update({status:'ativo'}).eq('id',id);
     await renderTabelaAfiliadas();
     await renderDashboard();
   }catch(e){ alert('Erro: '+traduzirErro(e.message)); }
@@ -2131,6 +2213,25 @@ async function salvarFaixas(){
   configLocal.faixas = faixasEditando;
   loading(true);
   await _sb.from('configuracoes').upsert({chave:'faixas',valor:JSON.stringify(configLocal.faixas)});
+  // FEATURE v1.6.10 (P9): registra esta alteração no histórico, com a data de
+  // hoje como início de vigência. Vendas com data anterior a hoje continuam
+  // usando a regra anterior (ver calcularComissaoPeriodo). Se a tabela ainda
+  // não existir (SQL de configuração não rodado), avisa mas não impede salvar
+  // as faixas em si — só a proteção contra recálculo retroativo não funciona
+  // até a tabela ser criada.
+  const hojeStr = new Date().toISOString().split('T')[0];
+  try{
+    await _sb.from('historico_faixas').insert({
+      faixas: JSON.stringify(configLocal.faixas),
+      vigente_desde: hojeStr,
+      criado_por: sessao.usuario?.email || 'admin',
+    });
+    historicoFaixas.push({faixas: configLocal.faixas, vigente_desde: hojeStr});
+    historicoFaixas.sort((a,b)=> a.vigente_desde < b.vigente_desde ? -1 : 1);
+  }catch(e){
+    console.warn('historico_faixas indisponível:', e);
+    alert('As faixas foram salvas, mas o histórico de vigência não pôde ser registrado — provavelmente a tabela "historico_faixas" ainda não existe no banco. Veja o guia de configuração pra criar essa tabela; até lá, alterações de faixa afetam vendas antigas também.');
+  }
   fecharModal('modal-faixas');
   loading(false);
   await renderComissoes();
@@ -2185,8 +2286,10 @@ async function renderAfiliada(afiliadaId){
   const dataFimMesAf=new Date(hojeAf.getFullYear(),hojeAf.getMonth()+1,0).toISOString().split('T')[0];
   const aprovadasMes=aprovadas.filter(v=>v.data>=dataInicioMesAf && v.data<=dataFimMesAf);
   const totalVendido=aprovadasMes.reduce((s,v)=>s+(+v.valor),0);
-  const comissao=calcComissao(totalVendido);
-  const pct=pctComissao(totalVendido);
+  // FEATURE v1.6.10 (P9): calcula respeitando a regra vigente na data de cada
+  // venda, não a regra atual aplicada de uma vez ao total do mês.
+  const {totalComissao:comissao, misto:comissaoMista} = calcularComissaoPeriodo(aprovadasMes);
+  const pct = totalVendido>0 ? (comissao/totalVendido*100) : 0;
 
   // Progresso para próxima faixa
   const faixaAtual=getFaixaAtual(totalVendido);
@@ -2217,7 +2320,7 @@ async function renderAfiliada(afiliadaId){
     <div class="af-stat">
       <div class="af-stat-label">Comissão a Receber</div>
       <div class="af-stat-valor">${fmtBRL(comissao)}</div>
-      <div class="af-stat-detalhe">${pct}% — ${labelFaixa(totalVendido)}</div>
+      <div class="af-stat-detalhe">${comissaoMista ? pct.toFixed(1)+'% (múltiplas faixas no mês)' : pct.toFixed(1)+'% — '+labelFaixa(totalVendido)}</div>
     </div>
     <div class="af-stat">
       <div class="af-stat-label">Posição no Ranking</div>
@@ -2278,17 +2381,23 @@ async function renderRanking(afiliadaId){
   if(btnAnterior) btnAnterior.className = 'btn-acao' + (rankingMesSelecionado==='anterior' ? '' : ' secundario');
   const [{data:afiliadas},{data:vendas}]=await Promise.all([
     _sb.from('afiliadas').select('id,nome,cupom').eq('status','ativo'),
-    _sb.from('vendas').select('afiliada_id,valor').eq('status','aprovado').gte('data',dataInicioRk).lte('data',dataFimRk),
+    _sb.from('vendas').select('afiliada_id,valor,data').eq('status','aprovado').gte('data',dataInicioRk).lte('data',dataFimRk),
   ]);
-  const sorted=(afiliadas||[]).map(a=>({
-    ...a,
-    vendas:(vendas||[]).filter(v=>v.afiliada_id===a.id).reduce((s,v)=>s+(+v.valor),0)
-  })).sort((a,b)=>b.vendas-a.vendas);
+  const sorted=(afiliadas||[]).map(a=>{
+    const vendasA=(vendas||[]).filter(v=>v.afiliada_id===a.id);
+    return {
+      ...a,
+      vendas: vendasA.reduce((s,v)=>s+(+v.valor),0),
+      // FEATURE v1.6.10 (P9): comissão do ranking também respeita a regra
+      // vigente na data de cada venda.
+      comissaoPeriodo: calcularComissaoPeriodo(vendasA).totalComissao,
+    };
+  }).sort((a,b)=>b.vendas-a.vendas);
   document.getElementById('lista-ranking').innerHTML=sorted.map((a,i)=>`
     <div class="ranking-item ${a.id===afiliadaId?'destaque-eu':''}">
       <div class="posicao ${i===0?'top1':i===1?'top2':i===2?'top3':''}">#${i+1}</div>
       <div><div class="rank-nome">${escapeHtml(a.nome)}${a.id===afiliadaId?'<span class="rank-eu-badge">você</span>':''}</div><div class="rank-sub">${escapeHtml(a.cupom)}</div></div>
-      <div class="rank-valor"><div class="rank-vendas">${fmtBRL(a.vendas)}</div><div class="rank-comissao">${fmtBRL(calcComissao(a.vendas))} comissão</div></div>
+      <div class="rank-valor"><div class="rank-vendas">${fmtBRL(a.vendas)}</div><div class="rank-comissao">${fmtBRL(a.comissaoPeriodo)} comissão</div></div>
     </div>
   `).join('');
 }
@@ -2551,6 +2660,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.9</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.11</div>
 </body>
 </html>
