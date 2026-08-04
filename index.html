@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.14">
+<meta name="app-version" content="1.6.15">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -342,13 +342,13 @@ tr:hover td{background:#faf7f2}
         <div class="form-campo" style="grid-column:1/-1"><label>Nome Completo *</label><input type="text" id="cad-pub-nome" autocomplete="off"></div>
         <div class="form-campo"><label>E-mail *</label><input type="email" id="cad-pub-email" autocomplete="off"></div>
         <div class="form-campo"><label>Telefone com DDD *</label><input type="tel" id="cad-pub-telefone" autocomplete="off"></div>
-        <div class="form-campo" style="grid-column:1/-1"><label>Instagram *</label><input type="text" id="cad-pub-instagram" autocomplete="off" placeholder="@seu_usuario"></div>
-        <div class="form-campo" style="grid-column:1/-1"><label>Endereço Completo * <span style="font-size:11px;font-weight:400;color:var(--cinza-medio)">(Rua, número, bairro, cidade, estado, CEP)</span></label><input type="text" id="cad-pub-endereco" autocomplete="off"></div>
       </div>
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin:1.5rem 0 1rem;border-top:1px solid var(--border);padding-top:1.25rem;text-transform:uppercase">Dados Empresariais <span style="font-size:13px;font-weight:400;color:var(--cinza-medio)">(opcional)</span></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin:1.5rem 0 1rem;border-top:1px solid var(--border);padding-top:1.25rem;text-transform:uppercase">Endereço *</div>
+      <div id="endereco-cad-pub"></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin:1.5rem 0 1rem;border-top:1px solid var(--border);padding-top:1.25rem;text-transform:uppercase">Redes Sociais</div>
       <div class="form-grid">
-        <div class="form-campo"><label>Razão Social</label><input type="text" id="cad-pub-razao" autocomplete="off"></div>
-        <div class="form-campo"><label>CNPJ</label><input type="text" id="cad-pub-cnpj" autocomplete="off"></div>
+        <div class="form-campo"><label>Instagram *</label><input type="text" id="cad-pub-instagram" autocomplete="off" placeholder="@seu_usuario"></div>
+        <div class="form-campo"><label>TikTok <span style="font-size:11px;font-weight:400;color:var(--cinza-medio)">(opcional)</span></label><input type="text" id="cad-pub-tiktok" autocomplete="off" placeholder="@seu_usuario"></div>
       </div>
     </div>
     <div class="tabela-wrap" style="padding:2rem;margin-bottom:1.5rem">
@@ -440,25 +440,38 @@ tr:hover td{background:#faf7f2}
 
 <!-- ====== MODAIS ====== -->
 <div class="modal-overlay" id="modal-cadastro">
-  <div class="modal" autocomplete="off">
+  <div class="modal" autocomplete="off" style="max-width:760px">
     <div class="modal-titulo" id="modal-cad-titulo">Nova Afiliada</div>
-    <div class="form-secao" style="margin-top:0;border-top:none;padding-top:0">Dados Pessoais e Acesso</div>
+    <div class="form-secao" style="margin-top:0;border-top:none;padding-top:0">Dados Pessoais</div>
     <div class="form-grid">
       <div class="form-campo"><label>Nome Completo</label><input type="text" id="cad-nome" autocomplete="off" placeholder=""></div>
       <div class="form-campo"><label>E-mail</label><input type="email" id="cad-email" autocomplete="off" placeholder=""></div>
       <div class="form-campo"><label>Cupom Personalizado</label><input type="text" id="cad-cupom" autocomplete="off" placeholder=""></div>
       <div class="form-campo"><label>Link de Divulgação</label><input type="text" id="cad-link" autocomplete="off" placeholder=""></div>
-      <div class="form-campo"><label>Instagram</label><input type="text" id="cad-insta" autocomplete="off" placeholder=""></div>
       <div class="form-campo"><label>WhatsApp</label><input type="text" id="cad-whats" autocomplete="off" placeholder=""></div>
     </div>
-    <div class="form-secao">Dados Fiscais</div>
+    <div class="form-secao">Endereço</div>
+    <div id="endereco-cad-admin-wrap"></div>
+    <div class="form-secao">Redes Sociais <span style="font-size:12px;font-weight:400;color:var(--cinza-medio)">(opcional)</span></div>
+    <div class="form-grid">
+      <div class="form-campo"><label>Instagram</label><input type="text" id="cad-insta" autocomplete="off" placeholder="@usuario"></div>
+      <div class="form-campo"><label>TikTok</label><input type="text" id="cad-tiktok" autocomplete="off" placeholder="@usuario"></div>
+    </div>
+    <div class="form-secao">Dados da Empresa <span style="font-size:12px;font-weight:400;color:var(--cinza-medio)">(a afiliada também pode preencher isso sozinha no primeiro acesso)</span></div>
     <div class="form-grid">
       <div class="form-campo"><label>CNPJ / CPF</label><input type="text" id="cad-cnpj" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
       <div class="form-campo"><label>Razão Social / Nome para NF</label><input type="text" id="cad-razao" autocomplete="off" placeholder=""></div>
     </div>
-    <div class="form-secao">Dados Bancários</div>
+    <div style="font-size:12px;color:var(--cinza-medio);margin:10px 0 6px">Endereço da empresa (se diferente do endereço pessoal)</div>
+    <div id="endereco-empresa-cad-admin-wrap"></div>
+    <div class="form-campo" style="margin-top:10px"><label>Cartão CNPJ (PDF)</label>
+      <input type="file" id="cad-cartao-cnpj-input" accept=".pdf" onchange="document.getElementById('cad-cartao-cnpj-nome').textContent=this.files[0]?this.files[0].name:''">
+      <div id="cad-cartao-cnpj-nome" style="font-size:12px;color:var(--cinza-medio);margin-top:4px"></div>
+      <div id="cad-cartao-cnpj-atual" style="font-size:12px;margin-top:4px"></div>
+    </div>
+    <div class="form-secao">Dados Bancários <span style="font-size:12px;font-weight:400;color:var(--cinza-medio)">(a afiliada também pode preencher isso sozinha no primeiro acesso)</span></div>
     <div class="form-grid tres-col">
-      <div class="form-campo"><label>Banco</label><input type="text" id="cad-banco" autocomplete="off" placeholder=""></div>
+      <div class="form-campo"><label>Banco</label><select id="cad-banco"></select></div>
       <div class="form-campo"><label>Agência</label><input type="text" id="cad-agencia" autocomplete="off" placeholder=""></div>
       <div class="form-campo"><label>Conta</label><input type="text" id="cad-conta" autocomplete="off" placeholder=""></div>
     </div>
@@ -470,7 +483,7 @@ tr:hover td{background:#faf7f2}
     </div>
     <div class="form-secao">Acesso ao Sistema</div>
     <div style="background:#1a1800;border:1px solid #3a3000;border-radius:8px;padding:12px 16px;font-size:13px;color:#c9a840;margin-bottom:12px;line-height:1.6">
-      &#128139; Ao salvar, a afiliada receberá um <strong>e-mail de convite</strong> para definir a própria senha e acessar o painel.
+      &#128139; Ao salvar, a afiliada receberá um <strong>e-mail de convite</strong> para definir a própria senha e acessar o painel. No primeiro acesso, se os Dados da Empresa ou Bancários ainda estiverem incompletos, ela será solicitada a preenchê-los.
     </div>
     <div class="form-grid uma-col">
       <div class="form-campo"><label>Status</label>
@@ -604,11 +617,48 @@ tr:hover td{background:#faf7f2}
   </div>
 </div>
 
+<!-- FEATURE v1.6.15: popup de completar cadastro (Dados da Empresa + Bancários),
+     exibido no primeiro login se esses dados ainda não tiverem sido preenchidos
+     (pelo admin ou pela própria afiliada). -->
+<div class="popup-overlay" id="popup-completar-cadastro" style="display:none">
+  <div class="popup" style="max-width:640px;max-height:90vh;overflow-y:auto;text-align:left">
+    <div class="popup-icon" style="text-align:center">🧾</div>
+    <div class="popup-titulo" style="text-align:center">Falta pouco!</div>
+    <div class="popup-subtitulo" style="text-align:center">Complete seus Dados da Empresa e Bancários para receber suas comissões.</div>
+    <div class="form-secao" style="margin-top:1rem">Dados da Empresa</div>
+    <div class="form-grid">
+      <div class="form-campo"><label>CNPJ / CPF</label><input type="text" id="completar-cnpj" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
+      <div class="form-campo"><label>Razão Social / Nome para NF</label><input type="text" id="completar-razao" autocomplete="off"></div>
+    </div>
+    <div style="font-size:12px;color:var(--cinza-medio);margin:10px 0 6px">Endereço da empresa</div>
+    <div id="endereco-completar-empresa-wrap"></div>
+    <div class="form-campo" style="margin-top:10px"><label>Cartão CNPJ (PDF)</label>
+      <input type="file" id="completar-cartao-cnpj-input" accept=".pdf" onchange="document.getElementById('completar-cartao-cnpj-nome').textContent=this.files[0]?this.files[0].name:''">
+      <div id="completar-cartao-cnpj-nome" style="font-size:12px;color:var(--cinza-medio);margin-top:4px"></div>
+    </div>
+    <div class="form-secao">Dados Bancários</div>
+    <div class="form-grid tres-col">
+      <div class="form-campo"><label>Banco</label><select id="completar-banco"></select></div>
+      <div class="form-campo"><label>Agência</label><input type="text" id="completar-agencia" autocomplete="off"></div>
+      <div class="form-campo"><label>Conta</label><input type="text" id="completar-conta" autocomplete="off"></div>
+    </div>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="form-campo"><label>Chave Pix</label><input type="text" id="completar-pix" autocomplete="off"></div>
+      <div class="form-campo"><label>Tipo de Conta</label>
+        <select id="completar-tipo-conta"><option value="corrente">Corrente</option><option value="poupanca">Poupança</option><option value="pix">Somente Pix</option></select>
+      </div>
+    </div>
+    <div id="completar-cadastro-erro" style="display:none;color:#c0392b;font-size:13px;margin-top:1rem"></div>
+    <button class="popup-btn" style="margin-top:1.25rem" onclick="salvarCompletarCadastro()">Salvar e Continuar ✓</button>
+  </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
 // CONTEÚDO DAS PÁGINAS
-const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Dashboard</div>\n          <div class=\"secao-desc\" id=\"desc-dashboard\">Visão geral do Clube Entre Elas</div>\n        </div>\n        <select id=\"sel-mes-dashboard\" onchange=\"renderDashboard()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;align-self:center\"></select>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Cupom</th><th>Total Vendido</th><th>Comissão</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Candidatas e afiliadas do clube. Candidatas aguardam aprovacao.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;align-items:center\"><select id=\"filtro-status-afiliadas\" onchange=\"renderTabelaAfiliadas()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"><option value=\"todos\">Todos os status</option><option value=\"ativo\">Ativas</option><option value=\"inativo\">Inativas</option><option value=\"pendente\">Pendentes / Candidatas</option></select><button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button></div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"overflow-x:auto\">\n        <table style=\"width:100%;min-width:900px\">\n          <thead><tr>\n            <th>#</th><th>Nome</th><th>Tipo</th><th>Cupom</th><th>E-mail</th>\n            <th>Vendas</th><th>Status</th><th>Pix</th><th>Banco</th><th>Ag.</th><th>Conta</th>\n            <th>Aceite Regras</th><th>Aceite Contrato</th><th>Acoes</th>\n          </tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('input-importar').click()\">&#8593; Importar Planilha</button>\n          <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n        </div>\n      </div>\n      <div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Produto</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\" id=\"desc-comissoes\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras e Documentos</div>\n      <div class=\"secao-desc\">Faça upload dos PDFs e configure o link do vídeo tutorial. O \"Notificar Afiliadas\" envia um aviso para as afiliadas já cadastradas sobre atualização de regras.</div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">LIVRO DE REGRAS</div>\n          <div id=\"info-pdf-regras\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-regras\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-regras').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-regras\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'regras')\">\n          <div id=\"aviso-upload-regras\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">CONTRATO</div>\n          <div id=\"info-pdf-contrato\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-contrato\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-contrato').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-contrato\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'contrato')\">\n          <div id=\"aviso-upload-contrato\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">VÍDEO TUTORIAL</div>\n        <div class=\"form-campo\" style=\"max-width:600px\">\n          <label>Link do YouTube</label>\n          <input type=\"url\" id=\"input-link-video\" placeholder=\"https://www.youtube.com/watch?v=...\" autocomplete=\"off\">\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"salvarLinkVideo()\">Salvar Link</button>\n        <div id=\"aviso-video\" style=\"display:none;margin-top:8px;font-size:13px;color:#5ab88a\">✅ Link salvo!</div>\n      </div>\n      <div id=\"aviso-regras\" style=\"display:none;margin-top:-1rem;margin-bottom:1.5rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">\n        ✅ Afiliadas verão o popup de aceite no próximo acesso.\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">HISTÓRICO DE ATUALIZAÇÕES</div>\n        <table style=\"width:100%\">\n          <thead><tr><th>Tipo</th><th>Arquivo</th><th>Data</th><th>Hora</th><th>Responsável</th></tr></thead>\n          <tbody id=\"tabela-historico-docs\"></tbody>\n        </table>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\"><label>Anexo (opcional — PDF ou imagem, até 10MB)</label><input type=\"file\" id=\"notif-anexo-input\" accept=\".pdf,image/*\" onchange=\"document.getElementById('notif-anexo-nome').textContent=this.files[0]?this.files[0].name:''\"><div id=\"notif-anexo-nome\" style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\"></div></div><button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n        <div id=\"aviso-notif\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">✅ Notificação enviada!</div>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
+const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Dashboard</div>\n          <div class=\"secao-desc\" id=\"desc-dashboard\">Visão geral do Clube Entre Elas</div>\n        </div>\n        <select id=\"sel-mes-dashboard\" onchange=\"renderDashboard()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;align-self:center\"></select>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Cupom</th><th>Total Vendido</th><th>Comissão</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Candidatas e afiliadas do clube. Candidatas aguardam aprovacao.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;align-items:center\"><select id=\"filtro-status-afiliadas\" onchange=\"renderTabelaAfiliadas()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"><option value=\"todos\">Todos os status</option><option value=\"ativo\">Ativas</option><option value=\"inativo\">Inativas</option><option value=\"pendente\">Pendentes / Candidatas</option></select><button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button></div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"overflow-x:auto\">\n        <table style=\"width:100%;min-width:900px\">\n          <thead><tr>\n            <th>#</th><th>Nome</th><th>Tipo</th><th>Cupom</th><th>E-mail</th>\n            <th>Vendas</th><th>Status</th><th>Cadastro</th><th>Pix</th><th>Banco</th><th>Ag.</th><th>Conta</th>\n            <th>Aceite Regras</th><th>Aceite Contrato</th><th>Acoes</th>\n          </tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('input-importar').click()\">&#8593; Importar Planilha</button>\n          <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n        </div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1rem 1.25rem;margin-bottom:1rem;display:flex;gap:10px;flex-wrap:wrap;align-items:end\"><div class=\"form-campo\" style=\"min-width:220px;flex:1\"><label style=\"font-size:11px\">Buscar (pedido, cupom, afiliada ou produto)</label><input type=\"text\" id=\"filtro-busca-vendas\" oninput=\"renderTabelaVendas()\" placeholder=\"Digite para filtrar...\"></div><div class=\"form-campo\" style=\"min-width:160px\"><label style=\"font-size:11px\">Status</label><select id=\"filtro-status-vendas\" onchange=\"renderTabelaVendas()\"><option value=\"todos\">Todos</option><option value=\"aprovado\">Aprovado</option><option value=\"pendente\">Pendente</option><option value=\"cancelado\">Cancelado</option><option value=\"estornado\">Estornado</option></select></div><div class=\"form-campo\" style=\"min-width:150px\"><label style=\"font-size:11px\">De</label><input type=\"date\" id=\"filtro-data-de-vendas\" onchange=\"renderTabelaVendas()\"></div><div class=\"form-campo\" style=\"min-width:150px\"><label style=\"font-size:11px\">Até</label><input type=\"date\" id=\"filtro-data-ate-vendas\" onchange=\"renderTabelaVendas()\"></div><button class=\"btn-acao secundario\" style=\"padding:9px 16px\" onclick=\"document.getElementById(\'filtro-busca-vendas\').value=\'\';document.getElementById(\'filtro-status-vendas\').value=\'todos\';document.getElementById(\'filtro-data-de-vendas\').value=\'\';document.getElementById(\'filtro-data-ate-vendas\').value=\'\';renderTabelaVendas();\">Limpar filtros</button></div><div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Produto</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\" id=\"desc-comissoes\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras e Documentos</div>\n      <div class=\"secao-desc\">Faça upload dos PDFs e configure o link do vídeo tutorial. O \"Notificar Afiliadas\" envia um aviso para as afiliadas já cadastradas sobre atualização de regras.</div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">LIVRO DE REGRAS</div>\n          <div id=\"info-pdf-regras\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-regras\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-regras').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-regras\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'regras')\">\n          <div id=\"aviso-upload-regras\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">CONTRATO</div>\n          <div id=\"info-pdf-contrato\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-contrato\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-contrato').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-contrato\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'contrato')\">\n          <div id=\"aviso-upload-contrato\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">VÍDEO TUTORIAL</div>\n        <div class=\"form-campo\" style=\"max-width:600px\">\n          <label>Link do YouTube</label>\n          <input type=\"url\" id=\"input-link-video\" placeholder=\"https://www.youtube.com/watch?v=...\" autocomplete=\"off\">\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"salvarLinkVideo()\">Salvar Link</button>\n        <div id=\"aviso-video\" style=\"display:none;margin-top:8px;font-size:13px;color:#5ab88a\">✅ Link salvo!</div>\n      </div>\n      <div id=\"aviso-regras\" style=\"display:none;margin-top:-1rem;margin-bottom:1.5rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">\n        ✅ Afiliadas verão o popup de aceite no próximo acesso.\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">HISTÓRICO DE ATUALIZAÇÕES</div>\n        <table style=\"width:100%\">\n          <thead><tr><th>Tipo</th><th>Arquivo</th><th>Data</th><th>Hora</th><th>Responsável</th></tr></thead>\n          <tbody id=\"tabela-historico-docs\"></tbody>\n        </table>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\"><label>Anexo (opcional — PDF ou imagem, até 10MB)</label><input type=\"file\" id=\"notif-anexo-input\" accept=\".pdf,image/*\" onchange=\"document.getElementById('notif-anexo-nome').textContent=this.files[0]?this.files[0].name:''\"><div id=\"notif-anexo-nome\" style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\"></div></div><button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n        <div id=\"aviso-notif\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">✅ Notificação enviada!</div>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
 const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\" id=\"desc-ranking-af\">Classificação por volume de vendas do mês atual</div>\n      <div style=\"display:flex;gap:8px;margin-bottom:1rem\"><button class=\"btn-acao\" id=\"btn-ranking-atual\" onclick=\"trocarMesRanking('atual')\">Mês Atual</button><button class=\"btn-acao secundario\" id=\"btn-ranking-anterior\" onclick=\"trocarMesRanking('anterior')\">Mês Anterior</button></div><div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras e Contrato</div>\n      <div id=\"regras-af-conteudo\"></div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem\" id=\"pdfs-af-wrap\" style=\"display:none\">\n        <div id=\"pdf-regras-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Livro de Regras</div>\n          <div id=\"pdf-regras-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-regras-af\"></span></div>\n        </div>\n        <div id=\"pdf-contrato-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Contrato</div>\n          <div id=\"pdf-contrato-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-contrato-af\"></span></div>\n        </div>\n      </div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"\" autocomplete=\"new-password\"><div style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\">Mínimo 8 caracteres, uma letra e um número.</div></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
 
 // ============================================================
@@ -637,6 +687,85 @@ function escapeHtml(s){
   if(s===null||s===undefined) return '';
   return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+// FEATURE v1.6.15: utilitários compartilhados de endereço/dados bancários,
+// usados no formulário público de candidatura, no cadastro do admin, e no
+// formulário de "completar cadastro" que a afiliada preenche no primeiro login.
+const LISTA_UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+const LISTA_BANCOS = [
+  'Banco do Brasil','Bradesco','Itaú Unibanco','Santander','Caixa Econômica Federal',
+  'Nubank','Inter','C6 Bank','PicPay','Mercado Pago','Sicoob','Sicredi','Banco Original',
+  'Banco Safra','BTG Pactual','Neon','Next','Banco Pan','Outro'
+];
+
+function montarOptionsUF(selecionado){
+  return '<option value="">UF</option>' + LISTA_UFS.map(uf=>`<option value="${uf}"${uf===selecionado?' selected':''}>${uf}</option>`).join('');
+}
+function montarOptionsBanco(selecionado){
+  return '<option value="">Selecione o banco</option>' + LISTA_BANCOS.map(b=>`<option value="${escapeHtml(b)}"${b===selecionado?' selected':''}>${escapeHtml(b)}</option>`).join('');
+}
+
+// Busca endereço pelo CEP usando a API pública do ViaCEP (gratuita, sem
+// necessidade de chave/cadastro — é o serviço padrão mais usado pra isso no
+// Brasil). Preenche os campos de rua/bairro/cidade/UF automaticamente.
+async function buscarCep(prefixo){
+  const cepEl = document.getElementById(prefixo+'-cep');
+  if(!cepEl) return;
+  const cep = cepEl.value.replace(/\D/g,'');
+  if(cep.length !== 8) return;
+  const avisoId = prefixo+'-cep-aviso';
+  const avisoEl = document.getElementById(avisoId);
+  if(avisoEl){ avisoEl.textContent='Buscando endereço...'; avisoEl.style.color='var(--cinza-medio)'; }
+  try{
+    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const dados = await resp.json();
+    if(dados.erro){
+      if(avisoEl){ avisoEl.textContent='CEP não encontrado.'; avisoEl.style.color='#c0392b'; }
+      return;
+    }
+    const ruaEl = document.getElementById(prefixo+'-rua');
+    const bairroEl = document.getElementById(prefixo+'-bairro');
+    const cidadeEl = document.getElementById(prefixo+'-cidade');
+    const ufEl = document.getElementById(prefixo+'-uf');
+    if(ruaEl && dados.logradouro) ruaEl.value = dados.logradouro;
+    if(bairroEl && dados.bairro) bairroEl.value = dados.bairro;
+    if(cidadeEl) cidadeEl.value = dados.localidade||'';
+    if(ufEl) ufEl.value = dados.uf||'';
+    if(avisoEl){ avisoEl.textContent='Endereço encontrado ✓'; avisoEl.style.color='#5ab88a'; setTimeout(()=>avisoEl.textContent='',3000); }
+    const numEl = document.getElementById(prefixo+'-numero');
+    if(numEl) numEl.focus();
+  }catch(e){
+    console.warn('Erro ao buscar CEP:', e);
+    if(avisoEl){ avisoEl.textContent='Não foi possível buscar o CEP agora — preencha manualmente.'; avisoEl.style.color='#c0392b'; }
+  }
+}
+
+// Monta o bloco HTML de endereço (rua/número/bairro/cidade/UF/CEP), reutilizado
+// nos 3 formulários. "prefixo" define os ids únicos de cada instância.
+function blocoEnderecoHtml(prefixo){
+  return `
+    <div class="form-grid">
+      <div class="form-campo"><label>CEP</label><input type="text" id="${prefixo}-cep" placeholder="00000-000" onblur="buscarCep('${prefixo}')" autocomplete="off">
+        <div id="${prefixo}-cep-aviso" style="font-size:11px;margin-top:4px;min-height:14px"></div>
+      </div>
+      <div class="form-campo" style="grid-column:span 2"><label>Rua</label><input type="text" id="${prefixo}-rua" autocomplete="off"></div>
+      <div class="form-campo"><label>Número</label><input type="text" id="${prefixo}-numero" autocomplete="off"></div>
+      <div class="form-campo"><label>Bairro</label><input type="text" id="${prefixo}-bairro" autocomplete="off"></div>
+      <div class="form-campo"><label>Cidade</label><input type="text" id="${prefixo}-cidade" autocomplete="off"></div>
+      <div class="form-campo"><label>UF</label><select id="${prefixo}-uf">${montarOptionsUF()}</select></div>
+    </div>`;
+}
+
+
+// FEATURE v1.6.15: define quando os Dados da Empresa + Dados Bancários de uma
+// afiliada estão completos — usado tanto no badge da tabela do admin quanto
+// pra decidir se mostra o formulário de completar cadastro no primeiro login.
+function cadastroEmpresaBancarioCompleto(a){
+  if(!a) return false;
+  const empresaOk = !!(a.cnpj && a.razao_social);
+  const bancarioOk = a.tipo_conta==='pix' ? !!a.pix : !!(a.banco && a.conta);
+  return empresaOk && bancarioOk;
+}
+
 function fmtBRL(v){return'R$ '+(+v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
 function fmtData(s){if(!s)return'';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`}
 function loading(on){document.getElementById('loading-overlay').classList.toggle('ativo',on)}
@@ -988,6 +1117,8 @@ async function carregarSessao(user){
       mudarPagAf('painel', null);
       await renderAfiliada(afiliadaNova.id);
       atualizarBadgeNotifAfLogin(afiliadaNova.id);
+      // FEATURE v1.6.15: checa se falta completar Dados da Empresa/Bancários.
+      verificarCadastroIncompletoNoLogin();
     }
     loading(false);
     return;
@@ -1027,6 +1158,9 @@ async function carregarSessao(user){
     atualizarBadgeNotifAfLogin(afiliada.id);
     if(configLocal.regrasPendentes && !perfil.regras_lidas){
       setTimeout(()=>abrirPopupRegras(), 800);
+    } else {
+      // FEATURE v1.6.15: sem regras pendentes, checa cadastro incompleto direto.
+      verificarCadastroIncompletoNoLogin();
     }
   }
 }
@@ -1200,8 +1334,10 @@ async function renderTabelaAfiliadas(){
     const acoes = isCandidata
       ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Aceitar" onclick="aceitarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\',\'' + a.email + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Recusar" onclick="recusarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
       : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Editar" onclick="editarAfiliada(\'' + a.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Reenviar convite" onclick="reenviarConvite(\'' + a.email + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>  ' + (a.status==='ativo' ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Desativar" onclick="desativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="9" y2="15"/><line x1="15" y1="9" x2="15" y2="15"/></svg></button>' : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Reativar" onclick="reativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>') + '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
-    return '<tr style="'+(isCandidata?'background:#fffbf0':'')+'"><td style="font-family:monospace;font-size:11px;color:var(--cinza-medio)">#'+(a.codigo||'-')+'</td><td style="font-weight:500">'+escapeHtml(a.nome)+'</td><td>'+badgeTipo+'</td><td style="font-family:monospace;font-size:12px;color:var(--dourado)">'+escapeHtml(a.cupom||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.email)+'</td><td>'+fmtBRL(tv)+'</td><td>'+badgeStatus+'</td><td style="font-size:12px">'+escapeHtml(a.pix||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.banco||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.agencia||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.conta||'-')+'</td><td style="font-size:11px">'+aceiteR+'</td><td style="font-size:11px">'+aceiteC+'</td><td><div style="display:flex;gap:4px">'+acoes+'</div></td></tr>';
-  }).join('') || '<tr><td colspan="14" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma afiliada cadastrada.</td></tr>';
+    const badgeCadastro = isCandidata ? '<span style="color:var(--cinza-claro);font-size:11px">-</span>'
+      : (cadastroEmpresaBancarioCompleto(a) ? '<span class="badge ativo">Completo</span>' : '<span class="badge pendente">Incompleto</span>');
+    return '<tr style="'+(isCandidata?'background:#fffbf0':'')+'"><td style="font-family:monospace;font-size:11px;color:var(--cinza-medio)">#'+(a.codigo||'-')+'</td><td style="font-weight:500">'+escapeHtml(a.nome)+'</td><td>'+badgeTipo+'</td><td style="font-family:monospace;font-size:12px;color:var(--dourado)">'+escapeHtml(a.cupom||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.email)+'</td><td>'+fmtBRL(tv)+'</td><td>'+badgeStatus+'</td><td>'+badgeCadastro+'</td><td style="font-size:12px">'+escapeHtml(a.pix||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.banco||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.agencia||'-')+'</td><td style="font-size:12px">'+escapeHtml(a.conta||'-')+'</td><td style="font-size:11px">'+aceiteR+'</td><td style="font-size:11px">'+aceiteC+'</td><td><div style="display:flex;gap:4px">'+acoes+'</div></td></tr>';
+  }).join('') || '<tr><td colspan="15" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma afiliada cadastrada.</td></tr>';
 }
 
 
@@ -1209,6 +1345,25 @@ async function renderTabelaVendas(){
   const {data:vendas} = await _sb.from('vendas').select('*, afiliadas(nome,cupom)').order('data',{ascending:false});
   const tbody = document.getElementById('tabela-vendas');
   if(!tbody) return;
+  // FEATURE v1.6.15 (item 1): filtros de busca/status/data na tabela de vendas.
+  const buscaEl = document.getElementById('filtro-busca-vendas');
+  const statusEl = document.getElementById('filtro-status-vendas');
+  const deEl = document.getElementById('filtro-data-de-vendas');
+  const ateEl = document.getElementById('filtro-data-ate-vendas');
+  const busca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
+  const statusFiltro = statusEl ? statusEl.value : 'todos';
+  const dataDe = deEl ? deEl.value : '';
+  const dataAte = ateEl ? ateEl.value : '';
+  const vendasFiltradas = (vendas||[]).filter(v=>{
+    if(statusFiltro!=='todos' && (v.status||'aprovado')!==statusFiltro) return false;
+    if(dataDe && v.data < dataDe) return false;
+    if(dataAte && v.data > dataAte) return false;
+    if(busca){
+      const alvo = [v.numero_pedido, v.afiliadas?.cupom, v.cupom, v.afiliadas?.nome, v.produto].filter(Boolean).join(' ').toLowerCase();
+      if(!alvo.includes(busca)) return false;
+    }
+    return true;
+  });
   // FEATURE v1.6.14 (item 3): badge preparado pra 4 status possíveis, não só
   // aprovado/cancelado.
   function badgeStatusVenda(status){
@@ -1221,7 +1376,7 @@ async function renderTabelaVendas(){
     const s = mapa[status] || mapa.aprovado;
     return `<span class="badge ${s.classe}">${s.texto}</span>`;
   }
-  tbody.innerHTML=(vendas||[]).map(v=>`
+  tbody.innerHTML=(vendasFiltradas).map(v=>`
     <tr>
       <td style="font-family:monospace;font-size:12px">${v.numero_pedido||'—'}</td>
       <td>${fmtData(v.data)}</td>
@@ -1460,9 +1615,17 @@ let editandoAfiliadaId=null;
 function abrirModalCadastro(){
   editandoAfiliadaId=null;
   document.getElementById('modal-cad-titulo').textContent='Nova Afiliada';
-  ['cad-nome','cad-email','cad-cupom','cad-link','cad-insta','cad-whats','cad-cnpj','cad-razao','cad-banco','cad-agencia','cad-conta','cad-pix','cad-senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['cad-nome','cad-email','cad-cupom','cad-link','cad-insta','cad-tiktok','cad-whats','cad-cnpj','cad-razao','cad-agencia','cad-conta','cad-pix','cad-senha'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('cad-status').value='ativo';
   document.getElementById('cad-tipo-conta').value='corrente';
+  // FEATURE v1.6.15: monta os blocos de endereço (pessoal e da empresa) e o
+  // seletor de banco, e limpa qualquer valor de uma edição anterior.
+  document.getElementById('endereco-cad-admin-wrap').innerHTML = blocoEnderecoHtml('endereco-cad-admin');
+  document.getElementById('endereco-empresa-cad-admin-wrap').innerHTML = blocoEnderecoHtml('empresa-cad-admin');
+  document.getElementById('cad-banco').innerHTML = montarOptionsBanco();
+  document.getElementById('cad-cartao-cnpj-input').value='';
+  document.getElementById('cad-cartao-cnpj-nome').textContent='';
+  document.getElementById('cad-cartao-cnpj-atual').innerHTML='';
   document.getElementById('modal-cadastro').classList.add('aberto');
 }
 async function editarAfiliada(id){
@@ -1475,15 +1638,37 @@ async function editarAfiliada(id){
   document.getElementById('cad-cupom').value=a.cupom||'';
   document.getElementById('cad-link').value=a.link||'';
   document.getElementById('cad-insta').value=a.instagram||'';
+  document.getElementById('cad-tiktok').value=a.tiktok||'';
   document.getElementById('cad-whats').value=a.whatsapp||'';
   document.getElementById('cad-cnpj').value=a.cnpj||'';
   document.getElementById('cad-razao').value=a.razao_social||'';
-  document.getElementById('cad-banco').value=a.banco||'';
   document.getElementById('cad-agencia').value=a.agencia||'';
   document.getElementById('cad-conta').value=a.conta||'';
   document.getElementById('cad-pix').value=a.pix||'';
   document.getElementById('cad-tipo-conta').value=a.tipo_conta||'corrente';
   document.getElementById('cad-status').value=a.status||'ativo';
+  // FEATURE v1.6.15: monta os blocos de endereço já preenchidos, e o select
+  // de banco com o valor salvo selecionado.
+  document.getElementById('endereco-cad-admin-wrap').innerHTML = blocoEnderecoHtml('endereco-cad-admin');
+  document.getElementById('endereco-cad-admin-cep').value=a.endereco_cep||'';
+  document.getElementById('endereco-cad-admin-rua').value=a.endereco_rua||'';
+  document.getElementById('endereco-cad-admin-numero').value=a.endereco_numero||'';
+  document.getElementById('endereco-cad-admin-bairro').value=a.endereco_bairro||'';
+  document.getElementById('endereco-cad-admin-cidade').value=a.endereco_cidade||'';
+  document.getElementById('endereco-cad-admin-uf').value=a.endereco_uf||'';
+  document.getElementById('endereco-empresa-cad-admin-wrap').innerHTML = blocoEnderecoHtml('empresa-cad-admin');
+  document.getElementById('empresa-cad-admin-cep').value=a.empresa_endereco_cep||'';
+  document.getElementById('empresa-cad-admin-rua').value=a.empresa_endereco_rua||'';
+  document.getElementById('empresa-cad-admin-numero').value=a.empresa_endereco_numero||'';
+  document.getElementById('empresa-cad-admin-bairro').value=a.empresa_endereco_bairro||'';
+  document.getElementById('empresa-cad-admin-cidade').value=a.empresa_endereco_cidade||'';
+  document.getElementById('empresa-cad-admin-uf').value=a.empresa_endereco_uf||'';
+  document.getElementById('cad-banco').innerHTML = montarOptionsBanco(a.banco||'');
+  document.getElementById('cad-cartao-cnpj-input').value='';
+  document.getElementById('cad-cartao-cnpj-nome').textContent='';
+  document.getElementById('cad-cartao-cnpj-atual').innerHTML = a.empresa_cartao_cnpj_url
+    ? `<a href="${escapeHtml(a.empresa_cartao_cnpj_url)}" target="_blank" style="color:var(--dourado)">📄 Ver cartão CNPJ já enviado</a>`
+    : '';
   document.getElementById('modal-cadastro').classList.add('aberto');
   document.getElementById('modal-cadastro').style.display='flex';
 }
@@ -1505,6 +1690,7 @@ async function salvarAfiliada(){
     cupom: document.getElementById('cad-cupom').value.trim().toUpperCase(),
     link: document.getElementById('cad-link').value.trim(),
     instagram: document.getElementById('cad-insta').value.trim(),
+    tiktok: document.getElementById('cad-tiktok').value.trim(),
     whatsapp: document.getElementById('cad-whats').value.trim(),
     cnpj: document.getElementById('cad-cnpj').value.trim(),
     razao_social: document.getElementById('cad-razao').value.trim(),
@@ -1514,7 +1700,36 @@ async function salvarAfiliada(){
     pix: document.getElementById('cad-pix').value.trim(),
     tipo_conta: document.getElementById('cad-tipo-conta').value,
     status: document.getElementById('cad-status').value,
+    // FEATURE v1.6.15: endereço pessoal e da empresa, campos separados.
+    endereco_cep:    document.getElementById('endereco-cad-admin-cep').value.trim(),
+    endereco_rua:    document.getElementById('endereco-cad-admin-rua').value.trim(),
+    endereco_numero: document.getElementById('endereco-cad-admin-numero').value.trim(),
+    endereco_bairro: document.getElementById('endereco-cad-admin-bairro').value.trim(),
+    endereco_cidade: document.getElementById('endereco-cad-admin-cidade').value.trim(),
+    endereco_uf:     document.getElementById('endereco-cad-admin-uf').value.trim(),
+    empresa_endereco_cep:    document.getElementById('empresa-cad-admin-cep').value.trim(),
+    empresa_endereco_rua:    document.getElementById('empresa-cad-admin-rua').value.trim(),
+    empresa_endereco_numero: document.getElementById('empresa-cad-admin-numero').value.trim(),
+    empresa_endereco_bairro: document.getElementById('empresa-cad-admin-bairro').value.trim(),
+    empresa_endereco_cidade: document.getElementById('empresa-cad-admin-cidade').value.trim(),
+    empresa_endereco_uf:     document.getElementById('empresa-cad-admin-uf').value.trim(),
   };
+  // FEATURE v1.6.15: upload do cartão CNPJ (PDF), se um arquivo foi escolhido.
+  const cartaoInput = document.getElementById('cad-cartao-cnpj-input');
+  const arquivoCartao = cartaoInput && cartaoInput.files[0];
+  if(arquivoCartao){
+    const path = `cartoes-cnpj/${Date.now()}_${arquivoCartao.name}`;
+    try{
+      const {error:errUp} = await _sb.storage.from('documentos-empresa').upload(path, arquivoCartao, {cacheControl:'3600'});
+      if(!errUp){
+        const {data:urlData} = _sb.storage.from('documentos-empresa').getPublicUrl(path);
+        dados.empresa_cartao_cnpj_url = urlData?.publicUrl || null;
+        dados.empresa_cartao_cnpj_nome = arquivoCartao.name;
+      } else {
+        console.warn('upload cartão CNPJ:', errUp);
+      }
+    }catch(e){ console.warn('upload cartão CNPJ:', e); }
+  }
   // Adicionar codigo separadamente após confirmar que coluna existe
   if(codigoAfiliada) dados.codigo = codigoAfiliada;
   if(editandoAfiliadaId){
@@ -1587,6 +1802,10 @@ function abrirCadastroPublico(){
   document.getElementById('tela-login').style.display = 'none';
   document.getElementById('tela-cadastro').style.display = 'block';
   window.scrollTo({top:0, behavior:'instant'});
+  // FEATURE v1.6.15: injeta o bloco de endereço estruturado (CEP com busca
+  // automática) no formulário público de candidatura.
+  const endEl = document.getElementById('endereco-cad-pub');
+  if(endEl && !endEl.dataset.montado){ endEl.innerHTML = blocoEnderecoHtml('endereco-cad-pub'); endEl.dataset.montado = '1'; }
   carregarDocsCadastro();
 }
 
@@ -1662,13 +1881,17 @@ async function enviarCandidatura(){
     email:    document.getElementById('cad-pub-email').value.trim(),
     telefone: document.getElementById('cad-pub-telefone').value.trim(),
     instagram:document.getElementById('cad-pub-instagram').value.trim(),
-    endereco: document.getElementById('cad-pub-endereco').value.trim(),
-    razao:    document.getElementById('cad-pub-razao').value.trim(),
-    cnpj:     document.getElementById('cad-pub-cnpj').value.trim(),
+    tiktok:   document.getElementById('cad-pub-tiktok').value.trim(),
+    endereco_cep:     document.getElementById('endereco-cad-pub-cep').value.trim(),
+    endereco_rua:     document.getElementById('endereco-cad-pub-rua').value.trim(),
+    endereco_numero:  document.getElementById('endereco-cad-pub-numero').value.trim(),
+    endereco_bairro:  document.getElementById('endereco-cad-pub-bairro').value.trim(),
+    endereco_cidade:  document.getElementById('endereco-cad-pub-cidade').value.trim(),
+    endereco_uf:      document.getElementById('endereco-cad-pub-uf').value.trim(),
   };
 
-  if(!campos.nome||!campos.email||!campos.telefone||!campos.instagram||!campos.endereco){
-    erro.textContent='Preencha todos os campos obrigatórios (*).';erro.style.display='block';return;
+  if(!campos.nome||!campos.email||!campos.telefone||!campos.instagram||!campos.endereco_rua||!campos.endereco_cidade||!campos.endereco_uf){
+    erro.textContent='Preencha todos os campos obrigatórios (*), incluindo o endereço.';erro.style.display='block';return;
   }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campos.email)){
     erro.textContent='E-mail inválido.';erro.style.display='block';return;
@@ -1690,9 +1913,10 @@ async function enviarCandidatura(){
 
     const {data:af,error:errAf}=await _sb.from('afiliadas').insert({
       nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
-      instagram:campos.instagram,
-      endereco:campos.endereco||null,
-      razao_social:campos.razao||null, cnpj:campos.cnpj||null,
+      instagram:campos.instagram, tiktok:campos.tiktok||null,
+      endereco_cep:campos.endereco_cep||null, endereco_rua:campos.endereco_rua||null,
+      endereco_numero:campos.endereco_numero||null, endereco_bairro:campos.endereco_bairro||null,
+      endereco_cidade:campos.endereco_cidade||null, endereco_uf:campos.endereco_uf||null,
       codigo, tipo:'candidata', status:'pendente',
       aceite_regras:true, aceite_contrato:true,
       data_candidatura:new Date().toISOString(),
@@ -1713,7 +1937,7 @@ async function enviarCandidatura(){
     sucesso.style.display='block';
     printsCandidata=[];
     document.getElementById('lista-prints').innerHTML='';
-    ['cad-pub-nome','cad-pub-email','cad-pub-telefone','cad-pub-instagram','cad-pub-endereco','cad-pub-razao','cad-pub-cnpj'].forEach(id=>{
+    ['cad-pub-nome','cad-pub-email','cad-pub-telefone','cad-pub-instagram','cad-pub-tiktok','endereco-cad-pub-cep','endereco-cad-pub-rua','endereco-cad-pub-numero','endereco-cad-pub-bairro','endereco-cad-pub-cidade','endereco-cad-pub-uf'].forEach(id=>{
       const el=document.getElementById(id);if(el)el.value='';
     });
     document.getElementById('chk-regras').checked=false;
@@ -2696,6 +2920,97 @@ async function alterarSenha(){
 }
 
 // ===== POPUP REGRAS =====
+async function abrirPopupCompletarCadastro(){
+  const a = sessao.afiliada;
+  if(!a) return;
+  document.getElementById('completar-cnpj').value = a.cnpj||'';
+  document.getElementById('completar-razao').value = a.razao_social||'';
+  document.getElementById('endereco-completar-empresa-wrap').innerHTML = blocoEnderecoHtml('empresa-completar');
+  document.getElementById('empresa-completar-cep').value = a.empresa_endereco_cep||'';
+  document.getElementById('empresa-completar-rua').value = a.empresa_endereco_rua||'';
+  document.getElementById('empresa-completar-numero').value = a.empresa_endereco_numero||'';
+  document.getElementById('empresa-completar-bairro').value = a.empresa_endereco_bairro||'';
+  document.getElementById('empresa-completar-cidade').value = a.empresa_endereco_cidade||'';
+  document.getElementById('empresa-completar-uf').value = a.empresa_endereco_uf||'';
+  document.getElementById('completar-banco').innerHTML = montarOptionsBanco(a.banco||'');
+  document.getElementById('completar-agencia').value = a.agencia||'';
+  document.getElementById('completar-conta').value = a.conta||'';
+  document.getElementById('completar-pix').value = a.pix||'';
+  document.getElementById('completar-tipo-conta').value = a.tipo_conta||'corrente';
+  document.getElementById('completar-cartao-cnpj-input').value='';
+  document.getElementById('completar-cartao-cnpj-nome').textContent='';
+  document.getElementById('completar-cadastro-erro').style.display='none';
+  const popup = document.getElementById('popup-completar-cadastro');
+  popup.classList.add('aberto');
+  popup.style.display = 'flex';
+}
+
+async function salvarCompletarCadastro(){
+  if(!sessao.afiliada) return;
+  const erroEl = document.getElementById('completar-cadastro-erro');
+  erroEl.style.display='none';
+
+  const dados = {
+    cnpj: document.getElementById('completar-cnpj').value.trim(),
+    razao_social: document.getElementById('completar-razao').value.trim(),
+    empresa_endereco_cep:    document.getElementById('empresa-completar-cep').value.trim(),
+    empresa_endereco_rua:    document.getElementById('empresa-completar-rua').value.trim(),
+    empresa_endereco_numero: document.getElementById('empresa-completar-numero').value.trim(),
+    empresa_endereco_bairro: document.getElementById('empresa-completar-bairro').value.trim(),
+    empresa_endereco_cidade: document.getElementById('empresa-completar-cidade').value.trim(),
+    empresa_endereco_uf:     document.getElementById('empresa-completar-uf').value.trim(),
+    banco: document.getElementById('completar-banco').value.trim(),
+    agencia: document.getElementById('completar-agencia').value.trim(),
+    conta: document.getElementById('completar-conta').value.trim(),
+    pix: document.getElementById('completar-pix').value.trim(),
+    tipo_conta: document.getElementById('completar-tipo-conta').value,
+  };
+
+  if(!dados.cnpj || !dados.razao_social){
+    erroEl.textContent = 'Preencha o CNPJ/CPF e a Razão Social.'; erroEl.style.display='block'; return;
+  }
+  if(dados.tipo_conta==='pix' ? !dados.pix : !(dados.banco && dados.conta)){
+    erroEl.textContent = dados.tipo_conta==='pix' ? 'Preencha a chave Pix.' : 'Preencha o banco e a conta (ou escolha "Somente Pix").';
+    erroEl.style.display='block'; return;
+  }
+
+  loading(true);
+  const cartaoInput = document.getElementById('completar-cartao-cnpj-input');
+  const arquivoCartao = cartaoInput && cartaoInput.files[0];
+  if(arquivoCartao){
+    const path = `cartoes-cnpj/${Date.now()}_${arquivoCartao.name}`;
+    try{
+      const {error:errUp} = await _sb.storage.from('documentos-empresa').upload(path, arquivoCartao, {cacheControl:'3600'});
+      if(!errUp){
+        const {data:urlData} = _sb.storage.from('documentos-empresa').getPublicUrl(path);
+        dados.empresa_cartao_cnpj_url = urlData?.publicUrl || null;
+        dados.empresa_cartao_cnpj_nome = arquivoCartao.name;
+      } else { console.warn('upload cartão CNPJ:', errUp); }
+    }catch(e){ console.warn('upload cartão CNPJ:', e); }
+  }
+
+  try{
+    await _sb.from('afiliadas').update(dados).eq('id', sessao.afiliada.id);
+    Object.assign(sessao.afiliada, dados);
+  }catch(e){
+    loading(false);
+    erroEl.textContent = 'Erro ao salvar: ' + traduzirErro(e.message); erroEl.style.display='block';
+    return;
+  }
+  loading(false);
+  const popup = document.getElementById('popup-completar-cadastro');
+  popup.classList.remove('aberto'); popup.style.display='none';
+}
+
+// Verifica se precisa mostrar o popup de completar cadastro; roda depois do
+// popup de regras (se houver) ou direto no login (se não houver regras
+// pendentes) — nunca os dois popups sobrepostos.
+function verificarCadastroIncompletoNoLogin(){
+  if(sessao.afiliada && !cadastroEmpresaBancarioCompleto(sessao.afiliada)){
+    setTimeout(()=>abrirPopupCompletarCadastro(), 500);
+  }
+}
+
 async function abrirPopupRegras(){
   // Buscar versões atuais dos documentos
   const {data:docs} = await _sb.from('configuracoes').select('chave,valor')
@@ -2772,6 +3087,9 @@ async function confirmarLeituraRegras(){
     loading(false);
     const popup = document.getElementById('popup-regras');
     if(popup){ popup.classList.remove('aberto'); popup.style.display = 'none'; }
+    // FEATURE v1.6.15: depois de fechar o popup de regras, checa se falta
+    // completar Dados da Empresa/Bancários.
+    verificarCadastroIncompletoNoLogin();
   }
 }
 
@@ -2784,6 +3102,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.14</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.15</div>
 </body>
 </html>
