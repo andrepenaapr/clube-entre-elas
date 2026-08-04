@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.13">
+<meta name="app-version" content="1.6.14">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -512,6 +512,7 @@ tr:hover td{background:#faf7f2}
           <option value="aprovado">Aprovado</option>
           <option value="pendente">Pendente</option>
           <option value="cancelado">Cancelado</option>
+          <option value="estornado">Estornado</option>
         </select>
       </div>
     </div>
@@ -553,7 +554,9 @@ tr:hover td{background:#faf7f2}
       <div class="form-campo"><label>Status</label>
         <select id="edit-venda-status">
           <option value="aprovado">Aprovado</option>
+          <option value="pendente">Pendente</option>
           <option value="cancelado">Cancelado</option>
+          <option value="estornado">Estornado</option>
         </select>
       </div>
     </div>
@@ -605,7 +608,7 @@ tr:hover td{background:#faf7f2}
 <script>
 
 // CONTEÚDO DAS PÁGINAS
-const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Dashboard</div>\n          <div class=\"secao-desc\" id=\"desc-dashboard\">Visão geral do Clube Entre Elas</div>\n        </div>\n        <select id=\"sel-mes-dashboard\" onchange=\"renderDashboard()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;align-self:center\"></select>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Cupom</th><th>Total Vendido</th><th>Comissão</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Candidatas e afiliadas do clube. Candidatas aguardam aprovacao.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;align-items:center\"><select id=\"filtro-status-afiliadas\" onchange=\"renderTabelaAfiliadas()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"><option value=\"todos\">Todos os status</option><option value=\"ativo\">Ativas</option><option value=\"inativo\">Inativas</option><option value=\"pendente\">Pendentes / Candidatas</option></select><button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button></div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"overflow-x:auto\">\n        <table style=\"width:100%;min-width:900px\">\n          <thead><tr>\n            <th>#</th><th>Nome</th><th>Tipo</th><th>Cupom</th><th>E-mail</th>\n            <th>Vendas</th><th>Status</th><th>Pix</th><th>Banco</th><th>Ag.</th><th>Conta</th>\n            <th>Aceite Regras</th><th>Aceite Contrato</th><th>Acoes</th>\n          </tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('input-importar').click()\">&#8593; Importar Planilha</button>\n          <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n        </div>\n      </div>\n      <div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\" id=\"desc-comissoes\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras e Documentos</div>\n      <div class=\"secao-desc\">Faça upload dos PDFs e configure o link do vídeo tutorial. O \"Notificar Afiliadas\" envia um aviso para as afiliadas já cadastradas sobre atualização de regras.</div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">LIVRO DE REGRAS</div>\n          <div id=\"info-pdf-regras\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-regras\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-regras').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-regras\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'regras')\">\n          <div id=\"aviso-upload-regras\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">CONTRATO</div>\n          <div id=\"info-pdf-contrato\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-contrato\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-contrato').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-contrato\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'contrato')\">\n          <div id=\"aviso-upload-contrato\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">VÍDEO TUTORIAL</div>\n        <div class=\"form-campo\" style=\"max-width:600px\">\n          <label>Link do YouTube</label>\n          <input type=\"url\" id=\"input-link-video\" placeholder=\"https://www.youtube.com/watch?v=...\" autocomplete=\"off\">\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"salvarLinkVideo()\">Salvar Link</button>\n        <div id=\"aviso-video\" style=\"display:none;margin-top:8px;font-size:13px;color:#5ab88a\">✅ Link salvo!</div>\n      </div>\n      <div id=\"aviso-regras\" style=\"display:none;margin-top:-1rem;margin-bottom:1.5rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">\n        ✅ Afiliadas verão o popup de aceite no próximo acesso.\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">HISTÓRICO DE ATUALIZAÇÕES</div>\n        <table style=\"width:100%\">\n          <thead><tr><th>Tipo</th><th>Arquivo</th><th>Data</th><th>Hora</th><th>Responsável</th></tr></thead>\n          <tbody id=\"tabela-historico-docs\"></tbody>\n        </table>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\"><label>Anexo (opcional — PDF ou imagem, até 10MB)</label><input type=\"file\" id=\"notif-anexo-input\" accept=\".pdf,image/*\" onchange=\"document.getElementById('notif-anexo-nome').textContent=this.files[0]?this.files[0].name:''\"><div id=\"notif-anexo-nome\" style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\"></div></div><button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n        <div id=\"aviso-notif\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">✅ Notificação enviada!</div>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
+const PAGINAS_ADMIN = {"adm-dashboard": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Dashboard</div>\n          <div class=\"secao-desc\" id=\"desc-dashboard\">Visão geral do Clube Entre Elas</div>\n        </div>\n        <select id=\"sel-mes-dashboard\" onchange=\"renderDashboard()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;align-self:center\"></select>\n      </div>\n      <div class=\"stats-grid\" id=\"stats-admin\"></div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\">\n          <div class=\"tabela-titulo\">Top Afiliadas do Mês</div>\n        </div>\n        <table>\n          <thead><tr><th>#</th><th>Afiliada</th><th>Cupom</th><th>Total Vendido</th><th>Comissão</th></tr></thead>\n          <tbody id=\"top-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-afiliadas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between\">\n        <div>\n          <div class=\"secao-titulo\">Afiliadas</div>\n          <div class=\"secao-desc\">Candidatas e afiliadas do clube. Candidatas aguardam aprovacao.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;align-items:center\"><select id=\"filtro-status-afiliadas\" onchange=\"renderTabelaAfiliadas()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"><option value=\"todos\">Todos os status</option><option value=\"ativo\">Ativas</option><option value=\"inativo\">Inativas</option><option value=\"pendente\">Pendentes / Candidatas</option></select><button class=\"btn-acao\" onclick=\"abrirModalCadastro()\">+ Nova Afiliada</button></div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"overflow-x:auto\">\n        <table style=\"width:100%;min-width:900px\">\n          <thead><tr>\n            <th>#</th><th>Nome</th><th>Tipo</th><th>Cupom</th><th>E-mail</th>\n            <th>Vendas</th><th>Status</th><th>Pix</th><th>Banco</th><th>Ag.</th><th>Conta</th>\n            <th>Aceite Regras</th><th>Aceite Contrato</th><th>Acoes</th>\n          </tr></thead>\n          <tbody id=\"tabela-afiliadas\"></tbody>\n        </table>\n      </div>", "adm-vendas": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px\">\n        <div>\n          <div class=\"secao-titulo\">Vendas</div>\n          <div class=\"secao-desc\">Importe a planilha da loja para registrar as vendas das afiliadas.</div>\n        </div>\n        <div style=\"display:flex;gap:10px;flex-wrap:wrap;align-items:center\">\n          <button class=\"btn-acao secundario\" onclick=\"abrirLogImportacao()\">&#128196; Log</button>\n          <button class=\"btn-acao secundario\" onclick=\"exportarPlanilha()\">&#8595; Exportar Modelo</button>\n          <button class=\"btn-acao secundario\" onclick=\"document.getElementById('input-importar').click()\">&#8593; Importar Planilha</button>\n          <input type=\"file\" id=\"input-importar\" accept=\".xlsx,.xls\" style=\"display:none\" onchange=\"importarPlanilha(this)\">\n        </div>\n      </div>\n      <div id=\"aviso-importacao\" style=\"display:none;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Pedido</th><th>Data</th><th>Hora</th><th>Cupom</th><th>Afiliada</th><th>Produto</th><th>Subtotal</th><th>Status</th><th>Ações</th></tr></thead>\n          <tbody id=\"tabela-vendas\"></tbody>\n        </table>\n      </div>", "adm-comissoes": "<div style=\"margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px\">\n        <div>\n          <div class=\"secao-titulo\">Comissões</div>\n          <div class=\"secao-desc\" id=\"desc-comissoes\">Fechamento mensal por afiliada com base nas faixas configuradas.</div>\n        </div>\n        <div style=\"display:flex;align-items:center;gap:10px;flex-wrap:wrap\">\n          <select id=\"sel-mes-comissao\" onchange=\"renderComissoes()\" style=\"padding:8px 12px;background:#fff;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none\"></select>\n          <button class=\"btn-acao secundario\" onclick=\"abrirModalFaixas()\">Editar Faixas</button>\n        </div>\n      </div>\n      <div class=\"faixas-wrap\" id=\"faixas-admin\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Afiliada</th><th>Total Vendido</th><th>Faixa</th><th>% Comissão</th><th>Valor Comissão</th><th>Banco / Pix</th><th>Pagamento</th></tr></thead>\n          <tbody id=\"tabela-fechamento\"></tbody>\n        </table>\n      </div>", "adm-regras": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Regras e Documentos</div>\n      <div class=\"secao-desc\">Faça upload dos PDFs e configure o link do vídeo tutorial. O \"Notificar Afiliadas\" envia um aviso para as afiliadas já cadastradas sobre atualização de regras.</div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">LIVRO DE REGRAS</div>\n          <div id=\"info-pdf-regras\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-regras\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-regras').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-regras\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'regras')\">\n          <div id=\"aviso-upload-regras\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n        <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">CONTRATO</div>\n          <div id=\"info-pdf-contrato\" style=\"font-size:12px;color:var(--cinza-medio);margin-bottom:1rem\">Nenhum arquivo enviado.</div>\n          <div class=\"form-campo\" style=\"margin-bottom:10px\"><label>Versao</label><input type=\"text\" id=\"versao-pdf-contrato\" placeholder=\"1.0\" autocomplete=\"off\" style=\"width:120px\"></div><button class=\"btn-acao secundario\" onclick=\"document.getElementById('upload-pdf-contrato').click()\" style=\"width:100%\">&#8593; Enviar PDF</button>\n          <input type=\"file\" id=\"upload-pdf-contrato\" accept=\".pdf\" style=\"display:none\" onchange=\"uploadDocumento(this,'contrato')\">\n          <div id=\"aviso-upload-contrato\" style=\"display:none;font-size:12px;margin-top:8px\"></div>\n        </div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">VÍDEO TUTORIAL</div>\n        <div class=\"form-campo\" style=\"max-width:600px\">\n          <label>Link do YouTube</label>\n          <input type=\"url\" id=\"input-link-video\" placeholder=\"https://www.youtube.com/watch?v=...\" autocomplete=\"off\">\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"salvarLinkVideo()\">Salvar Link</button>\n        <div id=\"aviso-video\" style=\"display:none;margin-top:8px;font-size:13px;color:#5ab88a\">✅ Link salvo!</div>\n      </div>\n      <div id=\"aviso-regras\" style=\"display:none;margin-top:-1rem;margin-bottom:1.5rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">\n        ✅ Afiliadas verão o popup de aceite no próximo acesso.\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:1rem\">HISTÓRICO DE ATUALIZAÇÕES</div>\n        <table style=\"width:100%\">\n          <thead><tr><th>Tipo</th><th>Arquivo</th><th>Data</th><th>Hora</th><th>Responsável</th></tr></thead>\n          <tbody id=\"tabela-historico-docs\"></tbody>\n        </table>\n      </div>", "adm-notificacoes": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Notificações</div>\n      <div class=\"secao-desc\">Envie avisos para todas as afiliadas ou para uma afiliada específica.</div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div class=\"form-grid\">\n          <div class=\"form-campo\">\n            <label>Título</label>\n            <input type=\"text\" id=\"notif-titulo-input\" placeholder=\"Ex: Novidade do mês\">\n          </div>\n          <div class=\"form-campo\">\n            <label>Destinatário</label>\n            <select id=\"notif-dest\">\n              <option value=\"todas\">Todas as afiliadas</option>\n            </select>\n          </div>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\">\n          <label>Mensagem</label>\n          <textarea class=\"regras-editor\" id=\"notif-texto-input\" rows=\"4\" style=\"min-height:80px\" placeholder=\"Digite a mensagem...\"></textarea>\n        </div>\n        <div class=\"form-campo\" style=\"margin-top:12px\"><label>Anexo (opcional — PDF ou imagem, até 10MB)</label><input type=\"file\" id=\"notif-anexo-input\" accept=\".pdf,image/*\" onchange=\"document.getElementById('notif-anexo-nome').textContent=this.files[0]?this.files[0].name:''\"><div id=\"notif-anexo-nome\" style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\"></div></div><button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"enviarNotificacao()\">Enviar Notificação</button>\n        <div id=\"aviso-notif\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a\">✅ Notificação enviada!</div>\n      </div>\n      <div class=\"secao-titulo\" style=\"font-size:20px;margin-bottom:1rem\">Histórico</div>\n      <div id=\"lista-notificacoes-admin\"></div>", "adm-equipe": "<div style=\"margin-bottom:1.5rem\">\n        <div class=\"secao-titulo\">Equipe de Gestão</div>\n        <div class=\"secao-desc\">Convide novos administradores para acessar o painel de gestão.</div>\n      </div>\n      <div class=\"tabela-wrap\" style=\"padding:1.5rem;margin-bottom:1.5rem\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">CONVIDAR NOVO ADMIN</div>\n        <div class=\"form-grid\" style=\"max-width:600px\">\n          <div class=\"form-campo\"><label>Nome</label><input type=\"text\" id=\"admin-nome\" placeholder=\"Nome completo\"></div>\n          <div class=\"form-campo\"><label>E-mail</label><input type=\"email\" id=\"admin-email\" placeholder=\"email@exemplo.com\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"convidarAdmin()\">Enviar Convite</button>\n        <div id=\"aviso-convite-admin\" style=\"display:none;margin-top:1rem;background:#0e2818;border:1px solid #1a5a30;border-radius:8px;padding:12px 16px;font-size:13px;color:#5ab88a;line-height:1.6\"></div>\n      </div>\n      <div class=\"tabela-wrap\">\n        <div class=\"tabela-header\"><div class=\"tabela-titulo\">Admins Cadastrados</div></div>\n        <table><thead><tr><th>Nome</th><th>E-mail</th><th>Criado em</th><th>Ações</th></tr></thead>\n        <tbody id=\"tabela-admins\"></tbody></table>\n      </div>"};
 const PAGINAS_AF = {"af-painel": "<div class=\"af-boas-vindas\">\n        <div style=\"font-size:13px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cinza-claro);margin-bottom:4px\">Bem-vinda,</div>\n        <div class=\"af-nome\" id=\"af-nome-display\">Ana Silva</div>\n        <div class=\"af-cupom-tag\" id=\"af-cupom-display\">CUPOM: ANAENTREELAS</div>\n      </div>\n      <div class=\"af-stats\" id=\"af-stats-grid\"></div>\n      <div class=\"divider\"></div>\n      <div class=\"secao-titulo\">Histórico de Vendas</div>\n      <div class=\"tabela-wrap\">\n        <table>\n          <thead><tr><th>Produto</th><th>Data</th><th>Valor</th><th>Status</th></tr></thead>\n          <tbody id=\"af-historico\"></tbody>\n        </table>\n      </div>", "af-ranking": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Ranking de Afiliadas</div>\n      <div class=\"secao-desc\" id=\"desc-ranking-af\">Classificação por volume de vendas do mês atual</div>\n      <div style=\"display:flex;gap:8px;margin-bottom:1rem\"><button class=\"btn-acao\" id=\"btn-ranking-atual\" onclick=\"trocarMesRanking('atual')\">Mês Atual</button><button class=\"btn-acao secundario\" id=\"btn-ranking-anterior\" onclick=\"trocarMesRanking('anterior')\">Mês Anterior</button></div><div class=\"ranking-lista\" id=\"lista-ranking\"></div>", "af-regras-af": "<div class=\"secao-titulo\" style=\"margin-bottom:1.5rem\">Regras e Contrato</div>\n      <div id=\"regras-af-conteudo\"></div>\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem\" id=\"pdfs-af-wrap\" style=\"display:none\">\n        <div id=\"pdf-regras-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Livro de Regras</div>\n          <div id=\"pdf-regras-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-regras-af\"></span></div>\n        </div>\n        <div id=\"pdf-contrato-af-wrap\" style=\"display:none\">\n          <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0.75rem;text-transform:uppercase\">Contrato</div>\n          <div id=\"pdf-contrato-af-container\" style=\"border:1px solid var(--border);border-radius:10px;overflow:hidden;height:500px;background:#f5f5f5\"></div>\n          <div style=\"font-size:11px;color:var(--cinza-medio);margin-top:6px;text-align:center\">Atualizado em: <span id=\"data-pdf-contrato-af\"></span></div>\n        </div>\n      </div>", "af-minha-conta": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Minha Conta</div>\n      <div class=\"secao-desc\">Gerencie sua senha de acesso ao painel.</div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">ALTERAR SENHA</div>\n        <div class=\"form-grid uma-col\" style=\"max-width:400px;gap:12px\">\n          <div class=\"form-campo\"><label>Senha Atual</label><input type=\"password\" id=\"senha-atual\" placeholder=\"\"></div>\n          <div class=\"form-campo\"><label>Nova Senha</label><input type=\"password\" id=\"senha-nova\" placeholder=\"\" autocomplete=\"new-password\"><div style=\"font-size:12px;color:var(--cinza-medio);margin-top:4px\">Mínimo 8 caracteres, uma letra e um número.</div></div>\n          <div class=\"form-campo\"><label>Confirmar Nova Senha</label><input type=\"password\" id=\"senha-confirma\" placeholder=\"\"></div>\n        </div>\n        <button class=\"btn-acao\" style=\"margin-top:1rem\" onclick=\"alterarSenha()\">Salvar Nova Senha</button>\n        <div class=\"msg-sucesso\" id=\"msg-senha-ok\">✓ Senha alterada com sucesso!</div>\n        <div class=\"msg-erro\" id=\"msg-senha-err\"></div>\n      </div>\n      <div class=\"senha-card\">\n        <div style=\"font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--creme);margin-bottom:1.25rem;letter-spacing:0.05em\">MEUS DADOS</div>\n        <div id=\"minha-conta-dados\"></div>\n      </div>", "af-notificacoes-af": "<div class=\"secao-titulo\" style=\"margin-bottom:0.5rem\">Avisos da Equipe</div>\n      <div class=\"secao-desc\">Comunicados enviados pela equipe Entre Elas</div>\n      <div id=\"lista-notificacoes-af\"></div>"};
 
 // ============================================================
@@ -1097,6 +1100,13 @@ async function renderAdmin(){
 
 // ---- Dashboard ----
 async function renderDashboard(){
+  // BUGFIX/OTIMIZAÇÃO v1.6.14: antes, esta função sempre buscava TODAS as
+  // vendas e afiliadas do banco de novo, mesmo quando a página do Dashboard
+  // nem estava visível (ex: ao editar uma venda na aba Vendas, que também
+  // chama renderDashboard() pra manter os números atualizados quando o admin
+  // voltar lá). Isso desperdiçava tempo/rede sempre que o Dashboard não
+  // estava na tela — contribuindo pro atraso ao salvar edições de venda.
+  if(!document.getElementById('stats-admin')) return;
   // Inicializar seletor de mês se necessário
   const selD = document.getElementById('sel-mes-dashboard');
   if(selD && selD.options.length === 0){
@@ -1199,6 +1209,18 @@ async function renderTabelaVendas(){
   const {data:vendas} = await _sb.from('vendas').select('*, afiliadas(nome,cupom)').order('data',{ascending:false});
   const tbody = document.getElementById('tabela-vendas');
   if(!tbody) return;
+  // FEATURE v1.6.14 (item 3): badge preparado pra 4 status possíveis, não só
+  // aprovado/cancelado.
+  function badgeStatusVenda(status){
+    const mapa = {
+      aprovado:  {classe:'ativo',    texto:'Aprovado'},
+      pendente:  {classe:'pendente', texto:'Pendente'},
+      cancelado: {classe:'inativo',  texto:'Cancelado'},
+      estornado: {classe:'inativo',  texto:'Estornado'},
+    };
+    const s = mapa[status] || mapa.aprovado;
+    return `<span class="badge ${s.classe}">${s.texto}</span>`;
+  }
   tbody.innerHTML=(vendas||[]).map(v=>`
     <tr>
       <td style="font-family:monospace;font-size:12px">${v.numero_pedido||'—'}</td>
@@ -1206,14 +1228,15 @@ async function renderTabelaVendas(){
       <td style="font-size:12px;color:var(--cinza-medio)">${v.hora||'—'}</td>
       <td style="font-family:monospace;font-size:12px;color:var(--dourado)">${escapeHtml(v.afiliadas?.cupom||v.cupom||'—')}</td>
       <td>${escapeHtml(v.afiliadas?.nome||'—')}</td>
+      <td style="font-size:12px">${escapeHtml(v.produto||'—')}</td>
       <td>${fmtBRL(v.valor)}</td>
-      <td><span class="badge ${v.status==='cancelado'?'inativo':'ativo'}">${v.status==='cancelado'?'Cancelado':'Aprovado'}</span></td>
+      <td>${badgeStatusVenda(v.status)}</td>
       <td style="display:flex;gap:6px">
         <button class="btn-mini" onclick="abrirEditarVenda('${v.id}','${v.numero_pedido||''}','${v.data||''}','${v.hora||''}',${v.valor||0},'${v.status||'aprovado'}')">Editar</button>
         <button class="btn-mini" style="color:#e05555;border-color:#e05555" onclick="apagarVenda('${v.id}','${v.numero_pedido||v.id}')">Apagar</button>
       </td>
     </tr>
-  `).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma venda registrada.</td></tr>';
+  `).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma venda registrada.</td></tr>';
 }
 
 // ---- Comissões ----
@@ -1995,8 +2018,8 @@ async function salvarEdicaoVenda(){
   loading(false);
   if(error){alert('Erro: '+traduzirErro(error.message));return;}
   fecharModal('modal-editar-venda');
-  await renderTabelaVendas();
-  await renderDashboard();
+  // OTIMIZAÇÃO v1.6.14: rodar em paralelo em vez de esperar uma de cada vez.
+  await Promise.all([renderTabelaVendas(), renderDashboard()]);
 }
 
 async function apagarVenda(id, pedido){
@@ -2006,8 +2029,7 @@ async function apagarVenda(id, pedido){
   const {error} = await _sb.from('vendas').delete().eq('id',id);
   loading(false);
   if(error){alert('Erro: '+traduzirErro(error.message));return;}
-  await renderTabelaVendas();
-  await renderDashboard();
+  await Promise.all([renderTabelaVendas(), renderDashboard()]);
 }
 
 function exportarPlanilha(){
@@ -2015,12 +2037,14 @@ function exportarPlanilha(){
   // FEATURE v1.6.6: coluna PRODUTO adicionada (opcional) — se vier preenchida na
   // planilha importada, usa o nome real do produto em vez do texto genérico
   // "Importação".
+  // FEATURE v1.6.14: coluna STATUS adicionada (opcional) — aceita Aprovada,
+  // Pendente, Cancelada ou Estornada. Se não vier, mantém tudo como aprovado.
   const ws = XLSX.utils.aoa_to_sheet([
-    ['PEDIDO','DATA','HORA','PRODUTO','SUBTOTAL DOS PRODUTOS','CUPOM DE DESCONTO'],
-    ['12345','01/06/2026','14:30','Nome do Produto','150.00','CUPOM123'],
+    ['PEDIDO','DATA','HORA','PRODUTO','SUBTOTAL DOS PRODUTOS','CUPOM DE DESCONTO','STATUS'],
+    ['12345','01/06/2026','14:30','Nome do Produto','150.00','CUPOM123','Aprovada'],
   ]);
   // Largura das colunas
-  ws['!cols'] = [{wch:12},{wch:12},{wch:8},{wch:26},{wch:22},{wch:22}];
+  ws['!cols'] = [{wch:12},{wch:12},{wch:8},{wch:26},{wch:22},{wch:22},{wch:14}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Vendas');
   XLSX.writeFile(wb, 'modelo_vendas_entre_elas.xlsx');
@@ -2057,20 +2081,42 @@ async function importarPlanilha(input){
     // "SUBTOTAL DOS PRODUTOS" (que contém a palavra PRODUTOS) — por isso o
     // filtro exclui colunas que também tenham SUBTOTAL ou VALOR no nome.
     const colProduto = header.findIndex(h=>h.includes('PRODUTO')&&!h.includes('SUBTOTAL')&&!h.includes('VALOR'));
+    // FEATURE v1.6.14: coluna STATUS opcional (Aprovada/Pendente/Estornado/
+    // Cancelada). Se não vier, mantém o comportamento anterior (tudo aprovado).
+    const colStatus = header.findIndex(h=>h.includes('STATUS')||h.includes('SITUACAO'));
 
     if(colPedido<0||colData<0||colValor<0||colCupom<0){
       throw new Error('Colunas obrigatórias não encontradas. Use o modelo exportado.');
+    }
+
+    // FEATURE v1.6.14: reconhece diferentes textos de status vindos da
+    // planilha da loja e converte pro valor interno do sistema.
+    function normalizarStatusVenda(txt){
+      const t = String(txt||'').toUpperCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      if(!t) return 'aprovado';
+      if(t.includes('CANCEL')) return 'cancelado';
+      if(t.includes('ESTORN')) return 'estornado';
+      if(t.includes('PEND')) return 'pendente';
+      return 'aprovado';
     }
 
     // Buscar cupons e pedidos existentes
     const {data:afiliadas} = await _sb.from('afiliadas').select('id,cupom').eq('status','ativo');
     const mapaCupons = {};
     (afiliadas||[]).forEach(a=>{ mapaCupons[a.cupom.toUpperCase()] = a.id; });
-    const {data:pedidosExist} = await _sb.from('vendas').select('numero_pedido');
-    const pedidosCad = new Set((pedidosExist||[]).map(v=>String(v.numero_pedido)));
+    // FEATURE v1.6.14 (item 1): busca dados completos dos pedidos já
+    // existentes (não só o número), pra poder detectar quando uma linha nova
+    // é na verdade OUTRO PRODUTO do mesmo pedido (mesmo número + mesmo cupom
+    // + nome de produto diferente do que já estava salvo) em vez de tratar
+    // como duplicado e descartar a linha.
+    const {data:pedidosExist} = await _sb.from('vendas').select('id,numero_pedido,valor,produto,cupom');
+    const pedidosExistMap = new Map();
+    (pedidosExist||[]).forEach(v=>{ if(v.numero_pedido) pedidosExistMap.set(String(v.numero_pedido), v); });
 
-    let inseridos=0, ignorados=0, duplicados=0, semCupom=0;
+    let inseridos=0, ignorados=0, duplicados=0, semCupom=0, mesclados=0;
     const registros = [];
+    const registrosPorPedido = new Map(); // pedidos novos deste mesmo import
+    const atualizacoesExistentes = new Map(); // pedidos que já estavam no banco
     const linhas = rows; // para compatibilidade com código abaixo
 
     for(let i=1; i<rows.length; i++){
@@ -2081,11 +2127,15 @@ async function importarPlanilha(input){
       const valorRaw= row[colValor];
       const cupom   = String(row[colCupom]||'').toUpperCase().trim();
       const produtoNome = colProduto>=0 ? String(row[colProduto]||'').trim() : '';
+      const status  = colStatus>=0 ? normalizarStatusVenda(row[colStatus]) : 'aprovado';
 
       if(!cupom){ semCupom++; continue; }
       const afiliadaId = mapaCupons[cupom];
       if(!afiliadaId){ semCupom++; continue; }
-      if(pedido && pedidosCad.has(pedido)){ duplicados++; continue; }
+
+      // Converter valor
+      const valor = parseFloat(String(valorRaw||0).replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
+      if(valor <= 0){ ignorados++; continue; }
 
       // Converter data
       let dataISO = '';
@@ -2099,28 +2149,64 @@ async function importarPlanilha(input){
         } else { dataISO = ds; }
       }
 
-      // Converter valor
-      const valor = parseFloat(String(valorRaw||0).replace(/[^0-9.,]/g,'').replace(',','.')) || 0;
-      if(valor <= 0){ ignorados++; continue; }
+      // FEATURE v1.6.14 (item 1): pedido já visto (no banco ou neste mesmo
+      // import)? Só mescla como "produto adicional" se o cupom bater E o
+      // nome do produto for realmente diferente dos já registrados nesse
+      // pedido — assim uma reimportação acidental da mesma planilha continua
+      // caindo em "duplicado" (sem somar valor de novo à toa), mas duas
+      // linhas de produtos diferentes do mesmo pedido são somadas de verdade.
+      const jaNoBanco = pedidosExistMap.has(pedido);
+      const jaNoImport = registrosPorPedido.has(pedido);
+      if(pedido && (jaNoBanco || jaNoImport)){
+        const existente = jaNoBanco ? pedidosExistMap.get(pedido) : registrosPorPedido.get(pedido);
+        if(String(existente.cupom).toUpperCase() !== cupom){ duplicados++; continue; }
+        const acc = atualizacoesExistentes.get(pedido);
+        const produtosJaListados = (jaNoBanco
+          ? [existente.produto].concat(acc?acc.produtosNovos:[])
+          : [existente.produto]
+        ).join(' + ').toUpperCase();
+        const ehProdutoNovo = produtoNome && !produtosJaListados.includes(produtoNome.toUpperCase());
+        if(!ehProdutoNovo){ duplicados++; continue; }
 
-      registros.push({
+        mesclados++;
+        if(jaNoBanco){
+          if(!acc) atualizacoesExistentes.set(pedido, {id:existente.id, valorBase:existente.valor, produtoBase:existente.produto, valorSoma:valor, produtosNovos:[produtoNome]});
+          else { acc.valorSoma += valor; acc.produtosNovos.push(produtoNome); }
+        } else {
+          existente.valor += valor;
+          existente.produto = existente.produto==='Importação' ? produtoNome : (existente.produto + ' + ' + produtoNome);
+        }
+        continue;
+      }
+
+      const registro = {
         numero_pedido: pedido,
         data: dataISO,
         hora: hora,
         valor: valor,
         cupom: cupom,
         afiliada_id: afiliadaId,
-        status: 'aprovado',
+        status: status,
         produto: produtoNome || 'Importação'
-      });
-      if(pedido) pedidosCad.add(pedido);
+      };
+      registros.push(registro);
+      if(pedido) registrosPorPedido.set(pedido, registro);
       inseridos++;
     }
 
-    // Inserir em lotes
+    // Inserir os pedidos novos em lote
     if(registros.length > 0){
       const {error} = await _sb.from('vendas').insert(registros);
       if(error) throw new Error('Erro ao salvar: ' + traduzirErro(error.message));
+    }
+    // Atualizar (mesclar) os pedidos que já existiam no banco
+    for(const {id, valorBase, produtoBase, valorSoma, produtosNovos} of atualizacoesExistentes.values()){
+      try{
+        await _sb.from('vendas').update({
+          valor: valorBase + valorSoma,
+          produto: produtoBase==='Importação' ? produtosNovos.join(' + ') : (produtoBase + ' + ' + produtosNovos.join(' + ')),
+        }).eq('id', id);
+      }catch(e){ console.warn('mesclar pedido existente:', e); }
     }
 
     aviso.style.cssText = 'display:block;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6;background:#0e2818;border:1px solid #1a5a30;color:#5ab88a';
@@ -2128,6 +2214,7 @@ async function importarPlanilha(input){
     // contadas no log salvo no banco mas nunca apareciam nesse resumo pro admin.
     aviso.innerHTML = `✅ Importação concluída!<br>
       <strong>${inseridos}</strong> vendas importadas &nbsp;|&nbsp;
+      <strong>${mesclados}</strong> itens somados a pedidos com múltiplos produtos &nbsp;|&nbsp;
       <strong>${duplicados}</strong> pedidos duplicados ignorados &nbsp;|&nbsp;
       <strong>${semCupom}</strong> registros sem cupom válido ignorados &nbsp;|&nbsp;
       <strong>${ignorados}</strong> registros com valor inválido ignorados`;
@@ -2147,8 +2234,7 @@ async function importarPlanilha(input){
       });
     }catch(e){ console.warn('log_importacoes:', e); }
 
-    await renderTabelaVendas();
-    await renderDashboard();
+    await Promise.all([renderTabelaVendas(), renderDashboard()]);
 
   } catch(e){
     aviso.style.cssText = 'display:block;margin-bottom:1rem;padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.6;background:#2e1a1a;border:1px solid #5a2a2a;color:#e08080';
@@ -2175,9 +2261,7 @@ async function salvarVenda(){
   await _sb.from('vendas').insert({afiliada_id:afId, produto, valor, data, status});
   fecharModal('modal-venda');
   loading(false);
-  await renderTabelaVendas();
-  await renderDashboard();
-  await renderComissoes();
+  await Promise.all([renderTabelaVendas(), renderDashboard(), renderComissoes()]);
 }
 
 // ---- Modal Faixas ----
@@ -2366,10 +2450,18 @@ async function renderAfiliada(afiliadaId){
     </div>
   `;
   // Histórico
-  document.getElementById('af-historico').innerHTML=(vendasAf||[]).slice(0,10).map(v=>`
-    <tr><td>${escapeHtml(v.produto)}</td><td>${fmtData(v.data)}</td><td>${fmtBRL(v.valor)}</td>
-    <td><span class="badge ${v.status==='aprovado'?'ativo':v.status==='cancelado'?'inativo':'pendente'}">${v.status==='aprovado'?'Aprovado':v.status==='cancelado'?'Cancelado':'Pendente'}</span></td></tr>
-  `).join('');
+  // FEATURE v1.6.14 (item 3): badge reconhece os 4 status possíveis agora.
+  document.getElementById('af-historico').innerHTML=(vendasAf||[]).slice(0,10).map(v=>{
+    const mapa = {
+      aprovado:  {classe:'ativo',    texto:'Aprovado'},
+      pendente:  {classe:'pendente', texto:'Pendente'},
+      cancelado: {classe:'inativo',  texto:'Cancelado'},
+      estornado: {classe:'inativo',  texto:'Estornado'},
+    };
+    const s = mapa[v.status] || mapa.aprovado;
+    return `<tr><td>${escapeHtml(v.produto)}</td><td>${fmtData(v.data)}</td><td>${fmtBRL(v.valor)}</td>
+    <td><span class="badge ${s.classe}">${s.texto}</span></td></tr>`;
+  }).join('');
   await renderRanking(afiliadaId);
   renderRegrasAf();
   await renderNotifAf(afiliadaId);
@@ -2692,6 +2784,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.13</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.14</div>
 </body>
 </html>
