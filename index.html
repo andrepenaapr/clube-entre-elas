@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.15">
+<meta name="app-version" content="1.6.16">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -1908,7 +1908,14 @@ async function enviarCandidatura(){
     const {data:existe}=await _sb.from('afiliadas').select('id').eq('email',campos.email).single();
     if(existe) throw new Error('Este e-mail já está cadastrado.');
 
-    const {data:ultima}=await _sb.from('afiliadas').select('codigo').order('codigo',{ascending:false}).limit(1).single().catch(()=>({data:null}));
+    // BUGFIX v1.6.16: mesmo padrão de .catch() quebrado das outras correções
+    // (o Supabase não retorna um objeto com .catch aqui) — isso quebrava TODA
+    // candidatura enviada pelo formulário público, sempre, sem exceção.
+    let ultima = null;
+    try{
+      const resp = await _sb.from('afiliadas').select('codigo').order('codigo',{ascending:false}).limit(1).single();
+      ultima = resp.data;
+    }catch(e){ console.warn('buscar último código:', e); }
     const codigo=String((ultima?.codigo?parseInt(ultima.codigo):0)+1).padStart(4,'0');
 
     const {data:af,error:errAf}=await _sb.from('afiliadas').insert({
@@ -1960,7 +1967,13 @@ async function aceitarCandidata(id,nome,email){
   if(!cupom){alert('O cupom nao pode estar vazio.');return;}
   loading(true);
   try{
-    const {data:cx}=await _sb.from('afiliadas').select('id').eq('cupom',cupom).single().catch(()=>({data:null}));
+    // BUGFIX v1.6.16: mesmo padrão de .catch() quebrado — isso quebrava TODA
+    // tentativa de aceitar uma candidata, sempre, sem exceção.
+    let cx = null;
+    try{
+      const resp = await _sb.from('afiliadas').select('id').eq('cupom',cupom).single();
+      cx = resp.data;
+    }catch(e){ console.warn('checar cupom existente:', e); }
     if(cx){loading(false);alert('Cupom ja em uso. Tente outro.');return;}
     const {error}=await _sb.from('afiliadas').update({
       tipo:'afiliada',status:'ativo',cupom,data_aceite:new Date().toISOString()
@@ -3102,6 +3115,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.15</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.16</div>
 </body>
 </html>
