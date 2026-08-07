@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.27">
+<meta name="app-version" content="1.6.28">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -2774,16 +2774,29 @@ async function excluirAfiliada(id, nome){
   // exclusões de 'perfis' ou 'vendas' falhassem silenciosamente (ex: por uma
   // policy de RLS bloqueando sem lançar erro visível), a exclusão parecia ter
   // funcionado mas deixava dadoórfão pra trás. Agora reporta qualquer falha.
+  // BUGFIX v1.6.28: buscamos o e-mail ANTES de excluir e apagamos qualquer
+  // perfil vinculado a esse e-mail também — não só por afiliada_id. Isso
+  // cobre um caso grave: se essa pessoa em algum momento (por causa do bug já
+  // corrigido de "assumir admin") acabou com um perfil de administradora
+  // (que não tem afiliada_id, só e-mail), esse perfil ficava órfão e
+  // continuava dando acesso de gestão mesmo depois da afiliada ser excluída.
+  const {data:afiliadaAtual} = await _sb.from('afiliadas').select('email').eq('id', id).single();
+  const emailAfiliada = afiliadaAtual?.email || null;
+
   const erros = [];
   const {error: errPerfil} = await _sb.from('perfis').delete().eq('afiliada_id', id);
-  if(errPerfil) erros.push('perfis: '+errPerfil.message);
+  if(errPerfil) erros.push('perfis (por afiliada_id): '+errPerfil.message);
+  if(emailAfiliada){
+    const {error: errPerfilEmail} = await _sb.from('perfis').delete().ilike('email', emailAfiliada);
+    if(errPerfilEmail) erros.push('perfis (por e-mail): '+errPerfilEmail.message);
+  }
   const {error: errVendas} = await _sb.from('vendas').delete().eq('afiliada_id', id);
   if(errVendas) erros.push('vendas: '+errVendas.message);
   const {error: errAfiliada} = await _sb.from('afiliadas').delete().eq('id', id);
   if(errAfiliada) erros.push('afiliadas: '+errAfiliada.message);
   loading(false);
   if(erros.length){
-    alert('Atenção: a exclusão não foi totalmente concluída.\n\n'+erros.join('\n')+'\n\nIsso pode deixar dados órfãos (ex: um e-mail que parece "ainda em uso" ao tentar recadastrar). Verifique as permissões (RLS) dessas tabelas no Supabase.');
+    alert('Atenção: a exclusão não foi totalmente concluída.\n\n'+erros.join('\n')+'\n\nIsso pode deixar dados órfãos (ex: um e-mail que parece "ainda em uso" ao tentar recadastrar, ou até um acesso de gestão indevido). Verifique as permissões (RLS) dessas tabelas no Supabase.');
     await renderTabelaAfiliadas();
     await renderDashboard();
     return;
@@ -3850,6 +3863,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.27</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.28</div>
 </body>
 </html>
