@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.24">
+<meta name="app-version" content="1.6.27">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -328,7 +328,7 @@ tr:hover td{background:#faf7f2}
 <div id="tela-cadastro" style="display:none;min-height:100vh;background:var(--bg)">
   <div style="background:var(--bg-header);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;letter-spacing:0.12em;color:#fff">ENTRE <span style="color:var(--dourado)">ELAS</span> — Programa de Afiliadas</div>
-    <button onclick="document.getElementById('tela-cadastro').style.display='none';document.getElementById('tela-login').style.display='flex'" style="background:none;border:none;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.5)">← Voltar ao login</button>
+    <button onclick="document.getElementById('tela-cadastro').style.display='none';document.getElementById('tela-login').style.display='flex'" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;color:#fff">← Voltar ao login</button>
   </div>
   <div style="max-width:780px;margin:0 auto;padding:2.5rem 1.5rem">
     <div style="text-align:center;margin-bottom:2.5rem">
@@ -750,6 +750,16 @@ let sessao = {
 // BUGFIX v1.6.3 (segurança): escapa HTML antes de injetar via innerHTML.
 // Necessário porque nome/e-mail vêm de um formulário PÚBLICO sem login
 // (candidatura de afiliada) e antes eram inseridos sem nenhum escape.
+// FEATURE v1.6.25: capitaliza nomes — primeira letra de cada palavra em
+// maiúscula, preposições comuns (de/da/do/das/dos/e) ficam em minúsculo.
+function capitalizarNome(nome){
+  const minusculas = new Set(['de','da','do','das','dos','e']);
+  return String(nome||'').trim().toLowerCase().split(/\s+/).map((palavra,i)=>{
+    if(i>0 && minusculas.has(palavra)) return palavra;
+    return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+  }).join(' ');
+}
+
 function escapeHtml(s){
   if(s===null||s===undefined) return '';
   return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1034,6 +1044,41 @@ function toggleSenha(){
   }
 }
 
+// FEATURE v1.6.26: cria o perfil só quando há CERTEZA do tipo de acesso —
+// nunca mais "assume" admin por ausência na tabela de afiliadas (esse era
+// o bug: se a busca por afiliada falhasse por qualquer motivo — RLS, erro
+// de rede, o que for — a pessoa virava admin por engano). Retorna true se
+// conseguiu criar (afiliada encontrada, ou convite de admin confirmado em
+// "convites_admin_pendentes"), ou false se não achou nada explícito — nesse
+// caso NENHUM perfil é criado, e quem chamou deve bloquear o acesso.
+async function criarPerfilComCerteza(userId, email, nomeFallback){
+  const emailNorm = String(email||'').trim();
+  const {data:af} = await _sb.from('afiliadas').select('id').ilike('email', emailNorm).single();
+  if(af){
+    // AUDITORIA v1.6.27: checar erro real do insert, não só confiar que
+    // "não travou" significa que funcionou (RLS pode bloquear em silêncio).
+    const {error: errIns} = await _sb.from('perfis').insert({user_id: userId, role:'afiliada', afiliada_id: af.id});
+    if(errIns){ console.error('criar perfil afiliada:', errIns); return false; }
+    return true;
+  }
+  const {data:convite} = await _sb.from('convites_admin_pendentes').select('nome').ilike('email', emailNorm).single();
+  if(convite){
+    const {error: errIns2} = await _sb.from('perfis').insert({user_id: userId, role:'admin', email: emailNorm, nome: convite.nome || nomeFallback || null});
+    if(errIns2){ console.error('criar perfil admin:', errIns2); return false; }
+    // Consome o convite — não pode ser reaproveitado depois.
+    await _sb.from('convites_admin_pendentes').delete().ilike('email', emailNorm);
+    return true;
+  }
+  return false;
+}
+function bloquearAcessoNaoIdentificado(){
+  _sb.auth.signOut();
+  loading(false);
+  document.getElementById('tela-login').style.display='flex';
+  const erroEl=document.getElementById('erro-login');
+  if(erroEl){ erroEl.textContent='Não foi possível confirmar seu tipo de acesso (afiliada ou administradora). Entre em contato com a administração do programa.'; }
+}
+
 // ===== INICIALIZAÇÃO =====
 window.addEventListener('DOMContentLoaded', async () => {
   if(!_sb){ mostrarErroConfig(); return; }
@@ -1067,9 +1112,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     if(isConvite) {
       const {data:perfil} = await _sb.from('perfis').select('id').eq('user_id', session.user.id).single();
       if(!perfil) {
-        const {data:af} = await _sb.from('afiliadas').select('id').ilike('email', session.user.email.trim()).single();
-        if(af) await _sb.from('perfis').insert({user_id: session.user.id, role:'afiliada', afiliada_id: af.id});
-        else await _sb.from('perfis').insert({user_id: session.user.id, role:'admin', email: session.user.email, nome: session.user.user_metadata?.nome || session.user.user_metadata?.full_name || null});
+        const criado = await criarPerfilComCerteza(session.user.id, session.user.email, session.user.user_metadata?.nome || session.user.user_metadata?.full_name);
+        if(!criado){ bloquearAcessoNaoIdentificado(); return; }
       }
       history.replaceState(null, '', window.location.pathname);
       loading(false);
@@ -1136,9 +1180,7 @@ async function confirmarRedefinicao() {
       if(session){
         const {data:perfil} = await _sb.from('perfis').select('id').eq('user_id', session.user.id).single();
         if(!perfil){
-          const {data:af} = await _sb.from('afiliadas').select('id').ilike('email', session.user.email.trim()).single();
-          if(af) await _sb.from('perfis').insert({user_id: session.user.id, role:'afiliada', afiliada_id: af.id});
-          else await _sb.from('perfis').insert({user_id: session.user.id, role:'admin', email: session.user.email, nome: session.user.user_metadata?.nome || session.user.user_metadata?.full_name || null});
+          await criarPerfilComCerteza(session.user.id, session.user.email, session.user.user_metadata?.nome || session.user.user_metadata?.full_name);
         }
       }
       await _sb.auth.signOut();
@@ -1184,14 +1226,11 @@ async function carregarConfig(){
 async function carregarSessao(user){
   const {data: perfil, error: errPerfil} = await _sb.from('perfis').select('*').eq('user_id', user.id).single();
   if(errPerfil || !perfil){
-    // Pode ser um admin recém convidado cujo perfil ainda não foi criado
-    // Tentar criar o perfil automaticamente
-    const {data:af} = await _sb.from('afiliadas').select('id').ilike('email', user.email.trim()).single();
-    if(af){
-      await _sb.from('perfis').insert({user_id: user.id, role:'afiliada', afiliada_id: af.id});
-    } else {
-      await _sb.from('perfis').insert({user_id: user.id, role:'admin', email: user.email, nome: user.user_metadata?.nome || user.user_metadata?.full_name || null});
-    }
+    // Pode ser um admin recém convidado cujo perfil ainda não foi criado —
+    // ou uma afiliada. Tentar criar o perfil só com certeza (ver
+    // criarPerfilComCerteza) — nunca mais assumir admin por padrão.
+    const criado = await criarPerfilComCerteza(user.id, user.email, user.user_metadata?.nome || user.user_metadata?.full_name);
+    if(!criado){ bloquearAcessoNaoIdentificado(); return; }
     // Recarregar sessão após criar perfil
     const {data:perfilNovo} = await _sb.from('perfis').select('*').eq('user_id', user.id).single();
     if(!perfilNovo){ document.getElementById('tela-login').style.display='flex'; loading(false); return; }
@@ -1212,7 +1251,8 @@ async function carregarSessao(user){
       if(!afiliadaNova){
         const {data:afCorreta} = await _sb.from('afiliadas').select('*').ilike('email', user.email.trim()).single();
         if(afCorreta){
-          await _sb.from('perfis').update({afiliada_id: afCorreta.id}).eq('user_id', user.id);
+          const {error: errAutoFix} = await _sb.from('perfis').update({afiliada_id: afCorreta.id}).eq('user_id', user.id);
+          if(errAutoFix) console.warn('auto-recuperação de perfil (não bloqueante):', errAutoFix);
           afiliadaNova = afCorreta;
         }
       }
@@ -1265,7 +1305,8 @@ async function carregarSessao(user){
     if(!afiliada){
       const {data:afCorreta} = await _sb.from('afiliadas').select('*').ilike('email', user.email.trim()).single();
       if(afCorreta){
-        await _sb.from('perfis').update({afiliada_id: afCorreta.id}).eq('user_id', user.id);
+        const {error: errAutoFix2} = await _sb.from('perfis').update({afiliada_id: afCorreta.id}).eq('user_id', user.id);
+        if(errAutoFix2) console.warn('auto-recuperação de perfil (não bloqueante):', errAutoFix2);
         afiliada = afCorreta;
         perfil.afiliada_id = afCorreta.id;
       }
@@ -1691,11 +1732,13 @@ async function salvarAmostra(){
 
   loading(true);
   try{
-    if(editandoAmostraId){
-      await _sb.from('amostras').update(dados).eq('id', editandoAmostraId);
-    } else {
-      await _sb.from('amostras').insert(dados);
-    }
+    // AUDITORIA v1.6.27: checar o campo "error" de verdade — o try/catch
+    // sozinho não pega um bloqueio silencioso de RLS (0 linhas afetadas,
+    // sem lançar exceção nenhuma).
+    const resp = editandoAmostraId
+      ? await _sb.from('amostras').update(dados).eq('id', editandoAmostraId)
+      : await _sb.from('amostras').insert(dados);
+    if(resp.error) throw new Error(resp.error.message);
     fecharModal('modal-amostra');
     await renderTabelaAmostras();
   }catch(e){
@@ -1927,11 +1970,11 @@ async function renderComissoes(){
     // FEATURE v1.6.10 (P9): calcula respeitando a regra vigente na data de
     // cada venda, não a regra atual aplicada de uma vez ao total do mês.
     const {totalComissao:comissao, misto, faixasAplicadas} = calcularComissaoPeriodo(vendasA);
-    const banco = a.banco&&a.conta ? `${a.banco} ag.${a.agencia} / ${a.conta}` : (a.pix ? `Pix: ${a.pix}` : '—');
+    const banco = a.banco&&a.conta ? `${escapeHtml(a.banco)} ag.${escapeHtml(a.agencia)} / ${escapeHtml(a.conta)}` : (a.pix ? `Pix: ${escapeHtml(a.pix)}` : '—');
     const pago = mapaPag[a.id];
     const pctEfetivo = total>0 ? (comissao/total*100) : 0;
     return `<tr>
-      <td><strong>${a.nome}</strong><div style="font-size:11px;color:var(--cinza-medio)">${a.cupom}</div></td>
+      <td><strong>${escapeHtml(a.nome)}</strong><div style="font-size:11px;color:var(--cinza-medio)">${escapeHtml(a.cupom)}</div></td>
       <td>${fmtBRL(total)}</td>
       <td style="font-size:12px;color:var(--cinza-medio)">${misto ? 'Múltiplas faixas no período' : labelFaixa(total, faixasAplicadas)}</td>
       <td style="font-weight:600">${misto ? pctEfetivo.toFixed(1)+'%*' : pctComissao(total, faixasAplicadas)+'%'}</td>
@@ -1941,7 +1984,7 @@ async function renderComissoes(){
         ${pago
           ? `<span class="badge ativo">✓ Pago em ${fmtData(pago.data_pagamento)}</span>
              <button class="btn-mini" style="margin-left:6px;font-size:10px" onclick="desfazerPagamento('${a.id}','${mesSel}')">Desfazer</button>`
-          : `<button class="btn-acao" style="padding:6px 14px;font-size:12px" onclick="marcarPago('${a.id}','${a.nome}','${mesSel}',${comissao})">Marcar Pago</button>`
+          : `<button class="btn-acao" style="padding:6px 14px;font-size:12px" onclick="marcarPago('${a.id}','${escapeHtml(a.nome).replace(/'/g,"\\'")}','${mesSel}',${comissao})">Marcar Pago</button>`
         }
       </td>
     </tr>`;
@@ -1968,8 +2011,9 @@ async function desfazerPagamento(afiliadaId, mesRef){
   if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
   if(!confirm('Desfazer marcação de pagamento?')) return;
   loading(true);
-  await _sb.from('pagamentos_comissao').delete().eq('afiliada_id', afiliadaId).eq('mes_ref', mesRef);
+  const {error} = await _sb.from('pagamentos_comissao').delete().eq('afiliada_id', afiliadaId).eq('mes_ref', mesRef);
   loading(false);
+  if(error){ alert('Erro ao desfazer pagamento: '+traduzirErro(error.message)); return; }
   await renderComissoes();
 }
 
@@ -2071,7 +2115,13 @@ async function enviarNotificacao(){
   }
 
   loading(true);
-  await _sb.from('notificacoes').insert({titulo, texto, dest, data:new Date().toISOString().split('T')[0], anexo_url, anexo_nome, anexo_tipo});
+  // AUDITORIA v1.6.27: checar erro real, não assumir sucesso.
+  const {error: errNotif} = await _sb.from('notificacoes').insert({titulo, texto, dest, data:new Date().toISOString().split('T')[0], anexo_url, anexo_nome, anexo_tipo});
+  if(errNotif){
+    loading(false);
+    alert('Erro ao enviar notificação: ' + traduzirErro(errNotif.message));
+    return;
+  }
   document.getElementById('notif-titulo-input').value='';
   document.getElementById('notif-texto-input').value='';
   if(anexoInput) anexoInput.value='';
@@ -2153,7 +2203,7 @@ async function editarAfiliada(id){
 }
 async function salvarAfiliada(){
   if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
-  const nome = document.getElementById('cad-nome').value.trim();
+  const nome = capitalizarNome(document.getElementById('cad-nome').value.trim());
   const email = document.getElementById('cad-email').value.trim().toLowerCase();
   if(!nome || !email){ alert('Nome e e-mail são obrigatórios.'); return; }
   loading(true);
@@ -2374,7 +2424,7 @@ async function enviarCandidatura(){
   erro.style.display='none'; sucesso.style.display='none';
 
   const campos={
-    nome:     document.getElementById('cad-pub-nome').value.trim(),
+    nome:     capitalizarNome(document.getElementById('cad-pub-nome').value.trim()),
     email:    document.getElementById('cad-pub-email').value.trim().toLowerCase(),
     telefone: document.getElementById('cad-pub-telefone').value.trim(),
     instagram:document.getElementById('cad-pub-instagram').value.trim(),
@@ -2517,7 +2567,10 @@ async function desativarAfiliada(id,nome){
     // BUGFIX v1.6.3: usava status:'desativada', valor que não existe em nenhuma outra
     // checagem do sistema (só 'ativo'/'inativo'/'pendente' são tratados) — o badge
     // ficava mostrando "Pendente" incorretamente para quem fosse desativada.
-    await _sb.from('afiliadas').update({status:'inativo'}).eq('id',id);
+    // AUDITORIA v1.6.27: checar erro real — try/catch sozinho não pega
+    // bloqueio silencioso de RLS.
+    const {error} = await _sb.from('afiliadas').update({status:'inativo'}).eq('id',id);
+    if(error) throw new Error(error.message);
     await renderTabelaAfiliadas();
     await renderDashboard();
   }catch(e){ alert('Erro: '+traduzirErro(e.message)); }
@@ -2531,7 +2584,8 @@ async function reativarAfiliada(id,nome){
   if(!confirm('Reativar '+nome+' no programa?'))return;
   loading(true);
   try{
-    await _sb.from('afiliadas').update({status:'ativo'}).eq('id',id);
+    const {error} = await _sb.from('afiliadas').update({status:'ativo'}).eq('id',id);
+    if(error) throw new Error(error.message);
     await renderTabelaAfiliadas();
     await renderDashboard();
   }catch(e){ alert('Erro: '+traduzirErro(e.message)); }
@@ -2542,8 +2596,9 @@ async function recusarCandidata(id,nome){
   if(!sessao.perfil||!['admin','equipe'].includes(sessao.perfil.role))return;
   if(!confirm(`Recusar a candidatura de ${nome}?`))return;
   loading(true);
-  await _sb.from('afiliadas').update({status:'inativo'}).eq('id',id);
+  const {error} = await _sb.from('afiliadas').update({status:'inativo'}).eq('id',id);
   loading(false);
+  if(error){ alert('Erro ao recusar: '+traduzirErro(error.message)); return; }
   await renderTabelaAfiliadas();
 }
 
@@ -2637,6 +2692,15 @@ async function convidarAdmin(){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ alert('E-mail inválido.'); return; }
   loading(true);
   try{
+    // FEATURE v1.6.26: registra o convite explicitamente ANTES de enviar o
+    // e-mail — é essa linha que o login vai checar depois pra saber com
+    // certeza se a pessoa deve virar admin, em vez de "assumir" isso quando
+    // não a encontra na tabela de afiliadas (esse "assumir" era o bug: se a
+    // busca por afiliada falhasse por qualquer motivo, a pessoa virava admin
+    // por engano).
+    const {error: errConvite} = await _sb.from('convites_admin_pendentes').upsert({email: email.toLowerCase().trim(), nome});
+    if(errConvite) throw new Error('Não foi possível registrar o convite: ' + errConvite.message);
+
     // Reaproveita a mesma Edge Function usada para convidar afiliadas.
     // IMPORTANTE: confirme que sua função "enviar-convite" trata tipo:'admin'
     // (hoje ela já trata 'afiliada' e 'recovery' — ver observações que te mandei).
@@ -2679,8 +2743,11 @@ async function excluirAdmin(userId){
   if(!sessao.perfil || !['admin','equipe'].includes(sessao.perfil.role)){ return; }
   if(!confirm('Excluir este administrador? Ele perderá o acesso ao sistema.')) return;
   loading(true);
-  await _sb.from('perfis').delete().eq('user_id', userId);
+  // AUDITORIA v1.6.27: checar erro real — sem isso, o admin podia achar que
+  // removeu o acesso de alguém quando na verdade não removeu nada.
+  const {error} = await _sb.from('perfis').delete().eq('user_id', userId);
   loading(false);
+  if(error){ alert('Erro ao excluir: ' + traduzirErro(error.message)); return; }
   await renderAdmins();
 }
 
@@ -3011,9 +3078,12 @@ async function salvarVenda(){
   const status=document.getElementById('venda-status').value;
   if(!afId||!valor)return;
   loading(true);
-  await _sb.from('vendas').insert({afiliada_id:afId, produto, valor, data, status});
-  fecharModal('modal-venda');
+  // AUDITORIA v1.6.27: checar erro real — sem isso, uma venda podia "sumir"
+  // silenciosamente se o banco recusasse o insert.
+  const {error} = await _sb.from('vendas').insert({afiliada_id:afId, produto, valor, data, status});
   loading(false);
+  if(error){ alert('Erro ao salvar venda: ' + traduzirErro(error.message)); return; }
+  fecharModal('modal-venda');
   await Promise.all([renderTabelaVendas(), renderDashboard(), renderComissoes()]);
 }
 
@@ -3090,16 +3160,21 @@ async function salvarFaixas(){
   // até a tabela ser criada.
   const hojeStr = new Date().toISOString().split('T')[0];
   try{
-    await _sb.from('historico_faixas').insert({
+    // AUDITORIA v1.6.27: checar o campo "error" de verdade — essa gravação é
+    // a base inteira da proteção contra recálculo retroativo (P9); se
+    // falhasse em silêncio, alterações de faixa voltariam a afetar vendas
+    // antigas sem ninguém perceber.
+    const {error: errHist} = await _sb.from('historico_faixas').insert({
       faixas: JSON.stringify(configLocal.faixas),
       vigente_desde: hojeStr,
       criado_por: sessao.usuario?.email || 'admin',
     });
+    if(errHist) throw new Error(errHist.message);
     historicoFaixas.push({faixas: configLocal.faixas, vigente_desde: hojeStr});
     historicoFaixas.sort((a,b)=> a.vigente_desde < b.vigente_desde ? -1 : 1);
   }catch(e){
     console.warn('historico_faixas indisponível:', e);
-    alert('As faixas foram salvas, mas o histórico de vigência não pôde ser registrado — provavelmente a tabela "historico_faixas" ainda não existe no banco. Veja o guia de configuração pra criar essa tabela; até lá, alterações de faixa afetam vendas antigas também.');
+    alert('As faixas foram salvas, mas o histórico de vigência não pôde ser registrado ('+traduzirErro(e.message)+') — provavelmente a tabela "historico_faixas" ainda não existe, ou falta permissão (RLS) pra essa gravação. Até isso ser corrigido, alterações de faixa afetam vendas antigas também.');
   }
   fecharModal('modal-faixas');
   loading(false);
@@ -3109,7 +3184,7 @@ async function salvarFaixas(){
 function fecharModal(id){const el=document.getElementById(id);el.classList.remove('aberto');el.style.display='none';}
 async function preencherSelectAfiliadas(){
   const {data}=await _sb.from('afiliadas').select('id,nome').eq('status','ativo').order('nome');
-  document.getElementById('venda-afiliada').innerHTML=(data||[]).map(a=>`<option value="${a.id}">${a.nome}</option>`).join('');
+  document.getElementById('venda-afiliada').innerHTML=(data||[]).map(a=>`<option value="${a.id}">${escapeHtml(a.nome)}</option>`).join('');
 }
 
 // ===== AFILIADA: RENDER =====
@@ -3458,7 +3533,7 @@ async function salvarDadosPessoaisAfiliada(){
   const msgErr = document.getElementById('conta-dados-msg-err');
   msgOk.style.display='none'; msgErr.style.display='none';
 
-  const nome = document.getElementById('conta-nome').value.trim();
+  const nome = capitalizarNome(document.getElementById('conta-nome').value.trim());
   if(!nome){ msgErr.textContent='O nome não pode ficar em branco.'; msgErr.style.display='block'; return; }
 
   const dados = {
@@ -3739,12 +3814,17 @@ async function confirmarLeituraRegras(){
     }catch(e){ console.warn('aceite:', e); }
 
     // Marcar como lido no perfil
-    await _sb.from('perfis').update({
+    // AUDITORIA v1.6.27: checar erro real — sem isso, se o banco recusasse
+    // silenciosamente, o popup de regras voltaria a aparecer no próximo login
+    // mesmo a pessoa já tendo aceitado (mesma classe do bug corrigido antes
+    // em salvarCompletarCadastro).
+    const {error: errRegras} = await _sb.from('perfis').update({
       regras_lidas: true,
       data_aceite_regras: dataHora,
       versao_regras_aceita: (cfg.versao_pdf_regras||cfg.data_pdf_regras||'1.0'),
       versao_contrato_aceita: (cfg.versao_pdf_contrato||cfg.data_pdf_contrato||'1.0'),
     }).eq('user_id',sessao.usuario.id);
+    if(errRegras) console.warn('marcar regras_lidas:', errRegras);
 
     if(sessao.perfil){
       sessao.perfil.regras_lidas = true;
@@ -3770,6 +3850,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.24</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.27</div>
 </body>
 </html>
