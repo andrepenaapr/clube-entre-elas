@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.23">
+<meta name="app-version" content="1.6.24">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -641,10 +641,12 @@ tr:hover td{background:#faf7f2}
       <div class="form-secao" id="titulo-secao-empresa-completar">Dados</div>
       <div class="form-grid">
         <div class="form-campo"><label id="label-completar-cnpj">CNPJ / CPF</label><input type="text" id="completar-cnpj" maxlength="18" oninput="this.value=maskCpfCnpj(this.value)" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
-        <div class="form-campo"><label id="label-completar-razao">Razão Social / Nome para NF</label><input type="text" id="completar-razao" autocomplete="off"></div>
+        <div class="form-campo" id="campo-razao-completar-wrap"><label id="label-completar-razao">Razão Social / Nome para NF</label><input type="text" id="completar-razao" autocomplete="off"></div>
       </div>
-      <div style="font-size:12px;color:var(--cinza-medio);margin:10px 0 6px">Endereço</div>
-      <div id="endereco-completar-empresa-wrap"></div>
+      <div id="secao-endereco-completar-wrap">
+        <div style="font-size:12px;color:var(--cinza-medio);margin:10px 0 6px">Endereço</div>
+        <div id="endereco-completar-empresa-wrap"></div>
+      </div>
       <div class="form-campo" id="campo-cartao-cnpj-completar" style="margin-top:10px">
         <label>Cartão CNPJ (PDF)</label>
         <input type="file" id="completar-cartao-cnpj-input" accept=".pdf" onchange="document.getElementById('completar-cartao-cnpj-nome').textContent=this.files[0]?this.files[0].name:''">
@@ -868,10 +870,10 @@ function blocoEnderecoHtml(prefixo){
 // pra decidir se mostra o formulário de completar cadastro no primeiro login.
 function cadastroEmpresaBancarioCompleto(a){
   if(!a) return false;
-  // FEATURE v1.6.21 (item 5): agora também exige que a pessoa tenha escolhido
-  // PF ou PJ, já que o formulário passou a depender dessa escolha.
+  // FEATURE v1.6.24: Pessoa Física não precisa mais de razão social/nome
+  // duplicado — só do CPF (guardado no mesmo campo "cnpj").
   const tipoPessoaOk = !!a.tipo_pessoa;
-  const empresaOk = !!(a.cnpj && a.razao_social);
+  const empresaOk = a.tipo_pessoa==='fisica' ? !!a.cnpj : !!(a.cnpj && a.razao_social);
   const bancarioOk = a.tipo_conta==='pix' ? !!a.pix : !!(a.banco && a.conta);
   return tipoPessoaOk && empresaOk && bancarioOk;
 }
@@ -1445,6 +1447,12 @@ async function renderDashboard(){
 async function abrirDadosAfiliada(id){
   const {data:a} = await _sb.from('afiliadas').select('*').eq('id',id).single();
   if(!a) return;
+  // FEATURE v1.6.24: abrir "Ver dados" limpa o indicador vermelho de
+  // "dados atualizados pela afiliada", já que o admin acabou de revisar.
+  if(a.dados_alterados_pendente){
+    const {error} = await _sb.from('afiliadas').update({dados_alterados_pendente:false}).eq('id',id);
+    if(!error){ a.dados_alterados_pendente = false; renderTabelaAfiliadas(); }
+  }
   const linha = (label,valor)=>`<div class="form-campo"><label style="font-size:11px">${label}</label><div style="font-size:14px;padding:6px 0">${valor?escapeHtml(String(valor)):'<span style="color:var(--cinza-claro)">—</span>'}</div></div>`;
   const endereco = [a.endereco_rua, a.endereco_numero, a.endereco_bairro, a.endereco_cidade, a.endereco_uf, a.endereco_cep].filter(Boolean).join(', ');
   const enderecoEmpresa = [a.empresa_endereco_rua, a.empresa_endereco_numero, a.empresa_endereco_bairro, a.empresa_endereco_cidade, a.empresa_endereco_uf, a.empresa_endereco_cep].filter(Boolean).join(', ');
@@ -1551,8 +1559,11 @@ async function renderTabelaAfiliadas(){
       ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Aceitar" onclick="aceitarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\',\'' + a.email + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Recusar" onclick="recusarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
       : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Editar" onclick="editarAfiliada(\'' + a.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Reenviar convite" onclick="reenviarConvite(\'' + a.email + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>  ' + (a.status==='ativo' ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Desativar" onclick="desativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="9" y2="15"/><line x1="15" y1="9" x2="15" y2="15"/></svg></button>' : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Reativar" onclick="reativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>') + '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
     const badgeCadastro = isCandidata ? '' : (cadastroEmpresaBancarioCompleto(a) ? '' : '<div style="font-size:9px;font-weight:700;letter-spacing:0.05em;color:#c0392b;text-transform:uppercase;margin-bottom:2px">⚠ Cadastro incompleto</div>');
+    // FEATURE v1.6.24: indicador de que a afiliada alterou os próprios dados
+    // (some quando o admin abre "Ver dados" dela).
+    const indicadorAtualizado = (!isCandidata && a.dados_alterados_pendente) ? '<span title="Dados atualizados pela afiliada" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#c0392b;margin-right:6px"></span>' : '';
     const dataCadastro = fmtData((a.created_at||'').split('T')[0]) || fmtData((a.data_candidatura||'').split('T')[0]) || fmtData((a.data_aceite||'').split('T')[0]) || '-';
-    return '<tr style="'+(isCandidata?'background:#fffbf0':'')+'"><td style="font-family:monospace;font-size:11px;color:var(--cinza-medio);white-space:nowrap">#'+(a.codigo||'-')+'</td><td style="font-weight:500;max-width:225px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escapeHtml(a.nome)+'">'+badgeCadastro+escapeHtml(a.nome)+'</td><td style="font-family:monospace;font-size:12px;color:var(--dourado);white-space:nowrap">'+escapeHtml(a.cupom||'-')+'</td><td style="font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escapeHtml(a.email)+'">'+escapeHtml(a.email)+'</td><td style="white-space:nowrap">'+fmtBRL(tv)+'</td><td style="white-space:nowrap">'+badgeStatus+'</td><td style="font-size:12px;white-space:nowrap">'+escapeHtml(a.endereco_cidade||'-')+'</td><td style="font-size:12px;white-space:nowrap">'+escapeHtml(a.endereco_uf||'-')+'</td><td style="font-size:12px;white-space:nowrap">'+dataCadastro+'</td><td style="white-space:nowrap">'+(isCandidata?'<span style="color:var(--cinza-claro);font-size:11px">-</span>':'<button class="btn-mini" onclick="abrirDadosAfiliada(\''+a.id+'\')">Ver dados</button>')+'</td><td style="white-space:nowrap">'+'<button class="btn-mini" onclick="abrirAnexosAfiliada(\''+a.id+'\',\''+a.nome.replace(/'/g,"\'")+'\')">Ver anexos</button>'+'</td><td style="font-size:11px;white-space:nowrap">'+aceiteR+'</td><td style="font-size:11px;white-space:nowrap">'+aceiteC+'</td><td style="white-space:nowrap"><div style="display:flex;gap:4px">'+acoes+'</div></td></tr>';
+    return '<tr style="'+(isCandidata?'background:#fffbf0':'')+'"><td style="font-family:monospace;font-size:11px;color:var(--cinza-medio);white-space:nowrap">#'+(a.codigo||'-')+'</td><td style="font-weight:500;max-width:225px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escapeHtml(a.nome)+'">'+badgeCadastro+indicadorAtualizado+escapeHtml(a.nome)+'</td><td style="font-family:monospace;font-size:12px;color:var(--dourado);white-space:nowrap">'+escapeHtml(a.cupom||'-')+'</td><td style="font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+escapeHtml(a.email)+'">'+escapeHtml(a.email)+'</td><td style="white-space:nowrap">'+fmtBRL(tv)+'</td><td style="white-space:nowrap">'+badgeStatus+'</td><td style="font-size:12px;white-space:nowrap">'+escapeHtml(a.endereco_cidade||'-')+'</td><td style="font-size:12px;white-space:nowrap">'+escapeHtml(a.endereco_uf||'-')+'</td><td style="font-size:12px;white-space:nowrap">'+dataCadastro+'</td><td style="white-space:nowrap">'+(isCandidata?'<span style="color:var(--cinza-claro);font-size:11px">-</span>':'<button class="btn-mini" onclick="abrirDadosAfiliada(\''+a.id+'\')">Ver dados</button>')+'</td><td style="white-space:nowrap">'+'<button class="btn-mini" onclick="abrirAnexosAfiliada(\''+a.id+'\',\''+a.nome.replace(/'/g,"\'")+'\')">Ver anexos</button>'+'</td><td style="font-size:11px;white-space:nowrap">'+aceiteR+'</td><td style="font-size:11px;white-space:nowrap">'+aceiteC+'</td><td style="white-space:nowrap"><div style="display:flex;gap:4px">'+acoes+'</div></td></tr>';
   }).join('') || '<tr><td colspan="14" style="text-align:center;color:var(--cinza-medio);padding:2rem">Nenhuma afiliada cadastrada.</td></tr>';
 }
 
@@ -3411,19 +3422,81 @@ async function abrirNotificacaoAf(id){
   }
 }
 
+// FEATURE v1.6.24: "Meus Dados" agora é editável pela própria afiliada.
 function renderMinhaContaDados(af){
   const el=document.getElementById('minha-conta-dados');
   if(!el)return;
   el.innerHTML=`
-    <div class="form-grid" style="pointer-events:none;opacity:0.7">
-      <div class="form-campo"><label>Nome</label><input type="text" value="${af.nome}" readonly></div>
-      <div class="form-campo"><label>E-mail</label><input type="text" value="${af.email}" readonly></div>
-      <div class="form-campo"><label>Cupom</label><input type="text" value="${af.cupom}" readonly></div>
-      <div class="form-campo"><label>Link</label><input type="text" value="${af.link||'—'}" readonly></div>
+    <div class="form-grid">
+      <div class="form-campo"><label>Nome</label><input type="text" id="conta-nome" value="${escapeHtml(af.nome||'')}"></div>
+      <div class="form-campo"><label>E-mail</label><input type="text" value="${escapeHtml(af.email||'')}" readonly style="opacity:0.6"></div>
+      <div class="form-campo"><label>Cupom</label><input type="text" value="${escapeHtml(af.cupom||'')}" readonly style="opacity:0.6"></div>
+      <div class="form-campo"><label>WhatsApp</label><input type="text" id="conta-whats" value="${escapeHtml(af.whatsapp||'')}" maxlength="15" oninput="this.value=maskTelefone(this.value)"></div>
+      <div class="form-campo"><label>Instagram</label><input type="text" id="conta-insta" value="${escapeHtml(af.instagram||'')}"></div>
+      <div class="form-campo"><label>TikTok</label><input type="text" id="conta-tiktok" value="${escapeHtml(af.tiktok||'')}"></div>
     </div>
-    <p style="font-size:12px;color:var(--cinza-claro);margin-top:0.75rem">Para atualizar seus dados, entre em contato com a equipe Entre Elas.</p>
+    <div style="font-size:13px;color:var(--cinza-medio);margin:1.25rem 0 0.75rem;font-weight:600">Endereço</div>
+    <div id="endereco-conta-wrap"></div>
+    <div id="conta-dados-msg-ok" class="msg-sucesso">✓ Dados atualizados com sucesso!</div>
+    <div id="conta-dados-msg-err" class="msg-erro"></div>
+    <button class="btn-acao" style="margin-top:1rem" onclick="salvarDadosPessoaisAfiliada()">Salvar Alterações</button>
+    <p style="font-size:12px;color:var(--cinza-claro);margin-top:0.75rem">Para trocar o e-mail ou o cupom, entre em contato com a equipe Entre Elas.</p>
   `;
+  document.getElementById('endereco-conta-wrap').innerHTML = blocoEnderecoHtml('endereco-conta');
+  document.getElementById('endereco-conta-cep').value = af.endereco_cep||'';
+  document.getElementById('endereco-conta-rua').value = af.endereco_rua||'';
+  document.getElementById('endereco-conta-numero').value = af.endereco_numero||'';
+  document.getElementById('endereco-conta-bairro').value = af.endereco_bairro||'';
+  document.getElementById('endereco-conta-cidade').value = af.endereco_cidade||'';
+  document.getElementById('endereco-conta-uf').value = af.endereco_uf||'';
+  if(af.endereco_rua||af.endereco_cep){ const r=document.getElementById('endereco-conta-resto'); if(r) r.style.display='grid'; }
 }
+
+async function salvarDadosPessoaisAfiliada(){
+  if(!sessao.afiliada) return;
+  const msgOk = document.getElementById('conta-dados-msg-ok');
+  const msgErr = document.getElementById('conta-dados-msg-err');
+  msgOk.style.display='none'; msgErr.style.display='none';
+
+  const nome = document.getElementById('conta-nome').value.trim();
+  if(!nome){ msgErr.textContent='O nome não pode ficar em branco.'; msgErr.style.display='block'; return; }
+
+  const dados = {
+    nome,
+    whatsapp: document.getElementById('conta-whats').value.trim(),
+    instagram: document.getElementById('conta-insta').value.trim(),
+    tiktok: document.getElementById('conta-tiktok').value.trim(),
+    endereco_cep:    document.getElementById('endereco-conta-cep').value.trim(),
+    endereco_rua:    document.getElementById('endereco-conta-rua').value.trim(),
+    endereco_numero: document.getElementById('endereco-conta-numero').value.trim(),
+    endereco_bairro: document.getElementById('endereco-conta-bairro').value.trim(),
+    endereco_cidade: document.getElementById('endereco-conta-cidade').value.trim(),
+    endereco_uf:     document.getElementById('endereco-conta-uf').value.trim(),
+    // FEATURE v1.6.24: sinaliza pro admin que essa afiliada mexeu nos
+    // próprios dados — vira um indicador vermelho na tabela de Afiliadas,
+    // até o admin abrir "Ver dados" dela.
+    dados_alterados_pendente: true,
+  };
+
+  loading(true);
+  const {data:linhas, error} = await _sb.from('afiliadas').update(dados).eq('id', sessao.afiliada.id).select();
+  loading(false);
+  // BUGFIX v1.6.23 (mesma lição): checar erro E confirmar que alguma linha
+  // foi realmente afetada, não só ausência de erro explícito.
+  if(error || !linhas || linhas.length===0){
+    msgErr.textContent = error ? ('Erro ao salvar: '+traduzirErro(error.message)) : 'Não foi possível salvar — tente novamente ou contate o suporte.';
+    msgErr.style.display='block';
+    return;
+  }
+  Object.assign(sessao.afiliada, dados);
+  const huAfEl = document.getElementById('header-usuario-af');
+  if(huAfEl) huAfEl.textContent = nome;
+  const afNomeEl = document.getElementById('af-nome-display');
+  if(afNomeEl) afNomeEl.textContent = nome;
+  msgOk.style.display='block';
+  setTimeout(()=>msgOk.style.display='none', 4000);
+}
+
 
 // ===== ALTERAR SENHA (AFILIADA) =====
 async function alterarSenha(){
@@ -3452,24 +3525,30 @@ function atualizarTipoPessoaCompletar(){
   const tipo = document.getElementById('completar-tipo-pessoa').value;
   const secoes = document.getElementById('secoes-completar-cadastro');
   const cartaoCampo = document.getElementById('campo-cartao-cnpj-completar');
+  // FEATURE v1.6.24: pra Pessoa Física, não pede mais nome nem endereço de
+  // novo (ela já preencheu isso no cadastro) — só CPF e dados bancários.
+  const campoRazao = document.getElementById('campo-razao-completar-wrap');
+  const secaoEndereco = document.getElementById('secao-endereco-completar-wrap');
   if(!tipo){ secoes.style.display='none'; return; }
   secoes.style.display='block';
   const labelCnpj = document.getElementById('label-completar-cnpj');
-  const labelRazao = document.getElementById('label-completar-razao');
   const cnpjInput = document.getElementById('completar-cnpj');
   const tituloSecao = document.getElementById('titulo-secao-empresa-completar');
   const avisoTitularidade = document.getElementById('aviso-titularidade-completar');
   if(tipo==='fisica'){
-    tituloSecao.textContent = 'Dados Pessoais (Nota Fiscal)';
+    tituloSecao.textContent = 'Documento';
     labelCnpj.textContent = 'CPF *';
-    labelRazao.textContent = 'Nome Completo *';
     cnpjInput.placeholder = '000.000.000-00';
+    campoRazao.style.display = 'none';
+    secaoEndereco.style.display = 'none';
     cartaoCampo.style.display = 'none';
     avisoTitularidade.textContent = '⚠ A titularidade da conta bancária abaixo deve ser da mesma pessoa física cadastrada aqui.';
   } else {
     tituloSecao.textContent = 'Dados da Empresa';
     labelCnpj.textContent = 'CNPJ *';
-    labelRazao.textContent = 'Razão Social *';
+    campoRazao.style.display = 'block';
+    document.getElementById('label-completar-razao').textContent = 'Razão Social *';
+    secaoEndereco.style.display = 'block';
     cnpjInput.placeholder = '00.000.000/0001-00';
     cartaoCampo.style.display = 'block';
     avisoTitularidade.textContent = '⚠ A titularidade da conta bancária abaixo deve ser da mesma pessoa jurídica cadastrada aqui.';
@@ -3517,22 +3596,27 @@ async function salvarCompletarCadastro(){
   const dados = {
     tipo_pessoa: tipoPessoa,
     cnpj: document.getElementById('completar-cnpj').value.trim(),
-    razao_social: document.getElementById('completar-razao').value.trim(),
-    empresa_endereco_cep:    document.getElementById('empresa-completar-cep').value.trim(),
-    empresa_endereco_rua:    document.getElementById('empresa-completar-rua').value.trim(),
-    empresa_endereco_numero: document.getElementById('empresa-completar-numero').value.trim(),
-    empresa_endereco_bairro: document.getElementById('empresa-completar-bairro').value.trim(),
-    empresa_endereco_cidade: document.getElementById('empresa-completar-cidade').value.trim(),
-    empresa_endereco_uf:     document.getElementById('empresa-completar-uf').value.trim(),
     banco: document.getElementById('completar-banco').value.trim(),
     agencia: document.getElementById('completar-agencia').value.trim(),
     conta: document.getElementById('completar-conta').value.trim(),
     pix: document.getElementById('completar-pix').value.trim(),
     tipo_conta: document.getElementById('completar-tipo-conta').value,
   };
+  // FEATURE v1.6.24: Pessoa Jurídica continua enviando razão social e
+  // endereço da empresa; Pessoa Física não precisa mais (reaproveita nome e
+  // endereço já cadastrados).
+  if(tipoPessoa==='juridica'){
+    dados.razao_social = document.getElementById('completar-razao').value.trim();
+    dados.empresa_endereco_cep    = document.getElementById('empresa-completar-cep').value.trim();
+    dados.empresa_endereco_rua    = document.getElementById('empresa-completar-rua').value.trim();
+    dados.empresa_endereco_numero = document.getElementById('empresa-completar-numero').value.trim();
+    dados.empresa_endereco_bairro = document.getElementById('empresa-completar-bairro').value.trim();
+    dados.empresa_endereco_cidade = document.getElementById('empresa-completar-cidade').value.trim();
+    dados.empresa_endereco_uf     = document.getElementById('empresa-completar-uf').value.trim();
+  }
 
-  if(!dados.cnpj || !dados.razao_social){
-    erroEl.textContent = tipoPessoa==='fisica' ? 'Preencha o CPF e o Nome Completo.' : 'Preencha o CNPJ e a Razão Social.';
+  if(!dados.cnpj || (tipoPessoa==='juridica' && !dados.razao_social)){
+    erroEl.textContent = tipoPessoa==='fisica' ? 'Preencha o CPF.' : 'Preencha o CNPJ e a Razão Social.';
     erroEl.style.display='block'; return;
   }
   if(dados.tipo_conta==='pix' ? !dados.pix : !(dados.banco && dados.conta)){
@@ -3686,6 +3770,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.23</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.24</div>
 </body>
 </html>
