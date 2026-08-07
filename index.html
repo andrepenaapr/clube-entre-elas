@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="2.0">
+<meta name="app-version" content="2.1">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -587,6 +587,11 @@ tr:hover td{background:#faf7f2}
 <div class="modal-overlay" id="modal-faixas">
   <div class="modal">
     <div class="modal-titulo">Editar Faixas de Comissão</div>
+    <div class="form-campo" style="margin-bottom:1rem">
+      <label>Esta alteração vale a partir de qual mês?</label>
+      <input type="month" id="faixas-mes-vigencia">
+      <div style="font-size:12px;color:var(--cinza-medio);margin-top:6px">Vendas de meses anteriores ao escolhido continuam usando a regra que já estava valendo. O mês escolhido inteiro (e os seguintes) passam a usar a regra nova.</div>
+    </div>
     <div id="faixas-form"></div>
     <div class="modal-acoes">
       <button class="btn-cancelar" onclick="fecharModal('modal-faixas')">Cancelar</button>
@@ -3142,6 +3147,12 @@ let faixasEditando = [];
 function abrirModalFaixas(){
   faixasEditando = JSON.parse(JSON.stringify(configLocal.faixas));
   renderFormFaixas();
+  // FEATURE v2.0: mês de vigência escolhido pelo admin, em vez de assumir
+  // sempre "hoje". Vem pré-preenchido com o mês atual, mas pode escolher
+  // qualquer outro (inclusive meses futuros).
+  const hoje = new Date();
+  const mesAtualStr = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('faixas-mes-vigencia').value = mesAtualStr;
   document.getElementById('modal-faixas').classList.add('aberto');
 }
 
@@ -3195,27 +3206,42 @@ async function salvarFaixas(){
 
   faixasEditando.sort((a,b)=>a.min-b.min);
   configLocal.faixas = faixasEditando;
+
+  // FEATURE v2.0: agora o admin escolhe explicitamente a partir de qual mês
+  // essa configuração vale, em vez do sistema assumir "hoje" ou "o mês que
+  // vem" por conta própria — isso gerava confusão (ex: alterar em agosto e
+  // o sistema só aplicar a partir de setembro, sem avisar).
+  const mesVigenciaEl = document.getElementById('faixas-mes-vigencia');
+  const mesVigencia = mesVigenciaEl ? mesVigenciaEl.value : '';
+  if(!mesVigencia){ alert('Escolha a partir de qual mês essa alteração deve valer.'); return; }
+  const vigenteDesde = mesVigencia + '-01';
+
   loading(true);
   await _sb.from('configuracoes').upsert({chave:'faixas',valor:JSON.stringify(configLocal.faixas)});
-  // FEATURE v1.6.10 (P9): registra esta alteração no histórico, com a data de
-  // hoje como início de vigência. Vendas com data anterior a hoje continuam
-  // usando a regra anterior (ver calcularComissaoPeriodo). Se a tabela ainda
-  // não existir (SQL de configuração não rodado), avisa mas não impede salvar
-  // as faixas em si — só a proteção contra recálculo retroativo não funciona
-  // até a tabela ser criada.
-  const hojeStr = new Date().toISOString().split('T')[0];
+  // FEATURE v1.6.10 (P9) / v2.0: registra esta alteração no histórico, com o
+  // mês escolhido pelo admin como início de vigência (não mais "hoje" fixo).
+  // Vendas de meses anteriores continuam usando a regra anterior (ver
+  // calcularComissaoPeriodo). Se a tabela ainda não existir (SQL de
+  // configuração não rodado), avisa mas não impede salvar as faixas em si —
+  // só a proteção contra recálculo retroativo não funciona até a tabela ser
+  // criada.
   try{
     // AUDITORIA v1.6.27: checar o campo "error" de verdade — essa gravação é
     // a base inteira da proteção contra recálculo retroativo (P9); se
     // falhasse em silêncio, alterações de faixa voltariam a afetar vendas
     // antigas sem ninguém perceber.
-    const {error: errHist} = await _sb.from('historico_faixas').insert({
+    // v2.0: usa upsert por vigente_desde — se o admin editar o mesmo mês
+    // duas vezes, a segunda vez corrige a primeira em vez de criar uma
+    // entrada duplicada e ambígua pro mesmo mês.
+    const {error: errHist} = await _sb.from('historico_faixas').upsert({
       faixas: JSON.stringify(configLocal.faixas),
-      vigente_desde: hojeStr,
+      vigente_desde: vigenteDesde,
       criado_por: sessao.usuario?.email || 'admin',
-    });
+    }, {onConflict: 'vigente_desde'});
     if(errHist) throw new Error(errHist.message);
-    historicoFaixas.push({faixas: configLocal.faixas, vigente_desde: hojeStr});
+    const idxExistente = historicoFaixas.findIndex(h=>h.vigente_desde===vigenteDesde);
+    if(idxExistente>=0) historicoFaixas[idxExistente] = {faixas: configLocal.faixas, vigente_desde: vigenteDesde};
+    else historicoFaixas.push({faixas: configLocal.faixas, vigente_desde: vigenteDesde});
     historicoFaixas.sort((a,b)=> a.vigente_desde < b.vigente_desde ? -1 : 1);
   }catch(e){
     console.warn('historico_faixas indisponível:', e);
@@ -3956,6 +3982,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v2.0</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v2.1</div>
 </body>
 </html>
