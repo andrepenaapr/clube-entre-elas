@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.30">
+<meta name="app-version" content="2.0">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -980,20 +980,33 @@ function faixasVigentesEm(dataStr){
   return aplicavel;
 }
 
+// FEATURE v1.6.31: a comissão agora é padronizada por MÊS inteiro, não mais
+// por vigência exata (que podia cortar o cálculo no meio do mês e mostrar
+// "múltiplas faixas" numa venda só um dia depois de outra). Se você altera
+// uma faixa HOJE, o mês corrente inteiro continua na regra anterior — a
+// mudança só passa a valer a partir do mês seguinte.
+function faixasVigentesNoMes(anoMes){ // anoMes = 'YYYY-MM'
+  const primeiroDia = anoMes + '-01';
+  if(!historicoFaixas.length) return configLocal.faixas;
+  let aplicavel = historicoFaixas[0].faixas;
+  for(const h of historicoFaixas){
+    if(h.vigente_desde <= primeiroDia) aplicavel = h.faixas;
+    else break;
+  }
+  return aplicavel;
+}
+
 // Recebe uma lista de vendas (cada uma com .valor e .data) e calcula a
-// comissão total respeitando a regra vigente na data de CADA venda — agrupa
-// as vendas por vigência, soma cada grupo, aplica a faixa daquele grupo, e
-// soma as comissões. Isso garante que uma alteração de faixa não afeta o
-// cálculo de vendas anteriores à data da alteração.
+// comissão total agrupando por MÊS — todas as vendas do mesmo mês usam a
+// mesma regra (a que estava vigente no início daquele mês). Isso garante que
+// uma alteração de faixa nunca divide o cálculo dentro de um único mês.
 function calcularComissaoPeriodo(vendas){
-  const grupos = new Map(); // chave: vigente_desde do grupo -> {faixas, total}
+  const grupos = new Map(); // chave: 'YYYY-MM' -> {faixas, total}
   for(const v of (vendas||[])){
-    const dataV = v.data || '9999-12-31';
-    let entrada = historicoFaixas.length ? historicoFaixas[0] : {faixas:configLocal.faixas, vigente_desde:'0001-01-01'};
-    for(const h of historicoFaixas){ if(h.vigente_desde <= dataV) entrada = h; else break; }
-    const chave = entrada.vigente_desde;
-    if(!grupos.has(chave)) grupos.set(chave, {faixas: entrada.faixas, total: 0});
-    grupos.get(chave).total += (+v.valor);
+    const anoMes = (v.data || '9999-12-31').slice(0,7);
+    const faixasDoMes = faixasVigentesNoMes(anoMes);
+    if(!grupos.has(anoMes)) grupos.set(anoMes, {faixas: faixasDoMes, total: 0});
+    grupos.get(anoMes).total += (+v.valor);
   }
   let totalVendido = 0, totalComissao = 0, faixasAplicadas = configLocal.faixas;
   for(const {faixas, total} of grupos.values()){
@@ -1011,7 +1024,7 @@ function calcularComissaoPeriodo(vendas){
     totalVendido,
     totalComissao,
     faixasAplicadas,
-    misto: grupos.size > 1, // true = a venda do período cruzou mais de uma vigência de faixas
+    misto: grupos.size > 1, // agora só acontece se as vendas passadas cruzarem mais de um mês calendário
   };
 }
 
@@ -2472,30 +2485,29 @@ async function enviarCandidatura(){
 
   loading(true); btn.disabled=true;
   try{
-    const {data:existe}=await _sb.from('afiliadas').select('id').ilike('email',campos.email.trim()).single();
-    if(existe) throw new Error('Este e-mail já está cadastrado.');
-
-    // BUGFIX v1.6.16: mesmo padrão de .catch() quebrado das outras correções
-    // (o Supabase não retorna um objeto com .catch aqui) — isso quebrava TODA
-    // candidatura enviada pelo formulário público, sempre, sem exceção.
-    let ultima = null;
-    try{
-      const resp = await _sb.from('afiliadas').select('codigo').order('codigo',{ascending:false}).limit(1).single();
-      ultima = resp.data;
-    }catch(e){ console.warn('buscar último código:', e); }
-    const codigo=String((ultima?.codigo?parseInt(ultima.codigo):0)+1).padStart(4,'0');
-
+    // FEATURE v1.6.32: removidas as consultas SELECT que dependiam de acesso
+    // público à tabela afiliadas (checar e-mail duplicado e buscar o último
+    // código sequencial) — mantê-las exigiria reabrir a mesma brecha de RLS
+    // que acabamos de fechar. Agora o próprio banco cuida dos dois: um índice
+    // único bloqueia e-mail duplicado no insert (erro tratado abaixo), e um
+    // gatilho gera o código sequencial sozinho (por isso não mandamos mais
+    // "codigo" aqui).
     const {data:af,error:errAf}=await _sb.from('afiliadas').insert({
       nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
       instagram:campos.instagram, tiktok:campos.tiktok||null,
       endereco_cep:campos.endereco_cep||null, endereco_rua:campos.endereco_rua||null,
       endereco_numero:campos.endereco_numero||null, endereco_complemento:campos.endereco_complemento||null, endereco_bairro:campos.endereco_bairro||null,
       endereco_cidade:campos.endereco_cidade||null, endereco_uf:campos.endereco_uf||null,
-      codigo, tipo:'candidata', status:'pendente',
+      tipo:'candidata', status:'pendente',
       aceite_regras:true, aceite_contrato:true,
       data_candidatura:new Date().toISOString(),
     }).select().single();
-    if(errAf) throw new Error(errAf.message);
+    if(errAf){
+      if(/duplicate key|unique constraint|already exists/i.test(errAf.message)){
+        throw new Error('Este e-mail já está cadastrado.');
+      }
+      throw new Error(errAf.message);
+    }
 
     for(const file of printsCandidata){
       const path=`candidatas/${af.id}/${Date.now()}_${file.name}`;
@@ -3944,6 +3956,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.30</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v2.0</div>
 </body>
 </html>
