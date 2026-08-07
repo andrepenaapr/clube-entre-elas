@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="1.6.28">
+<meta name="app-version" content="1.6.29">
 <title>Clube Entre Elas</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -462,7 +462,7 @@ tr:hover td{background:#faf7f2}
       <div class="form-campo"><label>TikTok</label><input type="text" id="cad-tiktok" autocomplete="off" placeholder="@usuario"></div>
     </div>
     <div class="form-secao">Dados da Empresa <span style="font-size:12px;font-weight:400;color:var(--cinza-medio)">(a afiliada também pode preencher isso sozinha no primeiro acesso)</span></div>
-    <div class="form-grid">
+    <div class="form-grid" style="grid-template-columns:1fr 2fr;align-items:start">
       <div class="form-campo"><label>CNPJ / CPF</label><input type="text" id="cad-cnpj" maxlength="18" oninput="this.value=maskCpfCnpj(this.value)" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
       <div class="form-campo"><label>Razão Social / Nome para NF</label><input type="text" id="cad-razao" autocomplete="off" placeholder=""></div>
     </div>
@@ -639,7 +639,7 @@ tr:hover td{background:#faf7f2}
     </div>
     <div id="secoes-completar-cadastro" style="display:none">
       <div class="form-secao" id="titulo-secao-empresa-completar">Dados</div>
-      <div class="form-grid">
+      <div class="form-grid" style="grid-template-columns:1fr 2fr;align-items:start">
         <div class="form-campo"><label id="label-completar-cnpj">CNPJ / CPF</label><input type="text" id="completar-cnpj" maxlength="18" oninput="this.value=maskCpfCnpj(this.value)" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0001-00"></div>
         <div class="form-campo" id="campo-razao-completar-wrap"><label id="label-completar-razao">Razão Social / Nome para NF</label><input type="text" id="completar-razao" autocomplete="off"></div>
       </div>
@@ -868,6 +868,7 @@ function blocoEnderecoHtml(prefixo){
     <div class="form-grid" id="${prefixo}-resto" style="display:none;margin-top:10px">
       <div class="form-campo" style="grid-column:span 2"><label>Rua</label><input type="text" id="${prefixo}-rua" autocomplete="off"></div>
       <div class="form-campo"><label>Número</label><input type="text" id="${prefixo}-numero" autocomplete="off"></div>
+      <div class="form-campo"><label>Complemento <span style="font-size:10px;font-weight:400;color:var(--cinza-medio)">(opcional)</span></label><input type="text" id="${prefixo}-complemento" autocomplete="off" placeholder="Apto, bloco, casa..."></div>
       <div class="form-campo"><label>Bairro</label><input type="text" id="${prefixo}-bairro" autocomplete="off"></div>
       <div class="form-campo"><label>Cidade</label><input type="text" id="${prefixo}-cidade" autocomplete="off"></div>
       <div class="form-campo"><label>UF</label><select id="${prefixo}-uf">${montarOptionsUF()}</select></div>
@@ -890,6 +891,14 @@ function cadastroEmpresaBancarioCompleto(a){
 
 function fmtBRL(v){return'R$ '+(+v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
 function fmtData(s){if(!s)return'';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`}
+// FEATURE v1.6.29 (item 6): data + hora, sem segundos — usado no tooltip de
+// aceite de regras/contrato.
+function fmtDataHora(iso){
+  if(!iso) return '';
+  const dt = new Date(iso);
+  if(isNaN(dt.getTime())) return '';
+  return dt.toLocaleDateString('pt-BR') + ' às ' + dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
 function loading(on){document.getElementById('loading-overlay').classList.toggle('ativo',on)}
 
 // FEATURE v1.6.8 (P4): traduz as mensagens de erro mais comuns que vêm em
@@ -909,6 +918,8 @@ function traduzirErro(msg){
     [/jwt expired|invalid jwt/i, 'Sua sessão expirou. Faça login novamente.'],
     [/permission denied|not authorized/i, 'Você não tem permissão para fazer isso.'],
     [/row-level security/i, 'Acesso negado pela política de segurança do banco.'],
+    [/should not be the same as an old password|previously used password|password.*(has been|was) (pwned|used|breached)/i, 'Essa senha já foi usada antes. Escolha uma senha diferente.'],
+    [/bucket not found/i, 'Não foi possível acessar o local de armazenamento do arquivo (bucket não encontrado no Supabase). Avise o suporte técnico.'],
   ];
   for(const [re, pt] of mapa){ if(re.test(m)) return pt; }
   return m;
@@ -1594,8 +1605,8 @@ async function renderTabelaAfiliadas(){
     const badgeTipo   = isCandidata ? '<span class="badge pendente">Candidata</span>' : '<span class="badge ativo">Afiliada</span>';
     const badgeStatus = a.status==='ativo' ? '<span class="badge ativo">Ativa</span>' : a.status==='inativo' ? '<span class="badge inativo">Inativa</span>' : '<span class="badge pendente">Pendente</span>';
     const semAceite   = '<span style="color:var(--cinza-claro);font-size:11px">-</span>';
-    const aceiteR     = a.versao_regras_aceita    ? '<span class="badge ativo" title="'+fmtData(a.data_aceite_regras)+'">'+a.versao_regras_aceita+'</span>'    : semAceite;
-    const aceiteC     = a.versao_contrato_aceita  ? '<span class="badge ativo" title="'+fmtData(a.data_aceite_regras)+'">'+a.versao_contrato_aceita+'</span>'  : semAceite;
+    const aceiteR     = a.versao_regras_aceita    ? '<span class="badge ativo" title="'+fmtDataHora(a.data_aceite_regras)+'">'+a.versao_regras_aceita+'</span>'    : semAceite;
+    const aceiteC     = a.versao_contrato_aceita  ? '<span class="badge ativo" title="'+fmtDataHora(a.data_aceite_regras)+'">'+a.versao_contrato_aceita+'</span>'  : semAceite;
     const acoes = isCandidata
       ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Aceitar" onclick="aceitarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\',\'' + a.email + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Recusar" onclick="recusarCandidata(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
       : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Editar" onclick="editarAfiliada(\'' + a.id + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button> <button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Reenviar convite" onclick="reenviarConvite(\'' + a.email + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>  ' + (a.status==='ativo' ? '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:var(--border);color:var(--cinza-medio)" title="Desativar" onclick="desativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="9" y2="15"/><line x1="15" y1="9" x2="15" y2="15"/></svg></button>' : '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#2d6a4f;color:#2d6a4f" title="Reativar" onclick="reativarAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>') + '<button style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid;cursor:pointer;background:transparent;padding:0;border-color:#c9846a;color:#c9846a" title="Excluir" onclick="excluirAfiliada(\'' + a.id + '\',\'' + a.nome.replace(/'/g,"\'") + '\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
@@ -2180,6 +2191,7 @@ async function editarAfiliada(id){
   document.getElementById('endereco-cad-admin-cep').value=a.endereco_cep||'';
   document.getElementById('endereco-cad-admin-rua').value=a.endereco_rua||'';
   document.getElementById('endereco-cad-admin-numero').value=a.endereco_numero||'';
+  document.getElementById('endereco-cad-admin-complemento').value=a.endereco_complemento||'';
   document.getElementById('endereco-cad-admin-bairro').value=a.endereco_bairro||'';
   document.getElementById('endereco-cad-admin-cidade').value=a.endereco_cidade||'';
   document.getElementById('endereco-cad-admin-uf').value=a.endereco_uf||'';
@@ -2188,6 +2200,7 @@ async function editarAfiliada(id){
   document.getElementById('empresa-cad-admin-cep').value=a.empresa_endereco_cep||'';
   document.getElementById('empresa-cad-admin-rua').value=a.empresa_endereco_rua||'';
   document.getElementById('empresa-cad-admin-numero').value=a.empresa_endereco_numero||'';
+  document.getElementById('empresa-cad-admin-complemento').value=a.empresa_endereco_complemento||'';
   document.getElementById('empresa-cad-admin-bairro').value=a.empresa_endereco_bairro||'';
   document.getElementById('empresa-cad-admin-cidade').value=a.empresa_endereco_cidade||'';
   document.getElementById('empresa-cad-admin-uf').value=a.empresa_endereco_uf||'';
@@ -2233,12 +2246,14 @@ async function salvarAfiliada(){
     endereco_cep:    document.getElementById('endereco-cad-admin-cep').value.trim(),
     endereco_rua:    document.getElementById('endereco-cad-admin-rua').value.trim(),
     endereco_numero: document.getElementById('endereco-cad-admin-numero').value.trim(),
+    endereco_complemento: document.getElementById('endereco-cad-admin-complemento').value.trim(),
     endereco_bairro: document.getElementById('endereco-cad-admin-bairro').value.trim(),
     endereco_cidade: document.getElementById('endereco-cad-admin-cidade').value.trim(),
     endereco_uf:     document.getElementById('endereco-cad-admin-uf').value.trim(),
     empresa_endereco_cep:    document.getElementById('empresa-cad-admin-cep').value.trim(),
     empresa_endereco_rua:    document.getElementById('empresa-cad-admin-rua').value.trim(),
     empresa_endereco_numero: document.getElementById('empresa-cad-admin-numero').value.trim(),
+    empresa_endereco_complemento: document.getElementById('empresa-cad-admin-complemento').value.trim(),
     empresa_endereco_bairro: document.getElementById('empresa-cad-admin-bairro').value.trim(),
     empresa_endereco_cidade: document.getElementById('empresa-cad-admin-cidade').value.trim(),
     empresa_endereco_uf:     document.getElementById('empresa-cad-admin-uf').value.trim(),
@@ -2432,6 +2447,7 @@ async function enviarCandidatura(){
     endereco_cep:     document.getElementById('endereco-cad-pub-cep').value.trim(),
     endereco_rua:     document.getElementById('endereco-cad-pub-rua').value.trim(),
     endereco_numero:  document.getElementById('endereco-cad-pub-numero').value.trim(),
+    endereco_complemento: document.getElementById('endereco-cad-pub-complemento').value.trim(),
     endereco_bairro:  document.getElementById('endereco-cad-pub-bairro').value.trim(),
     endereco_cidade:  document.getElementById('endereco-cad-pub-cidade').value.trim(),
     endereco_uf:      document.getElementById('endereco-cad-pub-uf').value.trim(),
@@ -2469,7 +2485,7 @@ async function enviarCandidatura(){
       nome:campos.nome, email:campos.email, whatsapp:campos.telefone,
       instagram:campos.instagram, tiktok:campos.tiktok||null,
       endereco_cep:campos.endereco_cep||null, endereco_rua:campos.endereco_rua||null,
-      endereco_numero:campos.endereco_numero||null, endereco_bairro:campos.endereco_bairro||null,
+      endereco_numero:campos.endereco_numero||null, endereco_complemento:campos.endereco_complemento||null, endereco_bairro:campos.endereco_bairro||null,
       endereco_cidade:campos.endereco_cidade||null, endereco_uf:campos.endereco_uf||null,
       codigo, tipo:'candidata', status:'pendente',
       aceite_regras:true, aceite_contrato:true,
@@ -3514,6 +3530,7 @@ async function abrirNotificacaoAf(id){
 function renderMinhaContaDados(af){
   const el=document.getElementById('minha-conta-dados');
   if(!el)return;
+  const ehPJ = af.tipo_pessoa === 'juridica';
   el.innerHTML=`
     <div class="form-grid">
       <div class="form-campo"><label>Nome</label><input type="text" id="conta-nome" value="${escapeHtml(af.nome||'')}"></div>
@@ -3525,19 +3542,47 @@ function renderMinhaContaDados(af){
     </div>
     <div style="font-size:13px;color:var(--cinza-medio);margin:1.25rem 0 0.75rem;font-weight:600">Endereço</div>
     <div id="endereco-conta-wrap"></div>
+    ${ehPJ ? `
+    <div style="font-size:13px;color:var(--cinza-medio);margin:1.25rem 0 0.75rem;font-weight:600">Dados da Empresa</div>
+    <div class="form-grid" style="grid-template-columns:1fr 2fr;align-items:start">
+      <div class="form-campo"><label>CNPJ</label><input type="text" id="conta-cnpj" maxlength="18" oninput="this.value=maskCpfCnpj(this.value)" value="${escapeHtml(af.cnpj||'')}"></div>
+      <div class="form-campo"><label>Razão Social</label><input type="text" id="conta-razao" value="${escapeHtml(af.razao_social||'')}"></div>
+    </div>
+    <div style="font-size:12px;color:var(--cinza-medio);margin:10px 0 6px">Endereço da empresa</div>
+    <div id="endereco-conta-empresa-wrap"></div>
+    <div class="form-campo" style="margin-top:10px">
+      <label>Cartão CNPJ (PDF)</label>
+      <input type="file" id="conta-cartao-cnpj-input" accept=".pdf" onchange="document.getElementById('conta-cartao-cnpj-nome').textContent=this.files[0]?this.files[0].name:''">
+      <div id="conta-cartao-cnpj-nome" style="font-size:12px;color:var(--cinza-medio);margin-top:4px"></div>
+      ${af.empresa_cartao_cnpj_url?`<div style="margin-top:4px"><a href="${escapeHtml(af.empresa_cartao_cnpj_url)}" target="_blank" style="color:var(--dourado);font-size:12px">📄 Ver cartão CNPJ atual</a></div>`:''}
+    </div>` : ''}
     <div id="conta-dados-msg-ok" class="msg-sucesso">✓ Dados atualizados com sucesso!</div>
     <div id="conta-dados-msg-err" class="msg-erro"></div>
     <button class="btn-acao" style="margin-top:1rem" onclick="salvarDadosPessoaisAfiliada()">Salvar Alterações</button>
-    <p style="font-size:12px;color:var(--cinza-claro);margin-top:0.75rem">Para trocar o e-mail ou o cupom, entre em contato com a equipe Entre Elas.</p>
+    <p style="font-size:12px;color:var(--cinza-claro);margin-top:0.75rem">Para trocar o e-mail, o cupom ou o tipo de pessoa (Física/Jurídica), entre em contato com a equipe Entre Elas.</p>
   `;
   document.getElementById('endereco-conta-wrap').innerHTML = blocoEnderecoHtml('endereco-conta');
   document.getElementById('endereco-conta-cep').value = af.endereco_cep||'';
   document.getElementById('endereco-conta-rua').value = af.endereco_rua||'';
   document.getElementById('endereco-conta-numero').value = af.endereco_numero||'';
+  document.getElementById('endereco-conta-complemento').value = af.endereco_complemento||'';
   document.getElementById('endereco-conta-bairro').value = af.endereco_bairro||'';
   document.getElementById('endereco-conta-cidade').value = af.endereco_cidade||'';
   document.getElementById('endereco-conta-uf').value = af.endereco_uf||'';
   if(af.endereco_rua||af.endereco_cep){ const r=document.getElementById('endereco-conta-resto'); if(r) r.style.display='grid'; }
+  // FEATURE v1.6.29 (item 5): Pessoa Jurídica também edita os dados da
+  // empresa aqui — sem precisar do admin.
+  if(ehPJ){
+    document.getElementById('endereco-conta-empresa-wrap').innerHTML = blocoEnderecoHtml('endereco-conta-empresa');
+    document.getElementById('endereco-conta-empresa-cep').value = af.empresa_endereco_cep||'';
+    document.getElementById('endereco-conta-empresa-rua').value = af.empresa_endereco_rua||'';
+    document.getElementById('endereco-conta-empresa-numero').value = af.empresa_endereco_numero||'';
+    document.getElementById('endereco-conta-empresa-complemento').value = af.empresa_endereco_complemento||'';
+    document.getElementById('endereco-conta-empresa-bairro').value = af.empresa_endereco_bairro||'';
+    document.getElementById('endereco-conta-empresa-cidade').value = af.empresa_endereco_cidade||'';
+    document.getElementById('endereco-conta-empresa-uf').value = af.empresa_endereco_uf||'';
+    if(af.empresa_endereco_rua||af.empresa_endereco_cep){ const r=document.getElementById('endereco-conta-empresa-resto'); if(r) r.style.display='grid'; }
+  }
 }
 
 async function salvarDadosPessoaisAfiliada(){
@@ -3557,6 +3602,7 @@ async function salvarDadosPessoaisAfiliada(){
     endereco_cep:    document.getElementById('endereco-conta-cep').value.trim(),
     endereco_rua:    document.getElementById('endereco-conta-rua').value.trim(),
     endereco_numero: document.getElementById('endereco-conta-numero').value.trim(),
+    endereco_complemento: document.getElementById('endereco-conta-complemento').value.trim(),
     endereco_bairro: document.getElementById('endereco-conta-bairro').value.trim(),
     endereco_cidade: document.getElementById('endereco-conta-cidade').value.trim(),
     endereco_uf:     document.getElementById('endereco-conta-uf').value.trim(),
@@ -3565,6 +3611,35 @@ async function salvarDadosPessoaisAfiliada(){
     // até o admin abrir "Ver dados" dela.
     dados_alterados_pendente: true,
   };
+
+  // FEATURE v1.6.29 (item 5): se for Pessoa Jurídica, também salva os dados
+  // da empresa e o cartão CNPJ, se um novo foi anexado.
+  if(sessao.afiliada.tipo_pessoa === 'juridica'){
+    dados.cnpj = document.getElementById('conta-cnpj').value.trim();
+    dados.razao_social = document.getElementById('conta-razao').value.trim();
+    dados.empresa_endereco_cep    = document.getElementById('endereco-conta-empresa-cep').value.trim();
+    dados.empresa_endereco_rua    = document.getElementById('endereco-conta-empresa-rua').value.trim();
+    dados.empresa_endereco_numero = document.getElementById('endereco-conta-empresa-numero').value.trim();
+    dados.empresa_endereco_complemento = document.getElementById('endereco-conta-empresa-complemento').value.trim();
+    dados.empresa_endereco_bairro = document.getElementById('endereco-conta-empresa-bairro').value.trim();
+    dados.empresa_endereco_cidade = document.getElementById('endereco-conta-empresa-cidade').value.trim();
+    dados.empresa_endereco_uf     = document.getElementById('endereco-conta-empresa-uf').value.trim();
+
+    const cartaoInput = document.getElementById('conta-cartao-cnpj-input');
+    const arquivoCartao = cartaoInput && cartaoInput.files[0];
+    if(arquivoCartao){
+      loading(true);
+      const path = `cartoes-cnpj/${Date.now()}_${arquivoCartao.name}`;
+      try{
+        const {error:errUp} = await _sb.storage.from('documentos-empresa').upload(path, arquivoCartao, {cacheControl:'3600'});
+        if(!errUp){
+          const {data:urlData} = _sb.storage.from('documentos-empresa').getPublicUrl(path);
+          dados.empresa_cartao_cnpj_url = urlData?.publicUrl || null;
+          dados.empresa_cartao_cnpj_nome = arquivoCartao.name;
+        } else { console.warn('upload cartão CNPJ:', errUp); }
+      }catch(e){ console.warn('upload cartão CNPJ:', e); }
+    }
+  }
 
   loading(true);
   const {data:linhas, error} = await _sb.from('afiliadas').update(dados).eq('id', sessao.afiliada.id).select();
@@ -3653,6 +3728,7 @@ async function abrirPopupCompletarCadastro(){
   document.getElementById('empresa-completar-cep').value = a.empresa_endereco_cep||'';
   document.getElementById('empresa-completar-rua').value = a.empresa_endereco_rua||'';
   document.getElementById('empresa-completar-numero').value = a.empresa_endereco_numero||'';
+  document.getElementById('empresa-completar-complemento').value = a.empresa_endereco_complemento||'';
   document.getElementById('empresa-completar-bairro').value = a.empresa_endereco_bairro||'';
   document.getElementById('empresa-completar-cidade').value = a.empresa_endereco_cidade||'';
   document.getElementById('empresa-completar-uf').value = a.empresa_endereco_uf||'';
@@ -3698,6 +3774,7 @@ async function salvarCompletarCadastro(){
     dados.empresa_endereco_cep    = document.getElementById('empresa-completar-cep').value.trim();
     dados.empresa_endereco_rua    = document.getElementById('empresa-completar-rua').value.trim();
     dados.empresa_endereco_numero = document.getElementById('empresa-completar-numero').value.trim();
+    dados.empresa_endereco_complemento = document.getElementById('empresa-completar-complemento').value.trim();
     dados.empresa_endereco_bairro = document.getElementById('empresa-completar-bairro').value.trim();
     dados.empresa_endereco_cidade = document.getElementById('empresa-completar-cidade').value.trim();
     dados.empresa_endereco_uf     = document.getElementById('empresa-completar-uf').value.trim();
@@ -3863,6 +3940,6 @@ document.getElementById('popup-regras').addEventListener('click',function(e){e.s
 document.getElementById('input-senha').addEventListener('keydown',e=>{if(e.key==='Enter')fazerLogin();});
 </script>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.28</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:#3a3a3a;letter-spacing:0.1em">Clube Entre Elas — v1.6.29</div>
 </body>
 </html>
