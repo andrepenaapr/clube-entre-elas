@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Entrar — Recibos de Aluguel{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4 mt-5">
+    <div class="card p-4">
+      <h4 class="mb-3 text-center"><i class="bi bi-house-door"></i> Recibos de Aluguel</h4>
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label">E-mail</label>
+          <input type="email" class="form-control" name="email" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Senha</label>
+          <input type="password" class="form-control" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-dark w-100">Entrar</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

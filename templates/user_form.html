@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar usuário' if user else 'Novo usuário' }}{% endblock %}
+{% block content %}
+<h4 class="mb-3">{{ 'Editar usuário' if user else 'Novo usuário' }}</h4>
+<div class="card p-4" style="max-width: 600px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label class="form-label">Nome *</label>
+      <input type="text" class="form-control" name="name" value="{{ user.name if user else '' }}" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">E-mail *</label>
+      <input type="email" class="form-control" name="email" value="{{ user.email if user else '' }}" {% if user %}readonly{% endif %} required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Papel</label>
+      <select class="form-select" name="role">
+        <option value="operador" {% if user and user.role == 'operador' %}selected{% endif %}>Operador (gerencia imóveis, clientes, contratos e recibos)</option>
+        <option value="admin" {% if user and user.role == 'admin' %}selected{% endif %}>Administrador (também gerencia usuários e configurações)</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">{{ 'Nova senha (deixe em branco para manter a atual)' if user else 'Senha inicial (opcional, padrão: mudar123)' }}</label>
+      <input type="text" class="form-control" name="password">
+    </div>
+    {% if user %}
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="active" id="active" {% if user.active %}checked{% endif %}>
+      <label class="form-check-label" for="active">Usuário ativo</label>
+    </div>
+    {% endif %}
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-dark">Salvar</button>
+      <a href="{{ url_for('users_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Recibo {{ receipt.number }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Recibo {{ receipt.number }}</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('receipt_pdf', receipt_id=receipt.id) }}" target="_blank" class="btn btn-dark"><i class="bi bi-file-earmark-pdf"></i> Abrir / baixar PDF</a>
+    <a href="{{ url_for('rental_detail', rental_id=receipt.rental_id) }}" class="btn btn-outline-secondary">Voltar ao contrato</a>
+  </div>
+</div>
+
+<div class="card p-4" style="max-width: 700px;">
+  <dl class="row mb-0">
+    <dt class="col-sm-4">Tipo</dt><dd class="col-sm-8">{{ TIPO_RECIBO_LABELS.get(receipt.tipo, receipt.tipo) }}</dd>
+    <dt class="col-sm-4">Data de emissão</dt><dd class="col-sm-8">{{ receipt.issue_date.strftime('%d/%m/%Y') }}</dd>
+    <dt class="col-sm-4">Valor</dt><dd class="col-sm-8">R$ {{ "%.2f"|format(receipt.value)|replace('.', ',') }}</dd>
+    {% if receipt.period_start and receipt.period_end %}
+    <dt class="col-sm-4">Período</dt><dd class="col-sm-8">{{ receipt.period_start.strftime('%d/%m/%Y') }} a {{ receipt.period_end.strftime('%d/%m/%Y') }}</dd>
+    {% endif %}
+    <dt class="col-sm-4">Imóvel</dt><dd class="col-sm-8">{{ receipt.snapshot_property_nickname }} — {{ receipt.snapshot_property_address }}</dd>
+    <dt class="col-sm-4">Cliente(s)</dt><dd class="col-sm-8">{{ receipt.snapshot_clients_names }}</dd>
+    <dt class="col-sm-4">Emitido por</dt><dd class="col-sm-8">{{ receipt.issued_by.name if receipt.issued_by else '-' }}</dd>
+    {% if receipt.notes %}
+    <dt class="col-sm-4">Observações</dt><dd class="col-sm-8">{{ receipt.notes }}</dd>
+    {% endif %}
+  </dl>
+</div>
+{% endblock %}

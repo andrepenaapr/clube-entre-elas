@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Imóveis{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Imóveis</h4>
+  {% if current_user.is_admin %}
+  <a href="{{ url_for('property_new') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Novo imóvel</a>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Apelido</th><th>Endereço</th><th>Valor padrão do aluguel</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for p in properties %}
+        <tr>
+          <td>{{ p.nickname }}</td>
+          <td>{{ p.address }}</td>
+          <td>{% if p.default_rent_value %}R$ {{ "%.2f"|format(p.default_rent_value)|replace('.', ',') }}{% else %}-{% endif %}</td>
+          <td>{% if p.active %}<span class="badge bg-success">Ativo</span>{% else %}<span class="badge bg-secondary">Inativo</span>{% endif %}</td>
+          <td class="text-end">{% if current_user.is_admin %}<a href="{{ url_for('property_edit', property_id=p.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>{% endif %}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Nenhum imóvel cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

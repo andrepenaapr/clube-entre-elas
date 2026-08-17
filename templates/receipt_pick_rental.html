@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Emitir recibo{% endblock %}
+{% block content %}
+<h4 class="mb-3">Emitir recibo</h4>
+
+<div class="card p-4" style="max-width: 600px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="mb-3">
+      <label class="form-label">Contrato</label>
+      <select class="form-select" name="rental_id" required>
+        <option value="">Selecione...</option>
+        {% for r in rentals %}
+        <option value="{{ r.id }}">{{ r.property.nickname }} — {{ r.clients_names }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-dark"><i class="bi bi-receipt"></i> Continuar</button>
+      <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Recibos{% endblock %}
+{% block content %}
+<h4 class="mb-3">Recibos emitidos</h4>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Nº</th><th>Data</th><th>Tipo</th><th>Cliente</th><th>Imóvel</th><th class="text-end">Valor</th><th></th></tr></thead>
+      <tbody>
+        {% for r in receipts %}
+        <tr>
+          <td>{{ r.number }}</td>
+          <td>{{ r.issue_date.strftime('%d/%m/%Y') }}</td>
+          <td>{{ TIPO_RECIBO_LABELS.get(r.tipo, r.tipo) }}</td>
+          <td>{{ r.snapshot_clients_names }}</td>
+          <td>{{ r.snapshot_property_nickname }}</td>
+          <td class="text-end">R$ {{ "%.2f"|format(r.value)|replace('.', ',') }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('receipt_detail', receipt_id=r.id) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+            <a href="{{ url_for('receipt_pdf', receipt_id=r.id) }}" target="_blank" class="btn btn-sm btn-dark">PDF</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Nenhum recibo emitido ainda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

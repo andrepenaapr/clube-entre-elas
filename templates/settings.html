@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Configurações{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Configurações</h4>
+  <a href="{{ url_for('users_list') }}" class="btn btn-outline-dark"><i class="bi bi-people"></i> Gerenciar usuários</a>
+</div>
+<p class="text-muted">Dados do locador — aparecem nos recibos emitidos.</p>
+<div class="card p-4" style="max-width: 700px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label class="form-label">Nome do locador (ou razão social)</label>
+      <input type="text" class="form-control" name="landlord_name" value="{{ settings.landlord_name or '' }}">
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">CPF/CNPJ</label>
+        <input type="text" class="form-control" name="landlord_document" value="{{ settings.landlord_document or '' }}">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Telefone</label>
+        <input type="text" class="form-control" name="landlord_phone" value="{{ settings.landlord_phone or '' }}">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-control" name="landlord_email" value="{{ settings.landlord_email or '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Endereço</label>
+      <input type="text" class="form-control" name="landlord_address" value="{{ settings.landlord_address or '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Cidade (usada no fecho do recibo, ex.: "Curvelo, 09 de abril de 2026")</label>
+      <input type="text" class="form-control" name="landlord_city" value="{{ settings.landlord_city or '' }}" placeholder="Ex.: Curvelo">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Texto adicional no rodapé do recibo (opcional)</label>
+      <textarea class="form-control" name="receipt_footer_text" rows="2">{{ settings.receipt_footer_text or '' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-dark">Salvar</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar imóvel' if property else 'Novo imóvel' }}{% endblock %}
+{% block content %}
+<h4 class="mb-3">{{ 'Editar imóvel' if property else 'Novo imóvel' }}</h4>
+<div class="card p-4" style="max-width: 700px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label class="form-label">Apelido / identificação *</label>
+      <input type="text" class="form-control" name="nickname" placeholder="Ex.: Apto 302 - Centro" value="{{ property.nickname if property else '' }}" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Endereço completo *</label>
+      <input type="text" class="form-control" name="address" value="{{ property.address if property else '' }}" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Valor padrão do aluguel (R$)</label>
+      <input type="text" class="form-control" name="default_rent_value" placeholder="Ex.: 1500,00" value="{{ property.default_rent_value if property else '' }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Descrição / observações</label>
+      <textarea class="form-control" name="description" rows="2">{{ property.description if property else '' }}</textarea>
+    </div>
+    {% if property %}
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" name="active" id="active" {% if property.active %}checked{% endif %}>
+      <label class="form-check-label" for="active">Imóvel ativo</label>
+    </div>
+    {% endif %}
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-dark">Salvar</button>
+      <a href="{{ url_for('properties_list') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
