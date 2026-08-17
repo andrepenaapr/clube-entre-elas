@@ -122,15 +122,15 @@ def create_app():
         if current_user.is_authenticated:
             return redirect(url_for("dashboard"))
         if request.method == "POST":
-            email = request.form.get("email", "").strip().lower()
+            username = request.form.get("username", "").strip().lower()
             password = request.form.get("password", "")
-            user = User.query.filter_by(email=email).first()
+            user = User.query.filter_by(username=username).first()
             if user and user.active and user.check_password(password):
                 login_user(user)
                 flash("Login realizado com sucesso.", "success")
                 next_url = request.args.get("next")
                 return redirect(next_url or url_for("dashboard"))
-            flash("E-mail ou senha inválidos.", "danger")
+            flash("Usuário ou senha inválidos.", "danger")
         return render_template("login.html")
 
     @app.route("/logout")
@@ -518,21 +518,23 @@ def create_app():
     @admin_required
     def user_new():
         if request.method == "POST":
-            email = request.form.get("email", "").strip().lower()
-            existing = User.query.filter_by(email=email).first()
+            username = request.form.get("username", "").strip().lower()
+            name = request.form.get("name", "").strip()
+            if not name or not username:
+                flash("Informe nome e nome de usuário.", "danger")
+                return render_template("user_form.html", user=None)
+            existing = User.query.filter_by(username=username).first()
             if existing:
-                flash("Já existe um usuário com esse e-mail.", "danger")
+                flash("Já existe um usuário com esse nome de usuário.", "danger")
                 return render_template("user_form.html", user=None)
             u = User(
-                name=request.form.get("name", "").strip(),
-                email=email,
+                name=name,
+                username=username,
+                email=(request.form.get("email", "").strip().lower() or None),
                 role=request.form.get("role", ROLE_OPERADOR),
             )
             password = request.form.get("password") or "mudar123"
             u.set_password(password)
-            if not u.name or not u.email:
-                flash("Informe nome e e-mail.", "danger")
-                return render_template("user_form.html", user=None)
             db.session.add(u)
             db.session.commit()
             flash(f"Usuário criado. Senha inicial: {password}", "success")
@@ -546,6 +548,7 @@ def create_app():
         u = User.query.get_or_404(user_id)
         if request.method == "POST":
             u.name = request.form.get("name", "").strip()
+            u.email = request.form.get("email", "").strip().lower() or None
             u.role = request.form.get("role", ROLE_OPERADOR)
             u.active = request.form.get("active") == "on"
             new_password = request.form.get("password")
@@ -591,7 +594,49 @@ def _migrate_db(app):
     from sqlalchemy import inspect, text
     with app.app_context():
         inspector = inspect(db.engine)
-        if "rentals" not in inspector.get_table_names():
+        table_names = inspector.get_table_names()
+
+        if "users" in table_names:
+            user_cols = {c["name"] for c in inspector.get_columns("users")}
+            if "username" not in user_cols:
+                db.session.execute(text("ALTER TABLE users ADD COLUMN username VARCHAR(80)"))
+                db.session.commit()
+                print("Banco atualizado: coluna 'username' adicionada em users.")
+                # preenche o username dos usuários já existentes com base no e-mail,
+                # garantindo unicidade (adiciona sufixo numérico em caso de conflito)
+                rows = db.session.execute(text("SELECT id, email FROM users WHERE username IS NULL")).fetchall()
+                used = set()
+                for row in rows:
+                    base = (row.email or f"usuario{row.id}").split("@")[0].strip().lower() or f"usuario{row.id}"
+                    candidate = base
+                    n = 1
+                    while candidate in used or db.session.execute(
+                        text("SELECT 1 FROM users WHERE username = :u"), {"u": candidate}
+                    ).first():
+                        n += 1
+                        candidate = f"{base}{n}"
+                    used.add(candidate)
+                    db.session.execute(
+                        text("UPDATE users SET username = :u WHERE id = :id"),
+                        {"u": candidate, "id": row.id},
+                    )
+                db.session.commit()
+                if rows:
+                    print(f"Banco atualizado: {len(rows)} usuário(s) com username gerado a partir do e-mail.")
+                try:
+                    db.session.execute(text("CREATE UNIQUE INDEX ix_users_username ON users (username)"))
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+            email_col = next((c for c in inspector.get_columns("users") if c["name"] == "email"), None)
+            if email_col is not None and not email_col.get("nullable", True):
+                try:
+                    db.session.execute(text("ALTER TABLE users ALTER COLUMN email DROP NOT NULL"))
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()
+
+        if "rentals" not in table_names:
             return
         existing_cols = {c["name"] for c in inspector.get_columns("rentals")}
         statements = []
@@ -635,13 +680,14 @@ def _init_db(app):
         db.create_all()
         _migrate_db(app)
         if not User.query.filter_by(role=ROLE_ADMIN).first():
-            admin_email = os.environ.get("ADMIN_EMAIL", "admin@exemplo.com")
+            admin_username = os.environ.get("ADMIN_USERNAME", "admin")
+            admin_email = os.environ.get("ADMIN_EMAIL") or None
             admin_password = os.environ.get("ADMIN_PASSWORD", "admin123")
-            admin = User(name="Administrador", email=admin_email, role=ROLE_ADMIN)
+            admin = User(name="Administrador", username=admin_username, email=admin_email, role=ROLE_ADMIN)
             admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
-            print(f"Usuário admin criado: {admin_email} / senha: {admin_password}")
+            print(f"Usuário admin criado: {admin_username} / senha: {admin_password}")
         Settings.get()
 
 

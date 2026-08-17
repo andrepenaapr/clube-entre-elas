@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Recibos{% endblock %}
 {% block content %}
-<h4 class="mb-3">Recibos emitidos</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Recibos emitidos</h4>
+  <a href="{{ url_for('receipt_pick_rental') }}" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Emitir recibo</a>
+</div>
 <div class="card">
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">

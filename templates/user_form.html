@@ -10,8 +10,12 @@
       <input type="text" class="form-control" name="name" value="{{ user.name if user else '' }}" required>
     </div>
     <div class="mb-3">
-      <label class="form-label">E-mail *</label>
-      <input type="email" class="form-control" name="email" value="{{ user.email if user else '' }}" {% if user %}readonly{% endif %} required>
+      <label class="form-label">Nome de usuário (login) *</label>
+      <input type="text" class="form-control" name="username" value="{{ user.username if user else '' }}" {% if user %}readonly{% endif %} required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">E-mail</label>
+      <input type="email" class="form-control" name="email" value="{{ user.email if user else '' }}">
     </div>
     <div class="mb-3">
       <label class="form-label">Papel</label>

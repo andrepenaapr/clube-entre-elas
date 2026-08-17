@@ -9,12 +9,12 @@
 <div class="card">
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Nome</th><th>Usuário</th><th>Papel</th><th>Status</th><th></th></tr></thead>
       <tbody>
         {% for u in users %}
         <tr>
           <td>{{ u.name }}</td>
-          <td>{{ u.email }}</td>
+          <td>{{ u.username }}</td>
           <td>{{ 'Administrador' if u.role == 'admin' else 'Operador' }}</td>
           <td>{% if u.active %}<span class="badge bg-success">Ativo</span>{% else %}<span class="badge bg-secondary">Inativo</span>{% endif %}</td>
           <td class="text-end"><a href="{{ url_for('user_edit', user_id=u.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a></td>
